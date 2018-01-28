@@ -1,5 +1,5 @@
 /* TLD library -- TLD example
- * Copyright (C) 2011-2017  Made to Order Software Corp.
+ * Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the

@@ -9,7 +9,7 @@
 #      See the CMake documentation.
 #
 # License:
-#      Copyright (c) 2013-2017 Made to Order Software Corp.
+#      Copyright (c) 2013-2018  Made to Order Software Corp.  All Rights Reserved
 #
 #      https://sourceforge.net/projects/unigw/
 #      contact@m2osw.com
