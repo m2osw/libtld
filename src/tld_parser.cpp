@@ -482,14 +482,17 @@ void verify_data(tld_info_map_t& map)
                 // otherwise considered letters...
                 switch(c.unicode())
                 {
-                case 0x0902: // Devanagari sign anusvara
-                case 0x093E: // devanagari vowel sign AA
-                case 0x0947: // devanagari vowel sign E
-                case 0x0949: // devanagari vowel sign candra O
+                case 0x0902: // Devanagari Sign Anusvara
+                case 0x093E: // Devanagari Vowel Sign AA
+                case 0x0947: // Devanagari Vowel Sign E
+                case 0x0949: // Devanagari Vowel Sign Candra O
+                case 0x094B: // Devanagari Vowel Sign O
+                case 0x094D: // Devanagari Sign Virama
                 case 0x0982: // Bengali Sign Anusvara
                 case 0x09BE: // Bengali Vowel Sign AA
                 case 0x0A3E: // Gurmukhi Vowel Sign AA
                 case 0x0ABE: // Gujarati Vowel Sign AA
+                case 0x0B3E: // Oriya Vowel Sign AA
                 case 0x0BBE: // Tamil Dependent Vowel Sign AA
                 case 0x0BBF: // Tamil Dependent Vowel Sign I
                 case 0x0BC2: // Tamil Vowel Sign UU
@@ -497,8 +500,17 @@ void verify_data(tld_info_map_t& map)
                 case 0x0BCD: // Tamil Sign Virama
                 case 0x0C3E: // Telugu Vowel Sign AA
                 case 0x0C4D: // Telugu Sign Virama
+                case 0x0CBE: // Kannada Vowel Sign AA
+                case 0x0D02: // Malayalam Sign Anusvara
+                case 0x0D3E: // Malayalam Vowel Sign AA
                 case 0x0D82: // Sinhala Sign Anusvaraya
                 case 0x0DCF: // Sinhala Vowel Sign Aela-Pilla
+                case 0x0E31: // Thai Character Mai Han-Akat
+                case 0x0E34: // Thai Character Sara I
+                case 0x0E36: // Thai Character Sara UE
+                case 0x0E38: // Thai Character Sara U
+                case 0x0E47: // Thai Character Maitaikhu
+                case 0x0E4C: // Thai Character Thanthakhat
                     break;
 
                 default:

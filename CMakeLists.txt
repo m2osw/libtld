@@ -3,7 +3,6 @@
 # Object:       Definitions to create the build environment with cmake
 #
 # Copyright:    Copyright (c) 2011-2017 Made to Order Software Corp.
-#               All Rights Reserved.
 #
 # http://snapwebsites.org/project/libtld
 # contact@m2osw.com

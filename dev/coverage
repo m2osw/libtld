@@ -6,27 +6,29 @@
 set -e
 start_date=`date`
 SOURCE=`pwd`
-MAJOR=`grep LIBTLD_VERSION_MAJOR CMakeLists.txt | sed -e 's/^.*set(.*LIBTLD_VERSION_MAJOR.*\([0-9]\+\).*$/\1/'`
-MINOR=`grep LIBTLD_VERSION_MINOR CMakeLists.txt | sed -e 's/^.*set(.*LIBTLD_VERSION_MINOR.*\([0-9]\+\).*$/\1/'`
-PATCH=`grep LIBTLD_VERSION_PATCH CMakeLists.txt | sed -e 's/^.*set(.*LIBTLD_VERSION_PATCH.*\([0-9]\+\).*$/\1/'`
-VERSION="$MAJOR.$MINOR.$PATCH"
+VERSION=`dpkg-parsechangelog --show-field Version | sed -e 's/~.*//' -e 's/\(^[0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/'`
 mkdir -p tmp/coverage
 rm -rf tmp/coverage/*
 cd tmp/coverage
 mkdir BUILD
 cd BUILD
 # request coverage in this build
-modules=`cd ../../../../; pwd`/snapCMakeModules/Modules
-cmake -DCMAKE_MODULE_PATH=$modules -DCMAKE_BUILD_TYPE=Debug -Dtld_library_COVERAGE:BOOL=ON ../../..
+modules=`cd ../../../../../; pwd`/cmake/Modules
+cmake -DCMAKE_MODULE_PATH:PATH="$modules" \
+      -DSnapCMakeModules_DIR:PATH="$modules" \
+      -DSnapDoxygen_DIR:PATH="$modules" \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -Dtld_library_COVERAGE:BOOL=ON \
+          ../../..
 cd ..
 echo
 echo "***"
-echo "*** compile"
+echo "*** compile v$VERSION"
 echo "***"
 VERBOSE=1 make -C BUILD
 echo
 echo "***"
-echo "*** run"
+echo "*** run v$VERSION"
 echo "***"
 BUILD/tests/tld_internal_test
 BUILD/tests/tld_test
@@ -35,7 +37,7 @@ BUILD/tests/tld_test_full_uri
 (cd ../../tests/; ./tld_test_godaddy.sh ../tmp/coverage/BUILD/src)
 ../../tests/tld_test_godaddy.sh
 BUILD/tests/tld_test_object
-cp ../../tests/effective_tld_names.dat .
+cp ../../tests/public_suffix_list.dat .
 BUILD/tests/tld_test_tld_names
 BUILD/tests/tld_test_domain_lowercase
 BUILD/tests/tld_test_versions $SOURCE
@@ -82,12 +84,12 @@ then
 fi
 if ! BUILD/src/validate_tld http://www.m2osw.com/validate/tld?perfect=work
 then
-    echo "validate_tld <valid URI> did exit with an error";
+    echo "validate_tld <invalid URI> did exit with an error";
     exit 1;
 fi
 if BUILD/src/validate_tld http://www.m2osw.comm/validate/tld?perfect=work
 then
-    echo "validate_tld <valid URI> did not exit with an error";
+    echo "validate_tld <invalid URI> did not exit with an error";
     exit 1;
 fi
 if BUILD/src/validate_tld --schemes ftp http://www.m2osw.com/bad/scheme
@@ -97,7 +99,17 @@ then
 fi
 if ! BUILD/src/validate_tld --schemes ftp ftp://www.m2osw.com/matching/scheme
 then
-    echo "validate_tld <valid URI> did exit with an error";
+    echo "validate_tld <invalid URI> did exit with an error";
+    exit 1;
+fi
+if BUILD/src/validate_tld 'mailto:"alexis@m2osw.com'
+then
+    echo "validate_tld <invalid URI> did not exit with an error";
+    exit 1;
+fi
+if BUILD/src/validate_tld 'mailto:"alexis@m2osw.com'
+then
+    echo "validate_tld <invalid URI> did not exit with an error";
     exit 1;
 fi
 if ! BUILD/src/validate_tld mailto:alexis@m2osw.com
@@ -107,7 +119,7 @@ then
 fi
 if ! BUILD/src/validate_tld -v mailto:alexis@m2osw.com
 then
-    echo "validate_tld <valid URI> did exit with an error";
+    echo "validate_tld <invalid URI> did exit with an error";
     exit 1;
 fi
 if BUILD/src/validate_tld --verbose
@@ -122,7 +134,7 @@ then
 fi
 echo
 echo "***"
-echo "*** gcov/lcov"
+echo "*** gcov/lcov v$VERSION"
 echo "***"
 
 # Choose one of the following gcov commands

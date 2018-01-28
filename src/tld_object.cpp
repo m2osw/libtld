@@ -53,7 +53,7 @@
  *
  * \param[in] domain_name  The domain to parse by this object.
  */
-tld_object::tld_object(const char *domain_name)
+tld_object::tld_object(char const * domain_name)
 {
     set_domain(domain_name);
 }
@@ -71,7 +71,7 @@ tld_object::tld_object(const char *domain_name)
  *
  * \param[in] domain_name  The domain to parse by this object.
  */
-tld_object::tld_object(const std::string& domain_name)
+tld_object::tld_object(std::string const & domain_name)
 {
     set_domain(domain_name);
 }
@@ -90,9 +90,9 @@ tld_object::tld_object(const std::string& domain_name)
  *
  * \param[in] domain_name  The domain to parse by this object.
  */
-void tld_object::set_domain(const char *domain_name)
+void tld_object::set_domain(char const * domain_name)
 {
-    set_domain(std::string(domain_name == NULL ? "" : domain_name));
+    set_domain(std::string(domain_name == nullptr ? "" : domain_name));
 }
 
 /** \brief Change the domain of a tld object with the newly specified domain.
@@ -108,7 +108,7 @@ void tld_object::set_domain(const char *domain_name)
  *
  * \param[in] domain_name  The domain to parse by this object.
  */
-void tld_object::set_domain(const std::string& domain_name)
+void tld_object::set_domain(std::string const & domain_name)
 {
     // tld() supports empty strings and initializes f_info appropriately
     f_domain = domain_name;
@@ -209,8 +209,8 @@ std::string tld_object::sub_domains() const
     {
         throw invalid_domain();
     }
-    const char *domain_name(f_info.f_tld);
-    const char *start(f_domain.c_str());
+    char const * domain_name(f_info.f_tld);
+    char const * start(f_domain.c_str());
     for(; domain_name > start && domain_name[-1] != '.'; --domain_name);
     if(domain_name == start)
     {
@@ -244,8 +244,8 @@ std::string tld_object::full_domain() const
     {
         throw invalid_domain();
     }
-    const char *domain_name(f_info.f_tld);
-    for(const char *start(f_domain.c_str()); domain_name > start && domain_name[-1] != '.'; --domain_name);
+    char const * domain_name(f_info.f_tld);
+    for(char const * start(f_domain.c_str()); domain_name > start && domain_name[-1] != '.'; --domain_name);
     return domain_name;
 }
 
@@ -269,9 +269,9 @@ std::string tld_object::domain_only() const
     {
         throw invalid_domain();
     }
-    const char *end(f_info.f_tld);
-    const char *domain_name(end);
-    for(const char *start(f_domain.c_str()); domain_name > start && domain_name[-1] != '.'; --domain_name);
+    char const * end(f_info.f_tld);
+    char const * domain_name(end);
+    for(char const * start(f_domain.c_str()); domain_name > start && domain_name[-1] != '.'; --domain_name);
     return std::string(domain_name, end - domain_name);
 }
 
@@ -344,9 +344,10 @@ tld_category tld_object::category() const
 std::string tld_object::country() const
 {
     // std::string doesn't like NULL as a parameter
-    if(f_info.f_country == NULL)
+    //
+    if(f_info.f_country == nullptr)
     {
-        return "";
+        return std::string();
     }
     return f_info.f_country;
 }
@@ -402,7 +403,7 @@ std::string tld_object::country() const
  * handle the case when it returns false.
  */
 
-/** \fn invalid_domain::invalid_domain(const char *what_str)
+/** \fn invalid_domain::invalid_domain(char const * what_str)
  * \brief Initialize the invalid_domain exception.
  *
  * This function initializes the invalid_domain exception with the specified

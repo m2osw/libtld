@@ -248,12 +248,12 @@
  * checked in multiple ways. We support the TLDs that start with an
  * asterisk (*) and those that start with an exclamation mark (!) which
  * means all the TLDs are now being checked out as expected.
- * This test reads the effective_tld_names.dat file which has to be
+ * This test reads the public_suffix_list.dat file which has to be
  * available in your current directory.
  *
  * \par
  * A copy of the Mozilla file is included with each version of the TLD
- * library. It is named tests/effective_tld_names.dat and should be
+ * library. It is named tests/public_suffix_list.dat and should be
  * up to date when we produce a new version for download on
  * SourceForge.net.
  *

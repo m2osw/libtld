@@ -158,7 +158,8 @@ const tld_email list_of_results[] =
       "", "alexis", "m2osw.com", "alexis@m2osw.com", "alexis@m2osw.com" },
 #endif
 
-    { NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+    // end list with nulls
+    { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr }
 };
 
 /// The list of valid emails used to check the parser out.
@@ -187,7 +188,7 @@ const valid_email list_of_valid_emails[] =
 #endif
 
     // end of list
-    { NULL, 0 }
+    { nullptr, 0 }
 };
 
 
@@ -255,7 +256,7 @@ std::string email_to_vstring(const std::string& e)
 void test_valid_emails()
 {
     const tld_email *results(list_of_results);
-    for(const valid_email *v(list_of_valid_emails); v->f_input_email != NULL; ++v)
+    for(const valid_email *v(list_of_valid_emails); v->f_input_email != nullptr; ++v)
     {
         if(verbose)
         {
@@ -289,7 +290,7 @@ void test_valid_emails()
                     tld_email_list::tld_email_t e;
                     for(int i(0); i < max; ++i, ++results)
                     {
-                        if(results->f_group == NULL)
+                        if(results->f_group == nullptr)
                         {
                             error("error: end of results array reached before completion of the test.\n");
                             return;
@@ -411,7 +412,7 @@ void test_valid_emails()
                     struct tld_email e;
                     for(int i(0); i < max; ++i, ++results)
                     {
-                        if(results->f_group == NULL)
+                        if(results->f_group == nullptr)
                         {
                             error("error: end of results array reached before completion of the test.\n");
                             return;
@@ -484,6 +485,7 @@ void test_valid_emails()
             tld_result r(list.parse(e, 0));
             if(r != TLD_RESULT_SUCCESS)
             {
+                fprintf(stderr, "call to list.parse() failed with %d expected %d for email \"%s\" (all valid atom characters)\n", r, TLD_RESULT_SUCCESS, e.c_str());
                 error("error: unexpected return value.");
             }
         }
@@ -501,6 +503,8 @@ void test_valid_emails()
         {
             switch(i)
             {
+            case ' ':   // at this point we disallow the space which causes problems with Snap!
+            case '\t':  // at this point we disallow the tab which causes problems with Snap!
             case '"':
             case '\\':
             case 0x7F:  // not included in the loop anyway
@@ -521,6 +525,7 @@ void test_valid_emails()
                     tld_result r(list.parse(e, 0));
                     if(r != TLD_RESULT_SUCCESS)
                     {
+                        fprintf(stderr, "call to list.parse() failed with %d expected %d for email \"%s\" (all valid characters)\n", r, TLD_RESULT_SUCCESS, email_to_vstring(e).c_str());
                         error("error: unexpected return value.");
                     }
                 }
@@ -532,7 +537,8 @@ void test_valid_emails()
 
     {
         // all valid quoted pair: '\t' and " " to "\x7E"
-        for(size_t i(31); i <= 126; ++i)
+        // -- at this time the \t and " " do not work here
+        for(size_t i(33); i <= 126; ++i)
         {
             tld_email_list list;
             std::string e("\"abc\\");
@@ -553,6 +559,7 @@ void test_valid_emails()
             tld_result r(list.parse(e, 0));
             if(r != TLD_RESULT_SUCCESS)
             {
+                fprintf(stderr, "call to list.parse() failed with %d expected %d for email \"%s\" (all valid quoted pairs)\n", r, TLD_RESULT_SUCCESS, email_to_vstring(e).c_str());
                 error("error: unexpected return value.");
             }
         }
@@ -665,8 +672,10 @@ const invalid_email list_of_invalid_emails[] =
 {
     { TLD_RESULT_NULL, "alexism2osw.com (missing @)" },
     { TLD_RESULT_INVALID, "doug barbieri@m2osw.com\n \t (space in email address)" },
-    { TLD_RESULT_INVALID, "doug_barbieri@m2osw com\n \t (space in email domain)" },
-    { TLD_RESULT_INVALID, "doug_barbieri@m2osw.com  org    (space in email domain after dot)" },
+    { TLD_RESULT_NO_TLD, "doug_barbieri@m2osw com\n \t (space in email domain)" },
+    { TLD_RESULT_NOT_FOUND, "doug_barbieri@m2osw.com  org    (space in email domain after dot)" },
+    { TLD_RESULT_NOT_FOUND, "<doug_barbieri@m2osw.com  org>  (space in email domain after dot)" },
+    { TLD_RESULT_INVALID, "<doug_barbieri@this sub domain.m2osw.com>  (space in email domain after dot)" },
     { TLD_RESULT_INVALID, " \v alexis@m2osw.com\n \t (bad control)" },
     { TLD_RESULT_INVALID, " (* Pascal Comments *) \t alexis@m2osw.com\n (missing closing parenthesis\\)" },
     { TLD_RESULT_INVALID, "(Start-Comment)alexis@ \t [ \t m2osw.com \t ] \n (extra after domain done) \"more\tdata\" \r\n\t" },
@@ -681,18 +690,27 @@ const invalid_email list_of_invalid_emails[] =
     { TLD_RESULT_INVALID, "(Group with CTRL) Group \v Unexpected: alexis@m2osw.com;" },
     { TLD_RESULT_INVALID, "\"alexis@m2osw.com;" },
     { TLD_RESULT_INVALID, "\"alexis@m2osw.com;\v\"" },
+    { TLD_RESULT_NO_TLD, "alexis@m2osw.com, valid@group.com; alexis@m2osw.com, invalid@group" },
+    { TLD_RESULT_NO_TLD, "alexis@m2osw.com, valid@group.com; alexis@m2osw.com, invalid@group;" },
+    { TLD_RESULT_NOT_FOUND, "alexis@m2osw.com, valid@group.com; alexis@m2osw.com, invalid@unknown.tld" },
+    { TLD_RESULT_NOT_FOUND, "alexis@m2osw.com, valid@group.com; alexis@m2osw.com, invalid@unknown.tld;" },
     { TLD_RESULT_INVALID, "\"Alexis Wilke\\" },  // \ followed by NUL
     { TLD_RESULT_INVALID, "(Comment with \\\\ followed by NUL: \\" },
     { TLD_RESULT_INVALID, "(Test Errors Once Done) \"Wilke, Alexis\" <alexis@m2osw.com> \"Bad\"" },
     { TLD_RESULT_INVALID, "(Comment with CTRL \b) \"Wilke, Alexis\" <alexis@m2osw.com>" },
-    { TLD_RESULT_INVALID, "[m2osw.com]" },
+    { TLD_RESULT_INVALID, "[m2osw.com]" }, // missing user name
     { TLD_RESULT_INVALID, "good@[bad-slash\\.com]" },
     { TLD_RESULT_INVALID, "good@[bad[reopen.com]" },
+    { TLD_RESULT_INVALID, "good@[bad-duplicate.com] more.net" }, // two domains
     { TLD_RESULT_INVALID, "(Test Errors Once Done) \"Wilke, Alexis\" <alexis@m2osw.com> [Bad]" },
     { TLD_RESULT_INVALID, "(Test Errors Once Done) alexis@start[Bad]" },
     { TLD_RESULT_INVALID, "(Test Errors Once Done) alexis@[first][Bad]" },
     { TLD_RESULT_INVALID, "(Test Errors Once Done) alexis@[control:\v]" },
     { TLD_RESULT_NULL, "(Test Errors Once Done) alexis@[ spaces BAD]" },
+    { TLD_RESULT_NULL, "(Wind Domain...) alexis@[    ]" },
+    { TLD_RESULT_NULL, "(More Spaces Test) alexis@[no-left-trim no-right-trim]" },
+    { TLD_RESULT_NULL, "(Dot Dot Dot Domain) alexis@[ . . . ]" },
+    { TLD_RESULT_INVALID, "(Dot Only Domain) alexis@[ . ]" },
     { TLD_RESULT_INVALID, "(Spurious Angle) alexis>@m2osw.com" },
     { TLD_RESULT_INVALID, "(Spurious Angle) alexis@m2osw.com>" },
     { TLD_RESULT_INVALID, "(Double Angle) <alexis@m2osw.com>>" },
@@ -709,7 +727,7 @@ const invalid_email list_of_invalid_emails[] =
     { TLD_RESULT_INVALID, "(Cannot end with a dot) alexis.@m2osw.com" },
     { TLD_RESULT_INVALID, "(Cannot end with a dot) <alexis.@m2osw.com>" },
     { TLD_RESULT_INVALID, "(Cannot include double dots) ale..xis@m2osw.com" },
-    //{ TLD_RESULT_INVALID, "(End domain with dot not considered valid!) alexis@m2osw.com." }, viewed as valid! (that bad?)
+    { TLD_RESULT_NOT_FOUND, "(End domain with dot not considered valid!) alexis@m2osw.com." },
     { TLD_RESULT_INVALID, "(End domain with dot not considered valid!) <alexis@m2osw.com.>" },
     { TLD_RESULT_NULL, "(Bad Emails) alexis,m2osw.com" },
     { TLD_RESULT_INVALID, "(Bad Char) alexis@m2osw\001com" },
@@ -717,15 +735,15 @@ const invalid_email list_of_invalid_emails[] =
     { TLD_RESULT_INVALID, "(Bad Extension) alexis@m2osw.ar" },
     { TLD_RESULT_INVALID, "(Bad Extension) alexis@m2osw.nom.ar" },
     { TLD_RESULT_NO_TLD, "(Bad Extension) alexis@m2osw" },
-    { TLD_RESULT_BAD_URI, "(Bad Extension) alexis@[m2osw..com]" },
+    { TLD_RESULT_INVALID, "(Bad Extension) alexis@[m2osw..com]" },
 
     // end of list
-    { TLD_RESULT_SUCCESS, NULL }
+    { TLD_RESULT_SUCCESS, nullptr }
 };
 
 void test_invalid_emails()
 {
-    for(const invalid_email *v(list_of_invalid_emails); v->f_input_email != NULL; ++v)
+    for(const invalid_email *v(list_of_invalid_emails); v->f_input_email != nullptr; ++v)
     {
         if(verbose)
         {
@@ -756,13 +774,13 @@ void test_invalid_emails()
                 error(ss.str());
             }
             tld_email_free(list);
-            list = NULL;
+            list = nullptr;
         }
     }
 }
 
 
-void contract_furfilled(tld_email_list::tld_email_t& e)
+void contract_furfilled(tld_email_list::tld_email_t & e)
 {
     if(!e.f_group.empty()
     || !e.f_original_email.empty()

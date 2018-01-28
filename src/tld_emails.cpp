@@ -392,7 +392,7 @@ tld_email_list::tld_email_list()
  * \return TLD_RESULT_SUCCESS when no errors were detected, TLD_RESULT_INVALID
  *         or some other value if any error occured.
  */
-tld_result tld_email_list::parse(const std::string& emails, int flags)
+tld_result tld_email_list::parse(std::string const & emails, int flags)
 {
     f_input = emails;
     f_flags = flags;
@@ -417,16 +417,16 @@ tld_result tld_email_list::parse(const std::string& emails, int flags)
  */
 void tld_email_list::parse_all_emails()
 {
-    // old emails supposedly accepted \0 in headers! we do not
-    // we actually don't even support control characters as
+    // old emails supposedly accepted \0 in headers!
+    // we actually do not even support control characters as
     // defined in the newest version of the Internet Message
     // (RFC 5322); the following loop, though, does not check
     // all the characters, only those necessary to cut all the
     // email elements properly
 
-    const char *start(f_input.c_str());
+    char const * start(f_input.c_str());
     bool group(true);
-    const char *s(start);
+    char const * s(start);
     for(; *s != '\0'; ++s)
     {
         switch(*s)
@@ -446,10 +446,10 @@ void tld_email_list::parse_all_emails()
             // end of this group
             {
                 // trim ending spaces
-                const char *end(s);
+                char const * end(s);
                 for(; end > start; --end)
                 {
-                    const char c(end[-1]);
+                    char const c(end[-1]);
                     if(c != ' ' && c != '\n' && c != '\r' && c != '\t')
                     {
                         break;
@@ -457,7 +457,7 @@ void tld_email_list::parse_all_emails()
                 }
                 if(end - start > 0)
                 {
-                    std::string e(start, end - start);
+                    std::string const e(start, end - start);
                     tld_email_t email;
                     email.f_group = f_last_group;
                     f_result = email.parse(e);
@@ -483,10 +483,10 @@ void tld_email_list::parse_all_emails()
             }
             {
                 // trim ending spaces
-                const char *end(s);
+                char const * end(s);
                 for(; end > start; --end)
                 {
-                    const char c(end[-1]);
+                    char const c(end[-1]);
                     if(c != ' ' && c != '\n' && c != '\r' && c != '\t')
                     {
                         break;
@@ -498,7 +498,7 @@ void tld_email_list::parse_all_emails()
                     f_result = TLD_RESULT_INVALID;
                     return;
                 }
-                std::string last_group(start, end - start);
+                std::string const last_group(start, end - start);
                 // always add the group with an empty email (in case there
                 // is no email; and it clearly delimit each group.)
                 tld_email_t email;
@@ -520,10 +520,10 @@ void tld_email_list::parse_all_emails()
             // email separation
             {
                 // trim ending spaces
-                const char *end(s);
+                char const * end(s);
                 for(; end > start; --end)
                 {
-                    const char c(end[-1]);
+                    char const c(end[-1]);
                     if(c != ' ' && c != '\n' && c != '\r' && c != '\t')
                     {
                         break;
@@ -531,7 +531,7 @@ void tld_email_list::parse_all_emails()
                 }
                 if(end - start > 0)
                 {
-                    std::string e(start, end - start);
+                    std::string const e(start, end - start);
                     tld_email_t email;
                     email.f_group = f_last_group;
                     f_result = email.parse(e);
@@ -614,6 +614,7 @@ void tld_email_list::parse_all_emails()
                 {
                     // domain literal cannot include '[', ']', or '\'
                     // and it must end with ']'
+                    //
                     f_result = TLD_RESULT_INVALID;
                     return;
                 }
@@ -632,10 +633,10 @@ void tld_email_list::parse_all_emails()
 
     {
         // trim ending spaces
-        const char *end(s);
+        char const * end(s);
         for(; end > start; --end)
         {
-            const char c(end[-1]);
+            char const c(end[-1]);
             if(c != ' ' && c != '\n' && c != '\r' && c != '\t')
             {
                 break;
@@ -643,7 +644,7 @@ void tld_email_list::parse_all_emails()
         }
         if(end - start > 0)
         {
-            std::string e(start, end - start);
+            std::string const e(start, end - start);
             tld_email_t email;
             email.f_group = f_last_group;
             f_result = email.parse(e);
@@ -717,8 +718,8 @@ std::string tld_email_list::quote_string(const std::string& str, char quote)
     bool apply_quotes(false);
     char open(quote);
     char close('"');
-    const char *extra("");
-    const char *escape("");
+    char const * extra("");
+    char const * escape("");
     switch(quote)
     {
     case '(':
@@ -748,10 +749,10 @@ std::string tld_email_list::quote_string(const std::string& str, char quote)
     if(!apply_quotes)
     {
         // check whether quotes are required
-        const char *s(str.c_str());
+        char const * s(str.c_str());
         for(; *s != '\0'; ++s)
         {
-            if(!is_atom_char(*s) && strchr(extra, *s) == NULL)
+            if(!is_atom_char(*s) && strchr(extra, *s) == nullptr)
             {
                 break;
             }
@@ -764,7 +765,7 @@ std::string tld_email_list::quote_string(const std::string& str, char quote)
         result += open;
         for(const char *s(str.c_str()); *s != '\0'; ++s)
         {
-            if(strchr(escape, *s) != NULL)
+            if(strchr(escape, *s) != nullptr)
             {
                 result += '\\';
             }
@@ -971,10 +972,11 @@ tld_email_field_type tld_email_list::email_field_type(const std::string& name)
  * \return The result of the parsing, TLD_RESULT_SUCCESS on success,
  * another value otherwise.
  */
-tld_result tld_email_list::tld_email_t::parse(const std::string& email)
+tld_result tld_email_list::tld_email_t::parse(std::string const & email)
 {
     // The following is parsing ONE email since we already removed the
     // groups, commas, semi-colons, leading and ending spaces.
+    //
     std::string value;
     value.reserve(email.length());
     std::string fullname;
@@ -985,8 +987,8 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
     bool found_at(false);
     bool found_dot(false);
     bool done(false);
-    const char *start(email.c_str());
-    const char *s(start);
+    char const * start(email.c_str());
+    char const * s(start);
     for(; *s != '\0'; ++s)
     {
         switch(*s)
@@ -1019,14 +1021,21 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
                     // do not accept any control characters
                     // (note that this is sufficient to check all characters
                     // after the \ character)
+                    //
                     return TLD_RESULT_INVALID;
                 }
                 value += *s;
             }
-            while( *(++s) == ' ' );
+            // on entry of this loop, *s == '"'
+            do
+            {
+                ++s;
+            }
+            while(*s == ' ');
             if( *s != '<' && *s != '@' )
             {
                 // A space afterwards is allowed, but '<' is expected
+                //
                 return TLD_RESULT_INVALID;
             }
             --s;
@@ -1081,11 +1090,14 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             if(!found_at || done || !value.empty() || !domain.empty())
             {
                 // domain before the '@'
+                //
                 return TLD_RESULT_INVALID;
             }
+            // trim spaces after the '['
+            //
             for(++s; *s != ']'; ++s)
             {
-                const char c(*s);
+                char const c(*s);
                 if(c != ' ' && c != '\n' && c != '\r' && c != '\t')
                 {
                     break;
@@ -1097,17 +1109,21 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
                 {
                     throw std::logic_error("somehow we found a \\0 in a literal domain in tld_email_t which should not happen since it was already checked in tld_email_t::parse()");
                 }
+                // spaces are forbidden in domain names (see test above)
+                //
                 if(static_cast<unsigned char>(*s) < ' ' || *s == 0x7F)
                 {
                     // do not accept any control characters
+                    //
                     return TLD_RESULT_INVALID;
                 }
                 value += *s;
             }
             // we can have spaces at the end, but those must be followed by ']'
+            //
             for(; *s != '[' && *s != '\\' && *s != ']'; ++s)
             {
-                const char c(*s);
+                char const c(*s);
                 if(c != ' ' && c != '\n' && c != '\r' && c != '\t')
                 {
                     break;
@@ -1115,9 +1131,19 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             }
             if(*s != ']' || value.empty())
             {
-                // domain literal cannot include a space and other characters
+                // domain literal cannot include a space
                 // nor can it be empty
+                //
                 return TLD_RESULT_NULL;
+            }
+            if(value[0] == '.'
+            || *value.rbegin() == '.'
+            || value.find("..") != std::string::npos)
+            {
+                // a domain cannot start or end with "."
+                // a domain cannot include ".."
+                //
+                return TLD_RESULT_INVALID;
             }
             domain = value;
             value.clear();
@@ -1128,11 +1154,14 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             {
                 // found two '<' or the '<' after the '@'
                 // or we had a dot before meaning that we already have a dotted username
+                // or we are done (a.k.a. found the '>')
+                //
                 return TLD_RESULT_INVALID;
             }
 
             // if we have an angle email address, whatever we found so far
             // is the user name; although it can be empty
+            //
             trim(value);
             if(!value.empty())
             {
@@ -1146,6 +1175,7 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             if(!has_angle || !found_at || done)
             {
                 // missing '<' and/or '@'
+                //
                 return TLD_RESULT_INVALID;
             }
             if(domain.empty())
@@ -1154,9 +1184,11 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
                 if(value.empty())
                 {
                     // an empty domain name is not valid, apparently
+                    //
                     return TLD_RESULT_NULL;
                 }
                 // we are done, we can only find spaces and comments
+                //
                 domain = value;
             }
             else
@@ -1184,6 +1216,7 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             if(value.empty())
             {
                 // no username is not a valid entry
+                //
                 return TLD_RESULT_NULL;
             }
             username = value;
@@ -1205,15 +1238,16 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             // (as far as I know this is not allowed in the RFC, only one space
             // between items; however, after a new-line / carriage return, you
             // could get many spaces and tabs and that's legal)
+            //
             for(++s; *s != '\0'; ++s)
             {
-                const char c(*s);
+                char const c(*s);
                 if(c != ' ' && c != '\n' && c != '\r' && c != '\t')
                 {
                     break;
                 }
             }
-            --s;
+            --s; // the main loop will skip that last character (again)
             break;
 
         case '.':
@@ -1229,9 +1263,11 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
 
         default:
             // here we must have a valid atom character ([-A-Za-z0-9!#$%&'*+/=?^_`{|}~])
+            //
             if(!is_atom_char(*s))
             {
                 // not a valid atom character
+                //
                 return TLD_RESULT_INVALID;
             }
             value += *s;
@@ -1243,7 +1279,8 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
     if(username.empty() || has_angle)
     {
         // no username means the '@' is missing
-        // angle bracket was not closed
+        // angle bracket was not closed ('>' missing)
+        //
         return TLD_RESULT_NULL;
     }
 
@@ -1252,6 +1289,7 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
         if(!value.empty())
         {
             // nothing of substance can appear after the domain
+            //
             return TLD_RESULT_INVALID;
         }
     }
@@ -1263,6 +1301,7 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             if(domain.empty())
             {
                 // domain is missing
+                //
                 return TLD_RESULT_NULL;
             }
         }
@@ -1271,6 +1310,7 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
             if(!domain.empty())
             {
                 // domain "defined twice"
+                //
                 return TLD_RESULT_INVALID;
             }
             domain = value;
@@ -1280,6 +1320,7 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
     // finally, verify that the domain is indeed valid
     // (i.e. proper characters, structure, and TLD)
     // for that step we use the lowercase version
+    //
     struct tld_info info;
     std::unique_ptr<char, void(*)(char *)> lowercase_domain(tld_domain_to_lowercase(domain.c_str()), reinterpret_cast<void(*)(char *)>(&::free));
     tld_result result(tld(lowercase_domain.get(), &info));
@@ -1311,6 +1352,7 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
     f_email_only     = quote_string(username, '\'') + "@" + quote_string(domain, '[');  // TODO protect characters...
 
     // the canonicalized version uses the domain name in lowercase
+    //
     std::string canonicalized_email(quote_string(username, '\'') + "@" + quote_string(lowercase_domain.get(), '['));  // TODO protect characters...
     if(fullname.empty())
     {
@@ -1347,9 +1389,9 @@ tld_result tld_email_list::tld_email_t::parse(const std::string& email)
  * \return Whether the function succeeded (TLD_RESULT_SUCCESS) or
  * failed (TLD_RESULT_INVALID).
  */
-tld_result tld_email_list::tld_email_t::parse_group(const std::string& group)
+tld_result tld_email_list::tld_email_t::parse_group(std::string const & group)
 {
-    const char *s(group.c_str());
+    char const * s(group.c_str());
     std::string g;
     int count;
 
@@ -1438,7 +1480,7 @@ tld_result tld_email_list::tld_email_t::parse_group(const std::string& group)
  *
  * \sa tld_email_next()
  */
-struct tld_email_list *tld_email_alloc()
+struct tld_email_list * tld_email_alloc()
 {
     return new tld_email_list;
 }
@@ -1451,7 +1493,7 @@ struct tld_email_list *tld_email_alloc()
  *
  * \param[in] list  The list to be freed.
  */
-void tld_email_free(struct tld_email_list *list)
+void tld_email_free(struct tld_email_list * list)
 {
     delete list;
 }
@@ -1469,7 +1511,7 @@ void tld_email_free(struct tld_email_list *list)
  * \return TLD_RESULT_SUCCESS if the email was parsed successfully,
  *         another TLD_RESULT_... when an error is detected
  */
-tld_result tld_email_parse(struct tld_email_list *list, const char *emails, int flags)
+tld_result tld_email_parse(struct tld_email_list * list, char const * emails, int flags)
 {
     return list->parse(emails, flags);
 }
@@ -1483,7 +1525,7 @@ tld_result tld_email_parse(struct tld_email_list *list, const char *emails, int 
  *
  * \return The number of emails defined in the object, it may be zero.
  */
-int tld_email_count(struct tld_email_list *list)
+int tld_email_count(struct tld_email_list * list)
 {
     return list->count();
 }
@@ -1496,7 +1538,7 @@ int tld_email_count(struct tld_email_list *list)
  *
  * \param[in] list  The list of email object to reset.
  */
-void tld_email_rewind(struct tld_email_list *list)
+void tld_email_rewind(struct tld_email_list * list)
 {
     list->rewind();
 }
@@ -1517,7 +1559,7 @@ void tld_email_rewind(struct tld_email_list *list)
  *
  * \sa tld_email_parse()
  */
-int tld_email_next(struct tld_email_list *list, struct tld_email *e)
+int tld_email_next(struct tld_email_list * list, struct tld_email * e)
 {
     return list->next(e) ? 1 : 0;
 }

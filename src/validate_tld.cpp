@@ -59,7 +59,7 @@ const char *schemes = "afp,adiumxtra,aw,beshare,bolo,cap,coap,crid,dns,feed,file
                       "ventrilo,wais,webcal,wyciwyg,z39.50r,z39.50s";
 
 /// Hold a list of schemes as defined by the end user.
-const char *user_schemes = NULL;
+char const * user_schemes = nullptr;
 
 /** \brief Check the parameter as a URI.
  *
@@ -67,7 +67,7 @@ const char *user_schemes = NULL;
  *
  * \param[in] uri  The URI to be checked.
  */
-void check_uri(const char *uri)
+void check_uri(char const * uri)
 {
     tld_result result;
     if(strncasecmp(uri, "mailto:", 7) == 0)
@@ -78,7 +78,7 @@ void check_uri(const char *uri)
     else
     {
         struct tld_info info;
-        const char *s(user_schemes == NULL ? schemes : user_schemes);
+        char const * s(user_schemes == nullptr ? schemes : user_schemes);
         result = tld_check_uri(uri, &info, s, 0);
     }
     if(result != TLD_RESULT_SUCCESS)
@@ -197,11 +197,16 @@ int main(int argc, char *argv[])
 
         return err_count > 0 ? 1 : 0;
     }
-    catch(std::exception const& e)
+    catch(std::exception const& e) // LCOV_EXCL_LINE
     {
-        // an exception occured, print out the message and exit with an error
-        std::cerr << "exception: " << e.what() << std::endl;
-        exit(1);
+        // an exception occurred, print out the message and exit with an error
+        //
+        // note that this tool is not expecting any exception
+        // because we only access the C interface which does
+        // not throw
+        //
+        std::cerr << "exception: " << e.what() << std::endl; // LCOV_EXCL_LINE
+        exit(1); // LCOV_EXCL_LINE
     }
 }
 

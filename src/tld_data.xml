@@ -92,7 +92,7 @@
     .maison .makeup .man .management .map .market .marketing .markets .mba
     .med .media .meet .meme .memorial .men .menu .mini .mls .mobi .mobile
     .moda .moe .moi .mom .money .mormon .mortgage .moto .motorcycles .mov
-    .movie .mutual .mutuelle
+    .movie .mutual
 
     <!-- .ngo / .ong == Non Governmental Organizations / Organizations Non Governementales -->
     .name .navy .net .network .new .news .now .ngo .ninja
@@ -112,6 +112,7 @@
     .racing .radio .read .realestate .realtor .realty .recipes .red .rehab
     .reise .reisen .rent .rentals .repair .report .republican .rest
     .restaurant .review .reviews .rich .rip .rocks .rodeo .room .run .rsvp
+    .rugby
 
     .safe .safety .sale .salon .sarl .save .scholarships .school .schule
     .science .search .seat .secure .security .services .sex .sexy
@@ -348,7 +349,7 @@
     .&#x0438;&#x043A;&#x043E;&#x043C;.museum
 
     <forbid reason="deprecated">.africamagic .nato .marketplace.aero
-    .taxi.aero</forbid>
+    .mutuelle .taxi.aero</forbid>
     <forbid reason="proposed">.mail .sport .web</forbid>
     <!-- example.com and example.net are domain names, not just TLDs -->
     <!--forbid reason="example">.example.com .example.net</forbid-->
@@ -372,11 +373,11 @@
 
     .cal .calvinklein .canon .capitalone .cartier .case
     .caseih .cba .cbn .cbre .cbs .ceb .cern .cfa .cfd .chanel .chase .chintai
-    .chloe .chrome .chrysler .cipriani .cisco .citadel .citi .citic .clubmed
+    .chrome .chrysler .cipriani .cisco .citadel .citi .citic .clubmed
     .comcast .commbank .compare .comsec .crs .csc .cuisinella .cyou
 
     .dabur .datsun .dclk .dds .dell .deloitte .delta .desi .dhl .discover .diy
-    .dnp .dodge .dtv .duck .dunlop .duns .dupont .durban .dvag .dvr .dwg
+    .dnp .dodge .dtv .duck .dunlop .duns .dupont .durban .dvag .dvr
     
     .edeka .emerck .epost .epson .ericsson .erni .esurance .etisalat
     .eurovision .everbank .extraspace
@@ -390,9 +391,9 @@
     .google .gop .grainger .guardian .gucci .guge
 
     .hbo .hdfc .hdfcbank .hgtv .hisamitsu .hitachi .hkt .homedepot .honda
-    .honeywell .hotmail .hsbc .htc .hughes .hyatt .hyundai
+    .honeywell .hotmail .hsbc .hughes .hyatt .hyundai
 
-    .ibm .icbc .icu .ieee .ifm .iinet .ikano .imamat .imdb .infiniti .intel
+    .ibm .icbc .icu .ieee .ifm .ikano .imamat .imdb .infiniti .intel
     .intuit .ipiranga .iselect .ismaili .ist .itau .itv .iveco .iwc
 
     .jaguar .java .jcb .jcp .jeep .jio .jlc .jll .jmp .jnj .jot .jpmorgan
@@ -406,9 +407,9 @@
     .lidl .lilly .lincoln .linde .lipsy .living .lixil .locker .locus
     .lotte .lpl .lplfinancial .ltda .lundbeck .lupin
 
-    .macys .maif .mango .marriott .marshalls .maserati .mattel .mcd .mcdonalds
+    .macys .maif .mango .marriott .marshalls .maserati .mattel
     .mckinsey .meo .merckmsd .metlife .microsoft .mint .mit .mitsubishi
-    .mlb .mma .mnet .mobily .monash .monster .montblanc .mopar .movistar .msd
+    .mlb .mma .mnet .mobily .monash .monster .mopar .movistar .msd
     .mtn .mtpc .mtr
 
     .nab .nadex .nationwide .natura .nba .nec .netbank .netflix .neustar
@@ -416,10 +417,10 @@
     .nissan .nissay .nokia .northwesternmutual .norton .nowruz .nowtv .nra .ntt
 
     .obi .observer .off .olayan .olayangroup .oldnavy .ollo .omega
-    .onyourside .open .oracle .orange .orientexpress .origins .osaka
+    .onyourside .open .oracle .orange .origins .osaka
     .otsuka .ott .ovh
 
-    .pamperedchef .panasonic .panerai .pars .passagens .pay .pccw
+    .panasonic .panerai .pars .passagens .pay .pccw
     .pfizer .philips .piaget .pictet .pid .pin .pioneer .pnc .pohl
     .politie .pramerica .praxi .prime .progressive .pru .prudential
     .pwc
@@ -438,7 +439,7 @@
     .swatch .swiftcover .swiss .sydney .symantec
 
     .tab .taipei .taobao .target .tatamotors .tatar .tci .tdk .telecity
-    .telefonica .teva .temasek .thd .theguardian .tiaa .tiffany .tjmaxx .tjx
+    .telefonica .teva .temasek .thd .tiaa .tiffany .tjmaxx .tjx
     .tkmaxx .tmall .toray .toshiba .total .toyota .travelchannel
     .travelersinsurance .trv .tui .tushu .tvs
 
@@ -530,8 +531,10 @@
     .&#x2B2F7;&#x2CEF4; <!-- VeriSign Sarl -->
     .&#x2B2F7;&#x2B137; <!-- VeriSign Sarl -->
 
-    <forbid reason="deprecated">.doosan .dstv .flsmidth .gotv .kyknet
-    .multichoice .mzansimagic .naspers .payu .supersport</forbid>
+    <forbid reason="deprecated">.chloe .doosan .dstv .dwg .flsmidth .gotv
+    .htc .iinet .kyknet .mcd .mcdonalds .montblanc .multichoice .mzansimagic
+    .naspers .orientexpress .pamperedchef .payu .supersport
+    .theguardian</forbid>
   </area>
   <area category="professionals">
     .accountant .accountants .actor .attorney .author .broker .builders
@@ -567,6 +570,8 @@
     <forbid reason="proposed">.geo .eng .sci</forbid>
   </area>
   <area category="technical">
+    .onion
+
     <!-- .local is used by Mac OS/X as in computername.local
          it is also used by mDNS -->
     <forbid reason="infrastructure">.arpa .e164.arpa .in-addr.arpa
@@ -603,7 +608,8 @@
     .ag .co.ag .com.ag .net.ag .nom.ag .org.ag
   </area>
   <area category="country" country="Argentina">
-    .com.ar .edu.ar .gob.ar .gov.ar .int.ar .mil.ar .net.ar .org.ar .tur.ar
+    .com.ar .edu.ar .gob.ar .gov.ar .int.ar .mil.ar .musica.ar .net.ar
+    .org.ar .tur.ar
     <forbid reason="unused">.ar</forbid>
     <exceptions apply-to=".ar">.congresodelalengua3.ar .educ.ar
     .gobiernoelectronico.ar .mecon.ar .nacion.ar .nic.ar .promocion.ar
@@ -675,7 +681,14 @@
     .bt .com.bt .edu.bt .gov.bt .net.bt .org.bt
   </area>
   <area category="country" country="Bolivia">
-    .bo .com.bo .net.bo .org.bo .tv.bo .mil.bo .int.bo .gob.bo .gov.bo .edu.bo
+    .bo .academia.bo .agro.bo .arte.bo .blog.bo .bolivia.bo .ciencia.bo
+    .com.bo .cooperativa.bo .democracia.bo .deporte.bo .ecologia.bo
+    .economia.bo .edu.bo .empresa.bo .gob.bo .indigena.bo .industria.bo
+    .info.bo .int.bo .medicina.bo .mil.bo .movimiento.bo .musica.bo
+    .natural.bo .nombre.bo .noticias.bo .net.bo .org.bo .patria.bo
+    .politica.bo .profesional.bo .plurinacional.bo .pueblo.bo .revista.bo
+    .salud.bo .tecnologia.bo .tksat.bo .transporte.bo .tv.bo .web.bo .wiki.bo
+    <forbid reason="deprecated">.gov.bo</forbid>
   </area>
   <area category="country" country="Bonaire, Sint Eustatius and Saba">
     <!-- not yet assigned -->
@@ -692,21 +705,50 @@
     .bw .co.bw .org.bw
   </area>
   <area category="country" country="Bouvet Island">
-    <!-- the effective_tld_names.txt includes .bv as a valid name now.
+    <!-- the public_suffix_list.txt includes .bv as a valid name now.
          it may become available as per:
          http://www.norid.no/nytt/mulig-bruk-bv.en.html
          -->
     <forbid reason="unused">.bv</forbid>
   </area>
   <area category="country" country="Brazil">
-    .br .adm.br .adv.br .agr.br .am.br .arq.br .art.br .ato.br .b.br .bio.br
-    .blog.br .bmd.br .cim.br .cng.br .cnt.br .com.br .coop.br .ecn.br .eco.br
-    .edu.br .emp.br .eng.br .esp.br .etc.br .eti.br .far.br .flog.br .fm.br
-    .fnd.br .fot.br .fst.br .g12.br .ggf.br .gov.br .imb.br .ind.br .inf.br
-    .jor.br .jus.br .leg.br .lel.br .mat.br .med.br .mil.br .mp.br .mus.br
-    .net.br .nom.br .not.br .ntr.br .odo.br .org.br .ppg.br .pro.br .psc.br
-    .psi.br .qsl.br .radio.br .rec.br .slg.br .srv.br .taxi.br .teo.br .tmp.br
-    .trd.br .tur.br .tv.br .vet.br .vlog.br .wiki.br .zlg.br
+    .br
+    .9guacu.br
+    .abc.br .adm.br .adv.br .agr.br .aju.br .am.br .anani.br .aparecida.br
+    .arq.br .art.br .ato.br
+    .b.br .belem.br .bhz.br .bio.br .blog.br .bmd.br .boavista.br .bsb.br
+    .campinagrande.br .campinas.br .caxias.br .cim.br .cng.br .cnt.br .com.br
+    .contagem.br .coop.br .cri.br .cuiaba.br .curitiba.br
+    .def.br
+    .ecn.br .eco.br .edu.br .emp.br .eng.br .esp.br .etc.br .eti.br
+    .far.br .feira.br .flog.br .floripa.br .fm.br .fnd.br .fortal.br .fot.br
+    .foz.br .fst.br
+    .g12.br .ggf.br .goiania.br .gov.br .gru.br
+
+        .ac.gov.br .al.gov.br .am.gov.br .ap.gov.br .ba.gov.br .ce.gov.br
+        .df.gov.br .es.gov.br .go.gov.br .ma.gov.br .mg.gov.br .ms.gov.br
+        .mt.gov.br .pa.gov.br .pb.gov.br .pe.gov.br .pi.gov.br .pr.gov.br
+        .rj.gov.br .rn.gov.br .ro.gov.br .rr.gov.br .rs.gov.br .sc.gov.br
+        .se.gov.br .sp.gov.br .to.gov.br
+
+    .imb.br .ind.br .inf.br
+    .jab.br .jampa.br .jdf.br .joinville.br .jor.br .jus.br
+    .leg.br .lel.br .londrina.br
+    .macapa.br .maceio.br .manaus.br .maringa.br .mat.br .med.br .mil.br
+    .morena.br .mp.br .mus.br
+    .natal.br .net.br .niteroi.br .nom.br .not.br .ntr.br
+    .odo.br .org.br .osasco.br
+    .palmas.br .poa.br .ppg.br .pro.br .psc.br .psi.br .pvh.br
+    .qsl.br
+    .radio.br .rec.br .recife.br .ribeirao.br .rio.br .riobranco.br
+    .riopreto.br
+    .salvador.br .sampa.br .santamaria.br .santoandre.br .saobernardo.br
+    .saogonca.br .sjc.br .slg.br .slz.br .sorocaba.br .srv.br
+    .taxi.br .teo.br .the.br .tmp.br .trd.br .tur.br .tv.br
+    .udi.br
+    .vet.br .vix.br .vlog.br
+    .wiki.br
+    .zlg.br
     <!-- I'm not too sure what happened to .can.br,
          whether it ever really existed -->
     <forbid reason="deprecated">.can.br</forbid>
@@ -725,7 +767,7 @@
     .bg .a.bg .b.bg .c.bg .d.bg .e.bg .f.bg .g.bg .h.bg .i.bg .j.bg .k.bg .l.bg
     .m.bg .n.bg .o.bg .p.bg .q.bg .r.bg .s.bg .t.bg .u.bg .v.bg .w.bg .x.bg
     .y.bg .z.bg .0.bg .1.bg .2.bg .3.bg .4.bg .5.bg .6.bg .7.bg .8.bg .9.bg
-    <forbid reason="proposed">.&#x0431;&#x0433;</forbid>
+    .&#x0431;&#x0433;
   </area>
   <area category="country" country="Burkina Faso">
     .bf .gov.bf
@@ -983,6 +1025,13 @@
     .&#x0A2D;&#x0A3E;&#x0A30;&#x0A24;
     .&#x09AD;&#x09BE;&#x09B0;&#x09A4;
     .&#x0B87;&#x0BA8;&#x0BCD;&#x0BA4;&#x0BBF;&#x0BAF;&#x0BBE;
+    .&#x0CAD;&#x0CBE;&#x0CB0;&#x0CA4;
+    .&#x0B2D;&#x0B3E;&#x0B30;&#x0B24;
+    .&#x09AD;&#x09BE;&#x09F0;&#x09A4;
+    .&#x092D;&#x093E;&#x0930;&#x0924;&#x092E;&#x094D;
+    .&#x092D;&#x093E;&#x0930;&#x094B;&#x0924;
+    .&#x0680;&#x0627;&#x0631;&#x062A;
+    .&#x0D2D;&#x0D3E;&#x0D30;&#x0D24;&#x0D02;
   </area>
   <area category="country" country="Indonesia">
     .id .ac.id .biz.id .co.id .desa.id .go.id .mil.id .my.id .net.id
@@ -1755,8 +1804,7 @@
     .&#x049B;&#x0430;&#x0437; <!-- "Kaz", Kazakh -->
   </area>
   <area category="country" country="Kenya">
-    .co.ke .or.ke .ne.ke .go.ke .ac.ke .sc.ke .me.ke .mobi.ke .info.ke
-    <forbid reason="unused">.ke</forbid>
+    .ke .ac.ke .co.ke .go.ke .info.ke .me.ke .mobi.ke .ne.ke .or.ke .sc.ke
   </area>
   <area category="country" country="Kinribati">
     .ki .com.ki .biz.ki .net.ki .info.ki .org.ki .gov.ki .edu.ki .mob.ki .tel.ki
@@ -1881,7 +1929,7 @@
     <forbid reason="deprecated">.an .com.an .edu.an .net.an .org.an</forbid>
   </area>
   <area category="country" country="New Caledonia">
-    .nc .asso.nc
+    .nc .asso.nc .nom.nc
   </area>
   <area category="country" country="New Zealand">
     .nz <!-- since Oct 2013 -->
@@ -2242,15 +2290,19 @@
     .norilsk.ru .snz.ru .oskol.ru .pyatigorsk.ru .rubtsovsk.ru .syzran.ru
     .tlt.ru .vdonsk.ru .zgrad.ru .chuvashia.ru .dudinka.ru .krasnoyarsk.ru
 
-    .su .adygeya.su .arkhangelsk.su .balashov.su .bashkiria.su .bryansk.su
-    .dagestan.su .grozny.su .ivanovo.su .kalmykia.su .kaluga.su .karelia.su
-    .khakassia.su .krasnodar.su .kurgan.su .lenug.su .mordovia.su .msk.su
-    .murmansk.su .nalchik.su .nov.su .obninsk.su .penza.su .pokrovsk.su
-    .sochi.su .spb.su .togliatti.su .troitsk.su .tula.su .tuva.su
-    .vladikavkaz.su .vladimir.su .vologda.su
+    .su
 
     .&#x0440;&#x0444;
-    <forbid reason="deprecated">.pskov.ru</forbid>
+    <forbid reason="deprecated">
+      .pskov.ru
+
+      .adygeya.su .arkhangelsk.su .balashov.su .bashkiria.su .bryansk.su
+      .dagestan.su .grozny.su .ivanovo.su .kalmykia.su .kaluga.su .karelia.su
+      .khakassia.su .krasnodar.su .kurgan.su .lenug.su .mordovia.su .msk.su
+      .murmansk.su .nalchik.su .nov.su .obninsk.su .penza.su .pokrovsk.su
+      .sochi.su .spb.su .togliatti.su .troitsk.su .tula.su .tuva.su
+      .vladikavkaz.su .vladimir.su .vologda.su
+    </forbid>
     <!-- TBD: .test.ru is defined in Mozilla list of TLDs, but it looks like
               it would only be for examples in documentations and not a
               real domain name. -->
@@ -2417,6 +2469,12 @@
   <area category="country" country="Thailand" nic="http://www.thnic.co.th">
     .th .ac.th .co.th .in.th .go.th .mi.th .or.th .net.th
     .&#x0E44;&#x0E17;&#x0E22;
+    .&#x0E28;&#x0E36;&#x0E01;&#x0E29;&#x0E32;.&#x0E44;&#x0E17;&#x0E22;
+    .&#x0E18;&#x0E38;&#x0E23;&#x0E01;&#x0E34;&#x0E08;.&#x0E44;&#x0E17;&#x0E22;
+    .&#x0E23;&#x0E31;&#x0E10;&#x0E1A;&#x0E32;&#x0E25;.&#x0E44;&#x0E17;&#x0E22;
+    .&#x0E17;&#x0E2B;&#x0E32;&#x0E23;.&#x0E44;&#x0E17;&#x0E22;
+    .&#x0E40;&#x0E19;&#x0E47;&#x0E15;.&#x0E44;&#x0E17;&#x0E22;
+    .&#x0E2D;&#x0E07;&#x0E04;&#x0E4C;&#x0E01;&#x0E23;.&#x0E44;&#x0E17;&#x0E22;
   </area>
   <area category="country" country="The Gambia">
     .gm
@@ -2643,6 +2701,10 @@
     .gen.ny.us .gen.oh.us .gen.ok.us .gen.or.us .gen.pa.us .gen.pr.us .gen.ri.us
     .gen.sc.us .gen.sd.us .gen.tn.us .gen.tx.us .gen.ut.us .gen.vi.us .gen.vt.us
     .gen.va.us .gen.wa.us .gen.wi.us .gen.wv.us .gen.wy.us
+
+    <!-- others -->
+    .ann-arbor.mi.us .eaton.mi.us .washtenaw.mi.us
+
     <!-- .us also has city, town, ville, and county specification using a
          sub-domain as in (ci|town|vil|co).<city-name>.<state>.us
          there is nothing special we have to do for those here -->
@@ -2690,20 +2752,35 @@
     .org.zm .sch.zm
   </area>
   <area category="country" country="Zimbabwe" nic="http://en.wikipedia.org/wiki/.zw">
-    .ac.zw .co.zw .org.zw
-    <forbid reason="unused">.zw</forbid>
+    .zw .ac.zw .co.zw .gov.zw .mil.zw .org.zw
   </area>
 
   <!-- entrepreneurial definitions which are not specific to a country
        nor were assigned by the IANA, often referenced as private domains -->
   <area category="entrepreneurial">
     .0emm.com
+    .12hp.at
+    .12hp.ch
+    .12hp.de
+    .1337.pictures
     .1kapp.com
+    .1password.ca
+    .1password.com
+    .1password.eu
+    .2ix.at
+    .2ix.ch
+    .2ix.de
     .3utilities.com
+    .4lima.at
+    .4lima.ch
+    .4lima.de
     .4u.com
+    .abkhazia.su
+    .accesscam.org
     .ac.leg.br
     .ae.org
     .africa.com
+    .aktyubinsk.su
     .alces.network
     .al.eu.org
     .al.leg.br
@@ -2713,31 +2790,50 @@
     .am.leg.br
     .api.githubcloud.com
     .ap.leg.br
+    .ap-northeast-1.elasticbeanstalk.com
+    .ap-northeast-2.elasticbeanstalk.com
     .appchizi.com
     .applinzi.com
+    .app.os.fedoraproject.org
+    .app.os.stg.fedoraproject.org
     .apps.fbsbx.com
     .apps.lair.io
     .appspot.com
     .a.prod.fastly.net
+    .ap-south-1.elasticbeanstalk.com
+    .ap-southeast-1.elasticbeanstalk.com
+    .ap-southeast-2.elasticbeanstalk.com
     .ar.com
+    .armenia.su
     .art.pl
+    .ashgabad.su
     .a.ssl.fastly.net
     .asso.eu.org
     .at-band-camp.net
     .at.eu.org
     .ath.cx
     .au.eu.org
+    .azerbaijan.su
     .azier-mobile.net
     .azurewebsites.net
     .azure-mobile.net
     .ba.leg.br
     .barrel-of-knowledge.info
     .barrell-of-knowledge.info
+    .barsy.bg
+    .barsy.de
+    .barsy.eu
+    .barsy.in
+    .barsy.net
+    .barsy.online
+    .barsyonline.com
+    .barsy.support
     .beep.pl
     .be.eu.org
     .beta.bounty-full.com
     .betainabox.com
     .better-than.tv
+    .bitballoon.com
     .biz.dk
     .bg.eu.org
     .backplaneapp.io
@@ -2745,6 +2841,7 @@
     .blogdns.net
     .blogdns.org
     .blogsite.org
+    .blogsite.xyz
     .blogspot.ae
     .blogspot.al
     .blogspot.am
@@ -2824,17 +2921,27 @@
     .bmoattachments.org
     .bnr.la
     .boldlygoingnowhere.org
+    .boomla.net
     .bounceme.net
     .boxfuse.io
+    .bplaced.com
+    .bplaced.de
+    .bplaced.net
     .brasilia.me
     .br.com
     .broke-it.net
     .browsersafetymark.io
     .bounty-full.com
     .b.ssl.fastly.net
+    .bukhara.su
     .buyshouses.net
+    .byen.site
+    .c66.me
     .cable-modem.org
+    .ca-central-1.elasticbeanstalk.com
     .ca.eu.org
+    .camdvr.org
+    .casacam.net
     .c.cdn77.org
     .cc.ua
     .cd.eu.org
@@ -2842,13 +2949,23 @@
     .cechire.com
     .ce.leg.br
     .certmgr.org
+    .channelsdvr.net
+    .chimkent.su
     .ch.eu.org
     .chirurgiens-dentistes-en-france.fr
     .ciscofreak.com
+    .cistron.nl
+    .clan.rip
     .cloudapp.net
+    .cloudaccess.host
+    .cloudaccess.net
     .cloudfront.net
     .cloudcontrolapp.com
     .cloudcontrolled.com
+    .cloud.fedoraproject.org
+    .cloudfunctions.net
+    .cloud.goog
+    .cloud.metacentrum.cz
     .cloudns.asia
     .cloudns.biz
     .cloudns.club
@@ -2860,9 +2977,9 @@
     .cloudns.pro
     .cloudns.pw
     .cloudns.us
-    .cloudfunctions.net
     .cn.com
     .cn.eu.org
+    .cn-north-1.eb.amazonaws.com.cn
     .cns.joyent.com
     .co.ca
     .co.cz
@@ -2878,7 +2995,13 @@
     .couchpotatofries.org
     .cryptonomic.net
     .cupcake.is
+    .cust.dev.thingdust.io
+    .cust.disrec.thingdust.io
     .customer.enonic.io
+    .custom.metacentrum.cz
+    .cust.prod.thingdust.io
+    .cust.testing.thingdust.io
+    .cya.gg
     .cy.eu.org
     .cyon.link
     .cyon.site
@@ -2886,14 +3009,22 @@
     .damnserver.com
     .daplie.me
     .dd-dns.de
+    .ddnsfree.com
     .ddns.me
     .ddns.net
     .ddnsking.com
     .ddnss.de
+    .ddnsgeek.com
     .ddnss.org
+    .debian.net
     .de.com
+    .de.cool
     .dedyn.io
     .de.eu.org
+    .definima.io
+    .definima.net
+    .demon.nl
+    .devices.resinstaging.io
     .dev-myqnapcloud.com
     .dev.static.land
     .df.leg.br
@@ -2920,6 +3051,7 @@
     .dontexist.org
     .doomdns.com
     .doomdns.org
+    .drayddns.com
     .draydns.de
     .dray-dns.de
     .dreamhosters.com
@@ -2968,10 +3100,12 @@
     .dyn.home-webserver.de
     .dyn-ip24.de
     .dynns.com
+    .dynu.net
     .dynv6.net
     .dynvpn.de
     .dyn-vpn.de
     .e4.cz
+    .east-kazakhstan.su
     .eating-organic.net
     .edu.eu.org
     .ee.eu.org
@@ -2991,23 +3125,35 @@
     .est-mon-blogueur.com
     .eu-1.evennode.com
     .eu-2.evennode.com
+    .eu-3.evennode.com
+    .eu-4.evennode.com
+    .eu-central-1.elasticbeanstalk.com
     .eu.com
     .eu.meteorapp.com
     .eu.org
+    .eu-west-1.elasticbeanstalk.com
+    .eu-west-2.elasticbeanstalk.com
+    .eu-west-3.elasticbeanstalk.com
+    .exnet.su
     .ex.ortsinfo.at
     .ext.githubcloud.com
     .familyds.com
     .familyds.net
     .familyds.org
     .fantasyleague.cc
+    .fastlylb.net
+    .fedorainfracloud.org
+    .fedorapeople.org
     .feste-ip.net
     .fhapp.xyz
     .fi.eu.org
+    .filegear.me
     .firebaseapp.com
     .firewall-gateway.com
     .firewall-gateway.de
     .firewall-gateway.net
     .firm.dk
+    .flynnhosting.net
     .flynnhub.com
     .for-better.biz
     .for-more.biz
@@ -3022,6 +3168,9 @@
     .fbx-os.fr
     .freeboxos.fr
     .freebox-os.fr
+    .freeddns.org
+    .freesite.host
+    .freetls.fastly.net
     .fr.eu.org
     .from-ak.com
     .from-al.com
@@ -3084,17 +3233,21 @@
     .gb.com
     .gb.net
     .geekgalaxy.com
+    .georgia.su
     .getmyip.com
     .gets-it.net
     .gda.pl
     .gdansk.pl
     .gdynia.pl
+    .giize.com
     .gist.githubcloud.com
     .github.io
     .githubcloud.com
     .githubcloudusercontent.com
     .githubusercontent.com
     .gitlab.io
+    .git-repos.de
+    .gleeze.com
     .gliwice.pl
     .global.prod.fastly.net
     .global.ssl.fastly.net
@@ -3115,6 +3268,7 @@
     .ham-radio-op.net
     .hashbang.sh
     .hasura-app.io
+    .hb.cldmail.ru
     .health-carereform.com
     .hepforge.org
     .here-for-more.info
@@ -3142,6 +3296,7 @@
     .home-webserver.de
     .hopto.me
     .hopto.org
+    .hosting-cluster.nl
     .hr.eu.org
     .hu.com
     .hu.eu.org
@@ -3157,9 +3312,11 @@
     .inf.ua
     .in.net
     .inc.hk
+    .info.cx
     .internet-dns.de
     .int.eu.org
     .in-the-band.net
+    .ipifony.net
     .is-a-anarchist.com
     .is-a-blogger.com
     .is-a-bookkeeper.com
@@ -3244,29 +3401,43 @@
     .isteingeek.de
     .istmein.de
     .it.eu.org
+    .jambyl.su
+    .jdevcloud.com
     .jp.eu.org
     .jp.net
     .jpn.com
     .js.org
+    .karacol.su
+    .karaganda.su
     .keymachine.de
     .kicks-ass.net
     .kicks-ass.org
     .knightpoint.systems
     .knowsitall.info
     .knx-server.net
+    .kozow.com
     .krakow.pl
     .kr.com
     .kr.eu.org
     .kunden.ortsinfo.at
+    .kustanai.su
     .land-4-sale.us
+    .lcube-server.de
     .lebtimnetz.de
     .leitungsen.de
     .likes-pie.com
     .likescandy.com
+    .lima-city.at
+    .lima-city.ch
+    .lima-city.de
+    .lima-city.rocks
+    .lima.zone
+    .localhost.daplie.me
     .l-o-g-i-n.de
     .loginto.me
     .logoip.com
     .logoip.de
+    .loseyourip.com
     .ltd.hk
     .ltd.ua
     .lt.eu.org
@@ -3274,6 +3445,9 @@
     .lv.eu.org
     .magentosite.cloud
     .ma.leg.br
+    .mangyshlak.su
+    .map.fastlylb.net
+    .map.fastly.net
     .mc.eu.org
     .me.eu.org
     .med.pl
@@ -3287,6 +3461,7 @@
     .mk.eu.org
     .mlbfan.org
     .mmafan.biz
+    .moonscale.net
     .ms.leg.br
     .mt.eu.org
     .mt.leg.br
@@ -3294,6 +3469,7 @@
     .myasustor.com
     .mycd.eu
     .mydissent.net
+    .myddns.rocks
     .mydrobo.com
     .myds.me
     .myeffect.net
@@ -3306,6 +3482,7 @@
     .myfusion.cloud
     .my-gateway.de
     .myhome-server.de
+    .mymailer.com.tw
     .mymediapc.net
     .mypep.link
     .mypets.ws
@@ -3317,9 +3494,11 @@
     .mysecuritycamera.net
     .mysecuritycamera.org
     .myshopblocks.com
+    .mytuleap.com
     .my-vigor.de
     .myvnc.com
     .my-wan.de
+    .mywire.org
     .neat-url.com
     .nerdpol.ovh
     .net-freaks.com
@@ -3327,11 +3506,16 @@
     .nhlfan.net
     .nfshost.com
     .net.eu.org
+    .netlify.com
     .ng.eu.org
     .ngrok.io
+    .nh-serv.co.uk
     .nl.eu.org
     .nid.io
     .no.com
+    .nodeart.io
+    .nodum.co
+    .nodum.io
     .no.eu.org
     .no-ip.biz
     .no-ip.ca
@@ -3341,15 +3525,55 @@
     .no-ip.net
     .no-ip.org
     .noip.us
+    .nom.ae
+    .nom.ai
+    .nom.al
+    .nom.cl
+    .nom.gd
+    .nom.gl
+    .nom.gt
+    .nom.hn
+    .nom.im
+    .nom.li
+    .nom.mk
+    .nom.nu
+    .nom.pw
+    .nom.qa
+    .nom.rs
+    .nom.si
+    .nom.ug
+    .nom.uy
+    .nom.vc
+    .nom.vg
+    .north-kazakhstan.su
+    .navoi.su
     .now.sh
     .nsupdate.info
     .nyc.mn
+    .nym.by
+    .nym.bz
+    .nym.gr
+    .nym.kz
+    .nym.la
+    .nym.li
+    .nym.lt
+    .nym.lu
+    .nym.me
+    .nym.mx
+    .nym.nz
+    .nym.pe
+    .nym.pt
+    .nym.sk
+    .nym.su
+    .nym.sx
+    .nym.tw
     .nz.eu.org
     .office-on-the.net
     .on-aptible.com
     .on-the-web.tv
     .on-web.fr
     .onthewifi.com
+    .ooguy.com
     .opencraft.hosting
     .operaunite.com
     .outsystemscloud.com
@@ -3361,6 +3585,7 @@
     .pantheonsite.io
     .paris.eu.org
     .pimienta.org
+    .pixolino.com
     .pb.leg.br
     .pe.leg.br
     .pgafan.net
@@ -3398,6 +3623,8 @@
     .realm.cz
     .redirectme.net
     .reg.dk
+    .remotewd.com
+    .resindevice.io
     .rhcloud.com
     .rj.leg.br
     .rn.leg.br
@@ -3410,7 +3637,7 @@
     .rs.leg.br
     .ru.com
     .ru.eu.org
-    .s3.amazonaws.com
+    .ru.net
     .s3-ap-northeast-1.amazonaws.com
     .s3-ap-northeast-2.amazonaws.com
     .s3.ap-northeast-2.amazonaws.com
@@ -3429,12 +3656,18 @@
     .s3.dualstack.ca-central-1.amazonaws.com
     .s3.dualstack.eu-central-1.amazonaws.com
     .s3.dualstack.eu-west-1.amazonaws.com
+    .s3.dualstack.eu-west-2.amazonaws.com
+    .s3.dualstack.eu-west-3.amazonaws.com
     .s3.dualstack.sa-east-1.amazonaws.com
     .s3.dualstack.us-east-1.amazonaws.com
     .s3.dualstack.us-east-2.amazonaws.com
     .s3-eu-central-1.amazonaws.com
     .s3.eu-central-1.amazonaws.com
     .s3-eu-west-1.amazonaws.com
+    .s3-eu-west-2.amazonaws.com
+    .s3.eu-west-2.amazonaws.com
+    .s3-eu-west-3.amazonaws.com
+    .s3.eu-west-3.amazonaws.com
     .s3-external-1.amazonaws.com
     .s3-fips-us-gov-west-1.amazonaws.com
     .s3-sa-east-1.amazonaws.com
@@ -3451,17 +3684,21 @@
     .s3-website.ca-central-1.amazonaws.com
     .s3-website.eu-central-1.amazonaws.com
     .s3-website-eu-west-1.amazonaws.com
+    .s3-website.eu-west-2.amazonaws.com
+    .s3-website.eu-west-3.amazonaws.com
     .s3-website-sa-east-1.amazonaws.com
     .s3-website-us-east-1.amazonaws.com
     .s3-website.us-east-2.amazonaws.com
     .s3-website-us-west-1.amazonaws.com
     .s3-website-us-west-2.amazonaws.com
     .sa.com
+    .sa-east-1.elasticbeanstalk.com
     .sandcats.io
     .saves-the-whales.com
     .sc.leg.br
     .scrapper-site.net
     .scrapping.cc
+    .scrysec.com
     .se.com
     .securitytactics.com
     .se.eu.org
@@ -3513,16 +3750,22 @@
     .spdns.eu
     .spdns.org
     .sp.leg.br
+    .square7.ch
+    .square7.de
+    .square7.net
     .ssl.origin.cdn77-secure.org
     .stackspace.space
+    .stage.nodeart.io
     .static-access.net
     .static.land
     .statics.cloud
     .stolos.io
     .store.dk
+    .storj.farm
     .stuff-4-sale.org
     .stuff-4-sale.us
     .stufftoread.com
+    .svn-repos.de
     .sweetpepper.org
     .syno-ds.de
     .synology-diskstation.de
@@ -3531,40 +3774,69 @@
     .sytes.net
     .t3l3p0rt.net
     .taifun-dns.de
+    .tashkent.su
     .teaches-yoga.com
     .tele.amune.org
+    .temp-dns.com
+    .termez.su
+    .theworkpc.com
     .thruhere.net
     .to.leg.br
     .townnews-staging.com
     .traeumtgerade.de
+    .trafficplex.cloud
     .transurl.be
     .transurl.eu
     .transurl.nl
     .tr.eu.org
     .triton.zone
+    .tselinograd.su
     .tunk.org
     .tuxfamily.org
+    .twmail.cc
+    .twmail.net
+    .twmail.org
+    .uber.space
     .ufcfan.org
     .uk.com
     .uk.eu.org
     .uk.net
     .unusualperson.com
+    .url.tw
     .us-1.evennode.com
     .us-2.evennode.com
+    .us-3.evennode.com
+    .us-4.evennode.com
     .us.com
     .us-east-1.amazonaws.com
+    .us-east-1.elasticbeanstalk.com
+    .us-east-2.elasticbeanstalk.com
+    .user.party.eus
     .us.eu.org
     .us-gov-west-1.compute.amazonaws.com
+    .us-gov-west-1.elasticbeanstalk.com
     .us.org
-    .user.party.eus
+    .us-west-1.elasticbeanstalk.com
+    .us-west-2.elasticbeanstalk.com
     .uy.com
+    .vapor.cloud
+    .vaporcloud.io
+    .v-info.info
     .vipsinaapp.com
     .virtueeldomein.nl
+    .vpnplus.to
+    .wpdevcloud.com
     .webhop.biz
     .webhop.info
     .webhop.me
     .webhop.net
     .webhop.org
+    .webhosting.be
+    .webredirect.org
+    .webspace.rocks
+    .wedeploy.io
+    .wedeploy.me
+    .wedeploy.sh
     .wellbeingzone.co.uk
     .wellbeingzone.eu
     .withgoogle.com
@@ -3576,6 +3848,7 @@
     .wroc.pl
     .xenapponazure.com
     .xen.prgmr.com
+    .xs4all.space
     .ybo.faith
     .ybo.party
     .ybo.review
@@ -3591,8 +3864,8 @@
     .zapto.org
     <forbid reason="unused">
       .0emm.com
+      .advisor.ws
       .alces.network
-      .alwaysdata.net
       .amazonaws.cn
       .amazonaws.com
       .amazonaws.com.cn
@@ -3603,6 +3876,7 @@
       .ap-south-1.amazonaws.com
       .ap-southeast-1.amazonaws.com
       .ap-southeast-2.amazonaws.com
+      .awdev.ca
       .ca-central-1.amazonaws.com
       .eu-west-1.amazonaws.com
       .sa-east-1.amazonaws.com
@@ -3610,6 +3884,7 @@
       .cdn77.net
       .cdn77.org
       .cdn77-secure.org
+      .cldmail.ru
       .cn-north-1.amazonaws.com.cn
       .cns.joyent.com
       .compute.amazonaws.com
@@ -3618,6 +3893,8 @@
       .compute.estate
       .cosidns.de
       .cryptonomic.net
+      .dev.thingdust.io
+      .disrec.thingdust.io
       .dualstack.ap-northeast-1.amazonaws.com
       .dualstack.ap-northeast-2.amazonaws.com
       .dualstack.ap-south-1.amazonaws.com
@@ -3626,18 +3903,24 @@
       .dualstack.ca-central-1.amazonaws.com
       .dualstack.eu-central-1.amazonaws.com
       .dualstack.eu-west-1.amazonaws.com
+      .dualstack.eu-west-2.amazonaws.com
+      .dualstack.eu-west-3.amazonaws.com
       .dualstack.sa-east-1.amazonaws.com
       .dualstack.us-east-1.amazonaws.com
       .dualstack.us-east-2.amazonaws.com
-      .elasticbeanstalk.com
+      .eb.amazonaws.com.cn
       .elb.amazonaws.com
       .elb.amazonaws.com.cn
       .eu-central-1.amazonaws.com
+      .eu-west-2.amazonaws.com
+      .eu-west-3.amazonaws.com
       .evennode.com
       .ex.ortsinfo.at
       .ext.githubcloud.com
       .fastly.net
       .fbsbx.com
+      .fedoraproject.org
+      .futurecms.at
       .githubcloudusercontent.com
       .her.name
       .his.name
@@ -3645,16 +3928,28 @@
       .kunden.ortsinfo.at
       .lair.io
       .magentosite.cloud
+      .metacentrum.cz
       .origin.cdn77-secure.org
       .ortsinfo.at
+      .os.fedoraproject.org
+      .os.stg.fedoraproject.org
       .party.eus
       .platform.sh
+      .platformsh.site
       .prgmr.com
+      .prod.thingdust.io
       .prod.fastly.net
+      .quipelements.com
+      .resinstaging.io
       .s3.amazonaws.com
+      .s5y.io
+      .sensiosite.cloud
       .ssl.fastly.net
       .statics.cloud
+      .stg.fedoraproject.org
       .stolos.io
+      .testing.thingdust.io
+      .thingdust.io
       .transurl.be
       .transurl.eu
       .transurl.nl

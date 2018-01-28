@@ -1,8 +1,14 @@
-libtld (1.5.8.39~xenial) xenial; urgency=high
+libtld (1.5.9.0~xenial) xenial; urgency=high
 
-  * Nightly build.
+  * Fixed the debian/copyright about the public_suffic_list.dat file
+    (the name had changed.)
+  * Fixed the dev/coverage so it works with the new environment.
+  * Updated our tld_data.xml file with all the new domain names.
+  * Fixed our tests so they all pass with the latest version of the library
+    and we get 100% coverage.
+  * Various clean ups.
 
- -- Build Server <build@m2osw.com>  Fri, 11 Aug 2017 14:46:45 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 27 Jan 2018 17:22:57 -0700
 
 libtld (1.5.8.0~xenial) xenial; urgency=high
 
@@ -10,23 +16,11 @@ libtld (1.5.8.0~xenial) xenial; urgency=high
 
  -- Doug Barbieri <doug@garibaldi>  Fri, 11 Aug 2017 12:59:52 -0700
 
-libtld (1.5.7.74~xenial) xenial; urgency=high
-
-  * Nightly build.
-
- -- Build Server <build@m2osw.com>  Sun, 04 Jun 2017 02:00:53 -0700
-
 libtld (1.5.7.0~xenial) xenial; urgency=high
 
   * Removed space/lf/cr/tab case and now return invalid.
 
  -- R. Douglas Barbieri <doug@dooglio.net>  Sat, 03 Jun 2017 13:41:40 -0700
-
-libtld (1.5.6.137~xenial) xenial; urgency=high
-
-  * Nightly build.
-
- -- Build Server <build@m2osw.com>  Sat, 21 Jan 2017 17:55:04 -0800
 
 libtld (1.5.6.0~xenial) xenial; urgency=high
 
@@ -101,7 +95,6 @@ libtld (1.4.20.17~trusty) trusty; urgency=high
 
 libtld (1.4.17~saucy) saucy; urgency=high
 
-  * Nightly build.
   * Added many new TLDs.
   * Better organized a few TLDs which were in the wrong category.
   * Updated the internal test accordingly.
