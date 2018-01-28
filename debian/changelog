@@ -1,3 +1,9 @@
+libtld (1.5.9.1~xenial) xenial; urgency=high
+
+  * Fixed a glitch in the copyright update.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 27 Jan 2018 17:57:17 -0700
+
 libtld (1.5.9.0~xenial) xenial; urgency=high
 
   * Fixed the debian/copyright about the public_suffic_list.dat file
@@ -6,6 +12,7 @@ libtld (1.5.9.0~xenial) xenial; urgency=high
   * Updated our tld_data.xml file with all the new domain names.
   * Fixed our tests so they all pass with the latest version of the library
     and we get 100% coverage.
+  * Updated the copyright notices.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 27 Jan 2018 17:22:57 -0700
