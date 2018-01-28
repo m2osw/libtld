@@ -8,6 +8,9 @@ It is also important in the event you wanted to check an SSL certificate
 
 # Notes:
 
+* Version 1.5.9 has been updated to the latest version of the world TLDs.
+  It also includes a fix to the email code so spaces are forbidden.
+
 * Version 1.5.0 offers a function to fold the characters of a domain
   to lowercase; including support for %XX encoding and UTF-8.
 

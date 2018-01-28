@@ -1,31 +1,36 @@
 #!/bin/sh -e
 # Build the project
 # Run the tests
-# Package the result
 
 echo "Please, do not use this script anymore. I did not try, but at this point it is likely not doing what was expected anymore."
 exit 1;
 
 # Stop immediately on errors
+#
 set -e
 
 # Change this variable to point to your wpkg distribution
-export WPKG_DIST_PATH=/home/alexis/m2osw/sources/freeware/usys/wpkg/dist
+#
+#export WPKG_DIST_PATH=/home/alexis/m2osw/sources/freeware/usys/wpkg/dist
 
 
 # The coverage builds everything and runs the tests
+#
 dev/coverage
 
 # Now create a clean version
+#
 rm -rf tmp/build
 mkdir -p tmp/build
 cd tmp/build
-ln -s ../snapCMakeModules ../..
-cmake ../..
+modules=`cd ../../../../; pwd`/cmake/Modules
+cmake -DCMAKE_MODULE_PATH:PATH="$modules" \
+      -DSnapCMakeModules_DIR:PATH="$modules" \
+      -DSnapDoxygen_DIR:PATH="$modules" \
+          ../..
 VERBOSE=1 make
-VERBOSE=1 make package_source
-VERBOSE=1 make wpkg_package
-rm ../../snapCMakeModules
+#VERBOSE=1 make package_source
+#VERBOSE=1 make wpkg_package
 
 echo
 echo "*** BUILT VERSION `src/validate_tld --version` ***"

@@ -2,11 +2,12 @@
 # Build the source package of this project (.tar.gz file)
 
 dpkg-source \
-	--tar-ignore='tmp*' \
-	--tar-ignore='*.sw?' \
-	--tar-ignore="tests/hex" \
+	--tar-ignore='*.git' \
 	--tar-ignore="*.gitignore*" \
-	--tar-ignore="*.so" \
 	--tar-ignore="*.o" \
 	--tar-ignore="*.out" \
+	--tar-ignore="*.so" \
+	--tar-ignore='*.sw?' \
+	--tar-ignore="tests/hex" \
+	--tar-ignore='tmp*' \
 	-i -b .
