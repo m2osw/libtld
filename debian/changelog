@@ -30,7 +30,7 @@ libtld (1.5.6.0~xenial) xenial; urgency=high
 
 libtld (1.5.5.0~xenial) xenial; urgency=high
 
-  * renamed the effective_tld_names.dat with its new name: 
+  * Renamed effective_tld_names.dat with its new name: public_suffix_list.dat
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat,  7 Jan 2017 13:50:22 -0700
 
@@ -38,7 +38,7 @@ libtld (1.5.4.0~xenial) xenial; urgency=high
 
   * Updated the TLDs with the newest available information.
   * Enhanced the test so we can support entries like "*.jp" at any level.
-  * Now top the CMakeLists.txt reads the version from changelog.
+  * Now the top CMakeLists.txt reads the version from changelog.
   * Updated the tests accordingly.
   * Various cleanups.
 
