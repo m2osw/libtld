@@ -1,3 +1,9 @@
+libtld (1.5.9.2~xenial) xenial; urgency=high
+
+  * Enhanced the README.md file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 29 Jan 2018 00:10:08 -0700
+
 libtld (1.5.9.1~xenial) xenial; urgency=high
 
   * Fixed a glitch in the copyright update.
