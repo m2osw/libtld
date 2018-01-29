@@ -1,10 +1,12 @@
+
 # Introduction
 
-libtld is an easy to use C/C++/PHP library that gives you information
+`libtld` is an easy to use C/C++/PHP library that gives you information
 about domain names (TLD) found in a URI. The result can be used to know
 whether someone entered a valid URI without having to hit the Internet.
 It is also important in the event you wanted to check an SSL certificate
 (i.e. the exact TLD + one name must be checked in that case.)
+
 
 # Notes:
 
@@ -26,7 +28,7 @@ It is also important in the event you wanted to check an SSL certificate
   finish up the Debian installer. Although one version included a memory
   leak but I did not then find the time to upload a new version here.
 
-* The .deb versions for Ubuntu can be downloaded from our snapcpp PPA
+* The .deb versions for Ubuntu can be downloaded from our `snapcpp` PPA
   on launchpad (this is not being updated anymore...):
 
       https://code.launchpad.net/~snapcpp/+archive/ppa/+packages
@@ -34,3 +36,11 @@ It is also important in the event you wanted to check an SSL certificate
 * The PHP extension was not downloaded in the previous version, so I
   won't upload a new version here. It did not change anyway.
 
+
+# Bugs
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/libtld/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._
