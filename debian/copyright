@@ -1,8 +1,8 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: libtld
 Upstream-Contact: Alexis Wilke <alexis@m2osw.com>
- http://www.m2osw.com/contact
-Source: http://snapwebsites.org/project/libtld
+ https://www.m2osw.com/contact
+Source: https://snapwebsites.org/project/libtld
 License: MIT
 Disclaimer: This package is part of the Snap! C++ system. It is not a native Debian package.
 Copyright:
@@ -354,7 +354,7 @@ License: Mozilla Public License, v. 2.0
  This Source Code Form is subject to the terms of the
  Mozilla Public License, v. 2.0. If a copy of the MPL
  was not distributed with this file, You can obtain
- one at http://mozilla.org/MPL/2.0/.
+ one at https://www.mozilla.org/MPL/2.0/.
  .
  If it is not possible or desirable to put the notice in a particular
  file, then You may include the notice in a location (such as a LICENSE

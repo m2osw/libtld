@@ -5,7 +5,7 @@
 # Copyright:    Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #               All Rights Reserved.
 #
-# http://snapwebsites.org/project/libtld
+# https://snapwebsites.org/project/libtld
 # contact@m2osw.com
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -120,7 +120,7 @@ set(CPACK_PACKAGE_VERSION_MINOR "${LIBTLD_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${LIBTLD_VERSION_PATCH}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "libtld-${LIBTLD_VERSION_MAJOR}.${LIBTLD_VERSION_MINOR}.${LIBTLD_VERSION_PATCH}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://snapwebsites.org/project/tld-library-libtld")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://snapwebsites.org/project/tld-library-libtld")
 # I'm not too sure how we can add this one...
 #set(CPACK_DEBIAN_PACKAGE_DEV_DEPENDENCIES "cmake libqt4-dev")
 include(CPack)
