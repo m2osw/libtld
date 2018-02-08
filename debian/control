@@ -13,7 +13,7 @@ Standards-Version: 3.9.4
 Section: libs
 Homepage: https://snapwebsites.org/project/libtld
 Vcs-Git: https://github.com/m2osw/snapcpp.git
-Vcs-Browser: https://github.com/m2osw/snapcpp
+Vcs-Browser: https://github.com/m2osw/libtld
 
 Package: libtld
 Architecture: any
