@@ -982,7 +982,7 @@ tld_result tld_email_list::tld_email_t::parse(std::string const & email)
     std::string fullname;
     std::string username;
     std::string domain;
-    int count;
+    uint64_t count = 0;
     bool has_angle(false);
     bool found_at(false);
     bool found_dot(false);
@@ -1393,7 +1393,7 @@ tld_result tld_email_list::tld_email_t::parse_group(std::string const & group)
 {
     char const * s(group.c_str());
     std::string g;
-    int count;
+    uint64_t count = 0;
 
     for(; *s != '\0'; ++s)
     {
