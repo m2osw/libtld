@@ -477,7 +477,7 @@ static int tld_wctomb(wint_t wc, char **s, int *max_length)
  * \endcode
  *
  * In C++ you may use an std::unique_ptr<> with free as the deleter
- * to not have to both with the call by hand (especially if you
+ * to not have to bother with the call by hand (especially if you
  * have possible exceptions in your code):
  *
  * \code
