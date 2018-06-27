@@ -1,3 +1,9 @@
+libtld (1.5.9.4~xenial) xenial; urgency=high
+
+  * Bump version to recompile with the -fsanitizer flags.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 26 Jun 2018 20:03:27 -0800
+
 libtld (1.5.9.3~xenial) xenial; urgency=high
 
   * Fixed the protocol to the snapwebsites.org.
