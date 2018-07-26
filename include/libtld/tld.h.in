@@ -173,9 +173,9 @@ public:
     tld_category category() const;
     std::string country() const;
 private:
-    std::string f_domain;
-    tld_info f_info;
-    tld_result f_result;
+    std::string f_domain = std::string();
+    tld_info    f_info   = tld_info();
+    tld_result  f_result = TLD_RESULT_INVALID;
 };
 
 struct LIBTLD_EXPORT tld_email_list
@@ -186,13 +186,13 @@ public:
         tld_result parse(const std::string& email);
         tld_result parse_group(const std::string& group);
 
-        std::string         f_group;
-        std::string         f_original_email;
-        std::string         f_fullname;
-        std::string         f_username;
-        std::string         f_domain;
-        std::string         f_email_only;
-        std::string         f_canonicalized_email;
+        std::string         f_group               = std::string();
+        std::string         f_original_email      = std::string();
+        std::string         f_fullname            = std::string();
+        std::string         f_username            = std::string();
+        std::string         f_domain              = std::string();
+        std::string         f_email_only          = std::string();
+        std::string         f_canonicalized_email = std::string();
     };
     typedef std::vector<tld_email_t>      tld_email_list_t;
 
@@ -209,12 +209,12 @@ public:
 private:
     void parse_all_emails();
 
-    std::string         f_input;
-    int                 f_flags;
-    tld_result          f_result;
-    std::string         f_last_group;
-    mutable int         f_pos;
-    tld_email_list_t    f_email_list;
+    std::string         f_input      = std::string();
+    int                 f_flags      = 0;
+    tld_result          f_result     = TLD_RESULT_INVALID;
+    std::string         f_last_group = std::string();
+    mutable int         f_pos        = 0;
+    tld_email_list_t    f_email_list = tld_email_list_t();
 };
 #endif
 

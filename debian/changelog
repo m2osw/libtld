@@ -1,3 +1,9 @@
+libtld (1.5.10.0~xenial) xenial; urgency=high
+
+  * Made code -Weffc++ compatible.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 25 Jul 2018 19:56:25 -0800
+
 libtld (1.5.9.5~xenial) xenial; urgency=high
 
   * Bump version to recompile without the -fsanitizer flags.

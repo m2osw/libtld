@@ -61,29 +61,29 @@ class tld_info
 {
 public:
     /// The category name to output for this TLD.
-    QString                f_category;
+    QString                f_category = QString();
     /// The reason name to output for this TLD.
-    QString                f_reason;
+    QString                f_reason = QString();
     /// The category attribute of the area tag.
-    QString                f_category_name;
+    QString                f_category_name = QString();
     /// The country name for an area.
-    QString                f_country;  // if category is "country", otherwise empty
+    QString                f_country = QString();  // if category is "country", otherwise empty
     /// Level of this TLD.
-    int                    f_level; // level of this TLD (1, 2, 3, 4)
+    int                    f_level = 0; // level of this TLD (1, 2, 3, 4)
     /// The complete TLD of this entry
-    QString                f_tld;
+    QString                f_tld = QString();
     /// The inverted TLD to help us sort everything.
-    QString                f_inverted;
+    QString                f_inverted = QString();
     /// The reason attribute define in forbid tags.
-    QString                f_reason_name;
+    QString                f_reason_name = QString();
     /// The TLD this exception applies to (i.e. the actual response)
-    QString                f_exception_apply_to;
+    QString                f_exception_apply_to = QString();
     /// The offset of this item in the final table.
-    int                    f_offset;
+    int                    f_offset = 0;
     /// The start offset of a TLDs next level entries
-    int                    f_start_offset;
+    int                    f_start_offset = 0;
     /// The end offset (excluded) of a TLDs next level entries
-    int                    f_end_offset;
+    int                    f_end_offset = 0;
 };
 
 /// Type used to hold the list of all the info structures.
