@@ -1,3 +1,12 @@
+libtld (1.5.11.0~xenial) xenial; urgency=high
+
+  * Updated to the latest known extension from the Public Suffix List.
+  * Updated the tests to include the hex.c to the cmake.
+  * Updated the internal test to work with the new data.
+  * Enhanced my tld_names test so the line number can be written on errors.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 27 Jul 2018 00:45:54 -0800
+
 libtld (1.5.10.1~xenial) xenial; urgency=high
 
   * Bump version to get a recompile on launchpad.

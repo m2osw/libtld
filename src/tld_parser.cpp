@@ -482,6 +482,9 @@ void verify_data(tld_info_map_t& map)
                 // otherwise considered letters...
                 switch(c.unicode())
                 {
+                case 0x0300: // Grave Accent
+                case 0x0301: // Acute Accent
+                case 0x0308: // Umlaut
                 case 0x0902: // Devanagari Sign Anusvara
                 case 0x093E: // Devanagari Vowel Sign AA
                 case 0x0947: // Devanagari Vowel Sign E

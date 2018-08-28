@@ -52,7 +52,12 @@ int verbose = 0;
  * extern enum tld_result tld(const char *uri, struct tld_info *info);
  */
 
-typedef std::vector<std::string> string_vector_t;
+struct tld_t
+{
+    std::string     f_name = std::string();
+    int             f_line = 0;
+};
+typedef std::vector<tld_t> string_vector_t;
 string_vector_t tlds;
 
 
@@ -155,7 +160,10 @@ void test_load()
             else if(s.length() > 1 && s[0] != '/' && s[1] != '/')
             {
                 // this is not a comment and not an empty line, that's a TLD
-                tlds.push_back(s);
+                tld_t t;
+                t.f_name = s;
+                t.f_line = line;
+                tlds.push_back(t);
 //printf("found [%s]\n", s.c_str());
             }
         }
@@ -182,13 +190,13 @@ void test_tlds()
         //       in the name, although at this time it only appears at the
         //       start and we just handle it as a special case here
         //
-        if(it->at(0) == '*'
-        && it->at(1) == '.')
+        if(it->f_name.at(0) == '*'
+        && it->f_name.at(1) == '.')
         {
             // as is (well, without the '*'), a '*.tld' must return INVALID
             // and status UNUSED
             //
-            std::string base_tld(it->substr(2));
+            std::string base_tld(it->f_name.substr(2));
             if(base_tld.find('.') == std::string::npos)
             {
                 // at least one '.', however for one such as '*.example.com'
@@ -204,7 +212,7 @@ void test_tlds()
                 // any other result is an error
                 fprintf(stderr, "error: tld(\"%s\", &info) for \"%s\" expected %d, got %d instead.\n",
                             base_tld.c_str(),
-                            it->c_str(),
+                            it->f_name.c_str(),
                             TLD_RESULT_INVALID,
                             r);
                 ++err_count;
@@ -215,7 +223,7 @@ void test_tlds()
             // '*' has a few specific cases or none at all)
             //
             std::string url("we-want-to-test-just-one-domain-name");
-            url += it->substr(1);
+            url += it->f_name.substr(1);
             r = tld(url.c_str(), &info);
             if(r == TLD_RESULT_SUCCESS)
             {
@@ -231,27 +239,27 @@ void test_tlds()
                 // we're good if invalid since that's what we expect in this case
                 // any other result is an error
                 fprintf(stderr, "error: tld(\"%s\", &info) for \"%s\" failed with %d.\n",
-                            url.c_str(), it->c_str(), r);
+                            url.c_str(), it->f_name.c_str(), r);
                 ++err_count;
             }
         }
-        else if(it->at(0) == '!')
+        else if(it->f_name.at(0) == '!')
         {
             std::string url;//("we-want-to-test-just-one-domain-name.");
-            url += it->substr(1);
+            url += it->f_name.substr(1);
             tld_result r = tld(url.c_str(), &info);
             if(r != TLD_RESULT_SUCCESS)
             {
                 // if it worked then we have a problem
                 fprintf(stderr, "error: tld(\"%s\", &info) = %d failed with an exception that should have been accepted.\n",
-                        it->c_str(), r);
+                        it->f_name.c_str(), r);
                 ++err_count;
             }
         }
-        else if(it->at(0) != '!')
+        else if(it->f_name.at(0) != '!')
         {
             std::string url("www.this-is-a-long-domain-name-that-should-not-make-it-in-a-tld.");
-            url += *it;
+            url += it->f_name;
             int level;
             QString utf16(QString::fromUtf8(url.c_str()));
             QString u(tld_encode(utf16, level));
@@ -260,17 +268,24 @@ void test_tlds()
             if(r == TLD_RESULT_SUCCESS || r == TLD_RESULT_INVALID)
             {
                 // it succeeded, but is it the right length?
-                utf16 = QString::fromUtf8(it->c_str());
+                utf16 = QString::fromUtf8(it->f_name.c_str());
                 u = tld_encode(utf16, level);
                 if(strlen(info.f_tld) != static_cast<size_t>(u.size() + 1))
                 {
-                    fprintf(stderr, "error: tld(\"%s\", &info) length mismatch (\"%s\", %d/%d).\n",
-                            uri.data(), info.f_tld,
+                    fprintf(stderr, "error:%d: tld(\"%s\", &info) length mismatch (\"%s\", %d/%d).\n",
+                            it->f_line,
+                            uri.data(),
+                            info.f_tld,
                             static_cast<int>(strlen(info.f_tld)),
                             static_cast<int>((u.size() + 1)));
 // s3-website.ap-northeast-2.amazonaws.com
-QString s(QString::fromUtf8(it->c_str()));
-fprintf(stderr, "%d> %s [%s] {%s} -> %d ", r, it->c_str(), u.toUtf8().data(), info.f_tld, s.length());
+QString s(QString::fromUtf8(it->f_name.c_str()));
+fprintf(stderr, "%d> %s [%s] {%s} -> %d ",
+        r,
+        it->f_name.c_str(),
+        u.toUtf8().data(),
+        info.f_tld,
+        s.length());
 for(int i(0); i < s.length(); ++i) {
 fprintf(stderr, "&#x%04X;", s.at(i).unicode());
 }
@@ -280,9 +295,14 @@ fprintf(stderr, "\n");
             }
             else
             {
-                //fprintf(stderr, "error: tld(\"%s\", &info) failed.\n", it->c_str());
-QString s(QString::fromUtf8(it->c_str()));
-printf("error: tld(\"%s\", &info) failed with %d [%s] -> %d ", it->c_str(), r, u.toUtf8().data(), s.length());
+                //fprintf(stderr, "error: tld(\"%s\", &info) failed.\n", it->f_name.c_str());
+QString s(QString::fromUtf8(it->f_name.c_str()));
+printf("error:%d: tld(\"%s\", &info) failed with %d [%s] -> %d ",
+        it->f_line,
+        it->f_name.c_str(),
+        r,
+        u.toUtf8().data(),
+        s.length());
 for(int i(0); i < s.length(); ++i) {
 printf("&#x%04X;", s.at(i).unicode());
 }

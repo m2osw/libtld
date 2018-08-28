@@ -115,7 +115,7 @@ main(int argc, char **argv)
 	for(i = 1; i < argc; ++i)
 	{
 		len = from_utf8(argv[i], buf);
-		if(len == -1)
+		if(len == (size_t) -1)
 		{
 			printf("%3d. invalid UTF-8\n", i);
 		}
@@ -124,7 +124,21 @@ main(int argc, char **argv)
 			printf(".");
 			for(j = 0; j < len; ++j)
 			{
-				printf("&#x%04X;", buf[j]);
+				if((buf[j] >= 'a' && buf[j] <= 'z')
+				|| (buf[j] >= '0' && buf[j] <= '9')
+				|| buf[j] == '-'
+				|| buf[j] == '.')
+				{
+					printf("%c", buf[j]);
+				}
+				else if(buf[j] >= 0x10000)
+				{
+					printf("&#x%06X;", buf[j]);
+				}
+				else
+				{
+					printf("&#x%04X;", buf[j]);
+				}
 			}
 			printf("\n");
 		}

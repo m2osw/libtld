@@ -38,6 +38,12 @@ include_directories(
     ${tld_library_SOURCE_DIR}/src
 )
 
+# Tool to generate the &#...; entities for UTF-8 domain names
+project(hex)
+add_executable(${PROJECT_NAME}
+    hex.c
+)
+
 # Test the library directly
 project(tld_internal_test)
 add_executable(${PROJECT_NAME}
