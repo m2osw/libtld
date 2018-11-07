@@ -97,7 +97,7 @@ include_directories(
 add_library(tld_static STATIC
     tld.c
     tld_domain_to_lowercase.c
-    tld_data.c
+    ${TLD_DATA_C}
     tld_emails.cpp
     tld_object.cpp
 )
