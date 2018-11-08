@@ -80,6 +80,19 @@ void check_uri(char const * uri)
         struct tld_info info;
         char const * s(user_schemes == nullptr ? schemes : user_schemes);
         result = tld_check_uri(uri, &info, s, 0);
+
+        if(verbose)
+        {
+            std::cout << "URI:      " << uri                               << std::endl;
+            std::cout << "Category: " << static_cast<int>(info.f_category) << std::endl;
+            std::cout << "Status:   " << static_cast<int>(info.f_status)   << std::endl;
+            if(info.f_country != nullptr)
+            {
+                std::cout << "Country:  " << info.f_country                    << std::endl;
+            }
+            std::cout << "TLD:      " << info.f_tld                        << std::endl;
+            std::cout << "Offset:   " << info.f_offset                     << std::endl;
+        }
     }
     if(result != TLD_RESULT_SUCCESS)
     {
