@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2018  Made to Order Software Corp.  All Rights Reserved
+/* Copyright (c) 2014-2019  Made to Order Software Corp.  All Rights Reserved
  *
  * https://snapwebsites.org/project/libtld
  * contact@m2osw.com
