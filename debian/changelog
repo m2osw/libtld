@@ -1,3 +1,9 @@
+libtld (1.5.12.0~xenial) xenial; urgency=high
+
+  * Removed the dependency on libaddr. It's not needed.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 22 Apr 2018 01:05:43 -0800
+
 libtld (1.5.11.0~xenial) xenial; urgency=high
 
   * Updated to the latest known extension from the Public Suffix List.
