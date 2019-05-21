@@ -8,6 +8,24 @@ It is also important in the event you wanted to check an SSL certificate
 (i.e. the exact TLD + one name must be checked in that case.)
 
 
+# Official source of TLDs
+
+ICANN has a [list of all the top-level domain
+names](https://www.icann.org/resources/pages/tlds-2012-02-25-en).
+
+Note that some of the entries may or may not be working. They say that they
+maintain this list.
+
+We also use the [list from
+Mozilla](https://publicsuffix.org/list/public_suffix_list.dat) which
+is likely up to date because many companies make use of it and send
+them requests to make sure it gets as close as possible to reality.
+Note that this list also includes sub-domain resellers (i.e. some companies
+are built around selling a sub-domain of a domain they purchased.)
+
+
+
+
 # Notes:
 
 * Version 1.5.9 has been updated to the latest version of the world TLDs.
