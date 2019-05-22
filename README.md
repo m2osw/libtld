@@ -1,4 +1,9 @@
 
+<p align="center">
+<img alt="advgetopt" title="IP Lock -- a command line to easily add and remove IPs from your firewall."
+src="https://snapwebsites.org/sites/snapwebsites.org/files/libtld.png" width="224" height="72"/>
+</p>
+
 # Introduction
 
 `libtld` is an easy to use C/C++/PHP library that gives you information
