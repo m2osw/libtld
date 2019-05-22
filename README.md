@@ -29,6 +29,12 @@ Note that this list also includes sub-domain resellers (i.e. some companies
 are built around selling a sub-domain of a domain they purchased.)
 
 
+# API
+
+Please look for the latest [libtld reference available on
+snapwebsites.org](https://snapwebsites.org/project/references)
+
+The documentation can also be generated from the source using Doxygen.
 
 
 # Notes:
