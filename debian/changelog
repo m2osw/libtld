@@ -1,3 +1,11 @@
+libtld (1.5.13.0~xenial) xenial; urgency=high
+
+  * Added a PROJECT_BRIEF description.
+  * Added in=C++ to the MAPPING_EXTENSION.
+  * Updated the doxy file to 1.8.11.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 11 Jun 2018 23:53:42 -0800
+
 libtld (1.5.12.0~xenial) xenial; urgency=high
 
   * Removed the dependency on libaddr. It's not needed.
