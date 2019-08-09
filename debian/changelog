@@ -1,16 +1,22 @@
+libtld (1.5.13.1~xenial) xenial; urgency=high
+
+  * Bump version to recompile with newever snapcmakemodules.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri,  9 Aug 2019 15:45:49 -0800
+
 libtld (1.5.13.0~xenial) xenial; urgency=high
 
   * Added a PROJECT_BRIEF description.
   * Added in=C++ to the MAPPING_EXTENSION.
   * Updated the doxy file to 1.8.11.
 
- -- Alexis Wilke <alexis@m2osw.com>  Tue, 11 Jun 2018 23:53:42 -0800
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 11 Jun 2019 23:53:42 -0800
 
 libtld (1.5.12.0~xenial) xenial; urgency=high
 
   * Removed the dependency on libaddr. It's not needed.
 
- -- Alexis Wilke <alexis@m2osw.com>  Mon, 22 Apr 2018 01:05:43 -0800
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 22 Apr 2019 01:05:43 -0800
 
 libtld (1.5.11.0~xenial) xenial; urgency=high
 
