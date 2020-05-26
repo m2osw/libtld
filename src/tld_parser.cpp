@@ -157,7 +157,7 @@ QString tld_encode(const QString& tld, int& level)
     }
 
     // break it up to easily invert it
-    QStringList split = result.split('!', QString::SkipEmptyParts);
+    QStringList split = result.split(static_cast<int>('!'), QString::SkipEmptyParts);
     int i(0);
     int j(split.size() - 1);
     while(i < j)
@@ -677,7 +677,7 @@ void output_countries(const country_map_t& countries)
 /// Save an offset in the info table.
 void save_offset(tld_info_map_t& map, const QString& tld, int offset)
 {
-    int e = tld.lastIndexOf('!', -2);
+    int e = tld.lastIndexOf(static_cast<int>('!'), -2);
     QString parent = tld.left(e + 1);
     if(!map.contains(parent))
     {
@@ -780,7 +780,7 @@ void output_tlds(tld_info_map_t& map,
                                     << ", \"";
                 save_offset(map, it->f_inverted, i);
                 // we only have to save the current level
-                int e = it->f_inverted.lastIndexOf('!', -2);
+                int e = it->f_inverted.lastIndexOf(static_cast<int>('!'), -2);
                 QString base(it->f_inverted.mid(e + 1, it->f_inverted.length() - e - 2));
                 if(base.length() > base_max)
                 {

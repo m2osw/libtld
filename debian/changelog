@@ -1,3 +1,9 @@
+libtld (1.5.14.0~xenial) xenial; urgency=high
+
+  * Fixed the compile of QString() with QChar() that does not offer a `char`.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 25 May 2020 17:14:58 -0800
+
 libtld (1.5.13.1~xenial) xenial; urgency=high
 
   * Bump version to recompile with newever snapcmakemodules.
