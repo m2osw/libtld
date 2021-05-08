@@ -1,5 +1,5 @@
 /* TLD library -- test the TLD interface
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -63,26 +63,162 @@ int verbose = 0;
  *
  * \param[in] offset  The offset in the tld_descriptions table
  * \param[in] uri  The URI buffer
+ *
+ * \return true if the first TLD is a star ("*").
  */
-void cat_ext(int offset, char *uri)
+int cat_ext(int offset, char *uri)
 {
-	int	k, l;
+    int k, l;
+    int has_star = strcmp(tld_descriptions[offset].f_tld, "*") == 0;
 
-	strcat(uri, tld_descriptions[offset].f_tld);
-	l = offset;
-	for(k = offset + 1; k < tld_end_offset; ++k)
-	{
-		if(l >= tld_descriptions[k].f_start_offset
-		&& l < tld_descriptions[k].f_end_offset)
-		{
-			/* found a parent */
-			strcat(uri, ".");
-			strcat(uri, tld_descriptions[k].f_tld);
-			l = k;
-			k = tld_descriptions[k].f_end_offset;
-		}
-	}
+    if(!has_star)
+    {
+        strcat(uri, ".");
+        strcat(uri, tld_descriptions[offset].f_tld);
+    }
+    l = offset;
+    for(k = offset + 1; k < tld_end_offset; ++k)
+    {
+        if(l >= tld_descriptions[k].f_start_offset
+        && l < tld_descriptions[k].f_end_offset)
+        {
+            /* found a parent */
+            if(strcmp(tld_descriptions[k].f_tld, "*") != 0)
+            {
+                strcat(uri, ".");
+                strcat(uri, tld_descriptions[k].f_tld);
+            }
+            else
+            {
+                fprintf(stderr, "fatal error: found \"*\" at the wrong place; it's only supported as the very first segment.\n");
+                exit(1);
+            }
+            l = k;
+            k = tld_descriptions[k].f_end_offset;
+        }
+    }
+
+    return has_star;
 }
+
+
+
+
+struct test_uris
+{
+    const char *        f_uri;
+    enum tld_result     f_result;
+    int                 f_offset;
+};
+
+
+const struct test_uris g_uris[] = {
+    {
+        "advisor-z2-ngprod-1997768525.us-west-2.elb.amazonaws.com",
+        TLD_RESULT_SUCCESS,
+        28,
+    },
+    {
+        "us-west-2.elb.amazonaws.com",
+        TLD_RESULT_SUCCESS,
+        0,
+    },
+    {
+        "m2osw.com",
+        TLD_RESULT_SUCCESS,
+        5,
+    },
+    {
+        ".com",
+        TLD_RESULT_SUCCESS,
+        0,
+    },
+    {
+        "com",
+        TLD_RESULT_NO_TLD,
+        -1,
+    },
+    {
+        ".ar",
+        TLD_RESULT_INVALID,
+        0,
+    },
+    {
+        "int.ar",
+        TLD_RESULT_SUCCESS,
+        0,
+    },
+    {
+        "blah.int.ar",
+        TLD_RESULT_SUCCESS,
+        4,
+    },
+    {
+        "orange.blah.int.ar",
+        TLD_RESULT_SUCCESS,
+        11,
+    },
+    {
+        "congresodelalengua3.ar",   /* congresodelalengua3 is an exceptional 2nd level */
+        TLD_RESULT_SUCCESS,
+        19,
+    },
+    {
+        "special.congresodelalengua3.ar",   /* congresodelalengua3 is an exceptional 2nd level */
+        TLD_RESULT_SUCCESS,
+        27,
+    },
+    {
+        "night-club.kawasaki.jp",
+        TLD_RESULT_SUCCESS,
+        0,
+    },
+    {
+        "orange.night-club.kawasaki.jp",
+        TLD_RESULT_SUCCESS,
+        6,
+    },
+};
+
+
+/*
+ * This tests various ad hoc domains with expected results.
+ *
+ * This way we can verify specific things we want to check.
+ */
+void test_specific()
+{
+    for(size_t idx = 0; idx < sizeof(g_uris) / sizeof(g_uris[0]); ++idx)
+    {
+        struct tld_info info;
+        enum tld_result r = tld(g_uris[idx].f_uri, &info);
+        if(verbose)
+        {
+            fprintf(
+                  stderr
+                , "info: URI \"%s\" returned %d and TLD is \"%s\"\n"
+                , g_uris[idx].f_uri
+                , r
+                , g_uris[idx].f_uri + info.f_offset);
+        }
+
+        if(r != g_uris[idx].f_result)
+        {
+            fprintf(stderr, "error: testing URI \"%s\" got result %d, expected %d and TLD of \"%s\"\n",
+                        g_uris[idx].f_uri, r, g_uris[idx].f_result,
+                        g_uris[idx].f_uri + g_uris[idx].f_offset);
+            ++err_count;
+        }
+        else if(info.f_offset != g_uris[idx].f_offset)
+        {
+            fprintf(stderr, "error: testing URI \"%s\" got offset %d, expected %d and TLD of \"%s\"\n",
+                        g_uris[idx].f_uri, info.f_offset, g_uris[idx].f_offset,
+                        g_uris[idx].f_uri + info.f_offset);
+            ++err_count;
+        }
+    }
+}
+
 
 /*
  * This test goes through all the domain names and extracts the domain,
@@ -98,167 +234,196 @@ void cat_ext(int offset, char *uri)
  */
 void test_all()
 {
-	const char *sub_domains[] = {
-		"",
-		"www.",
-		"tld.",
-		"george.snap.",
-		"very.long.sub.domain.ext.en.sion.here."
-		"host.%20.space."
-		"host.%fa.u-acute."
-		"host.%FA.U-acute."
-	};
-	struct tld_info	info;
-	char			uri[256], extension_uri[256];
-	int				i, j, p, max_subdomains;
-	enum tld_result	r;
+    const char *sub_domains[] = {
+        "",
+        "www.",
+        "tld.",
+        "george.snap.",
+        "very.long.sub.domain.ext.en.sion.here."
+        "host.%20.space."
+        "host.%fa.u-acute."
+        "host.%FA.U-acute."
+    };
+    struct tld_info info;
+    char            uri[256], extension_uri[256];
+    int             i, j, p, max_subdomains, has_star;
+    enum tld_result r;
 
-	max_subdomains = sizeof(sub_domains) / sizeof(sub_domains[0]);
+    max_subdomains = sizeof(sub_domains) / sizeof(sub_domains[0]);
 
-	for(i = 0; i < tld_end_offset; ++i)
-	{
-		for(j = 0; j < max_subdomains; ++j)
-		{
-			strcpy(uri, sub_domains[j]);
-			strcat(uri, "domain-name.");
-			cat_ext(i, uri);
-			/* reset the structure so we can verify it gets initialized */
-			memset(&info, 0xFE, sizeof(info));
-			r = tld(uri, &info);
-			/*
-			for(size_t l = 0; l < sizeof(info); ++l)
-			{
-				fprintf(stderr, "0x%02X ", ((unsigned char*)&info)[l]);
-			}
-			fprintf(stderr, "\nresult for [%s]: category[%d], status[%d/%d], country[%s],"
-								" tld[%s], offset[%d]\n",
-					uri,
-					(int)info.f_category,
-					(int)info.f_status, (int)tld_descriptions[i].f_status,
-					info.f_country,
-						info.f_tld, (int)info.f_offset);
-			*/
-			p = i;
-			if(tld_descriptions[i].f_status == TLD_STATUS_EXCEPTION)
-			{
-				if(tld_descriptions[i].f_exception_apply_to == USHRT_MAX)
-				{
-					fprintf(stderr, "error: domain name for \"%s\" (%d) is said to be an exception but it has no apply-to parameter. (result: %d)\n",
-							uri, i, r);
-					++err_count;
-				}
-				else
-				{
-					p = tld_descriptions[i].f_exception_apply_to;
-				}
-			}
-			if(tld_descriptions[i].f_status == TLD_STATUS_VALID)
-			{
-				if(r != TLD_RESULT_SUCCESS)
-				{
-					fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted successfully (returned: %d)\n",
-							uri, i, r);
-					++err_count;
-				}
-				else
-				{
-					/* in this case we have to test the top domain name only */
-					if(strncmp(uri + info.f_offset - 11, "domain-name", 11) != 0)
-					{
-						fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted successfully (returned: %d)\n",
-								uri, i, r);
-						++err_count;
-					}
-					/*
-					else
-						fprintf(stderr, "valid: \"%s\" -> \"%s\"\n", uri, info.f_tld);
-					*/
-				}
-			}
-			else if(tld_descriptions[i].f_status == TLD_STATUS_EXCEPTION)
-			{
-				if(r != TLD_RESULT_SUCCESS)
-				{
-					fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted successfully (returned: %d)\n",
-							uri, i, r);
-					++err_count;
-				}
-				else
-				{
-					strcpy(extension_uri, ".");
-					cat_ext(p, extension_uri);
-					if(strcmp(info.f_tld, extension_uri) != 0)
-					//if(strncmp(uri + info.f_offset - 11, "domain-name", 11) != 0)
-					{
-						fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted successfully (returned: %d)\n",
-								uri, i, r);
-						++err_count;
-					}
-					/*
-					else
-						fprintf(stderr, "valid: \"%s\" -> \"%s\"\n", uri, info.f_tld);
-					*/
-				}
-			}
-			else
-			{
-				if(tld_descriptions[i].f_status == TLD_STATUS_UNUSED
-				&& tld_descriptions[i].f_start_offset != USHRT_MAX
-				&& strcmp(tld_descriptions[tld_descriptions[i].f_start_offset].f_tld, "*") == 0)
-				{
-					/* this is somewhat of a special case, at this point
-					 * we have entries such as:
-					 *
-					 *     *.blah.com
-					 *
-					 * and that means the result is going to be SUCCESS
-					 * instead of INVALID...
-					 */
-					if(r != TLD_RESULT_INVALID
-					|| info.f_status != TLD_STATUS_UNUSED)
-					{
-						fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted as expected (returned: %d) [1]\n",
-								uri, i, r);
-						++err_count;
-					}
-				}
-				else if(r != TLD_RESULT_INVALID)
-				{
-					fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted as expected (returned: %d) [2]\n",
-							uri, i, r);
-					++err_count;
-				}
-				else if(p != i)
-				{
-					strcpy(extension_uri, ".");
-					cat_ext(p, extension_uri);
-					if(strcmp(info.f_tld, extension_uri) != 0)
-					{
-						fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted successfully (returned: %d/%s) [1]\n",
-								uri, i, r, info.f_tld);
-						++err_count;
-					}
-					/*
-					else
-						fprintf(stderr, "?? invalid: \"%s\" -> \"%s\"\n", uri, info.f_tld); 
-					*/
-				}
-				else
-				{
-					if(strncmp(uri + info.f_offset - 11, "domain-name", 11) != 0)
-					{
-						fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted successfully (returned: %d/%s) [2]\n",
-								uri, i, r, info.f_tld);
-						++err_count;
-					}
-					/*
-					else
-						fprintf(stderr, "?? invalid: \"%s\" -> \"%s\"\n", uri, info.f_tld); 
-					*/
-				}
-			}
-		}
-	}
+    for(i = 0; i < tld_end_offset; ++i)
+    {
+        for(j = 0; j < max_subdomains; ++j)
+        {
+            strcpy(uri, sub_domains[j]);
+            strcat(uri, "domain-name");
+            has_star = cat_ext(i, uri);
+
+            /* just in case make sure that we did not overflow the buffer */
+            if(strlen(uri) >= sizeof(uri))
+            {
+                fprintf(stderr, "fatal error: the URI \"%s\" is longer than the uri[] array.\n", uri);
+                exit(1);
+            }
+
+            /* reset the structure so we can verify it gets initialized */
+            memset(&info, 0xFE, sizeof(info));
+            r = tld(uri, &info);
+            /*
+            for(size_t l = 0; l < sizeof(info); ++l)
+            {
+                fprintf(stderr, "0x%02X ", ((unsigned char*)&info)[l]);
+            }
+            fprintf(stderr, "\nresult for [%s]: category[%d], status[%d/%d], country[%s],"
+                                " tld[%s], offset[%d]\n",
+                    uri,
+                    (int)info.f_category,
+                    (int)info.f_status, (int)tld_descriptions[i].f_status,
+                    info.f_country,
+                        info.f_tld, (int)info.f_offset);
+            */
+            p = i;
+            if(tld_descriptions[i].f_status == TLD_STATUS_EXCEPTION)
+            {
+                if(tld_descriptions[i].f_exception_apply_to == USHRT_MAX)
+                {
+                    fprintf(stderr, "error: domain name for \"%s\" (%d) is said to be an exception but it has no apply-to parameter. (result: %d)\n",
+                            uri, i, r);
+                    ++err_count;
+                }
+                else
+                {
+                    p = tld_descriptions[i].f_exception_apply_to;
+                }
+            }
+            if(tld_descriptions[i].f_status == TLD_STATUS_VALID)
+            {
+                if(r != TLD_RESULT_SUCCESS)
+                {
+                    fprintf(stderr, "error: valid domain name for \"%s\" (%d) could not be extracted successfully (returned: %d)\n",
+                            uri, i, r);
+                    ++err_count;
+                }
+                else if(has_star)
+                {
+                    /* the "domain-name" is absorbed as part of the TLD */
+                    int expected = strlen(sub_domains[j]);
+                    if(expected != 0)
+                    {
+                        --expected;     /* ignore the "." */
+                    }
+                    if(info.f_offset != expected)
+                    {
+                        fprintf(stderr, "error: valid domain name for \"%s\" (%d) could not be extracted successfully (offset: %d, expected: %d)\n",
+                                uri, i,
+                                info.f_offset, expected);
+                        ++err_count;
+                    }
+                }
+                else
+                {
+                    /* verify the top domain name */
+                    if(info.f_offset < 11)
+                    {
+                        fprintf(stderr, "error: somehow the top domain name in \"%s\" (%d) cannot properly be extracted\n",
+                                uri, i);
+                        ++err_count;
+                    }
+                    else if(strncmp(uri + info.f_offset - 11, "domain-name", 11) != 0)
+                    {
+                        fprintf(stderr, "error: valid domain name for \"%s\" (%d) could not be extracted successfully (offset: %d)\n",
+                                uri, i, info.f_offset);
+                        ++err_count;
+                    }
+                    /*
+                    else
+                        fprintf(stderr, "valid: \"%s\" -> \"%s\"\n", uri, info.f_tld);
+                    */
+                }
+            }
+            else if(tld_descriptions[i].f_status == TLD_STATUS_EXCEPTION)
+            {
+                if(r != TLD_RESULT_SUCCESS)
+                {
+                    fprintf(stderr, "error: exceptional domain name for \"%s\" (%d) could not be extracted successfully (returned: %d)\n",
+                            uri, i, r);
+                    ++err_count;
+                }
+                else
+                {
+                    extension_uri[0] = '\0';
+                    cat_ext(p, extension_uri);
+                    if(strcmp(info.f_tld, extension_uri) != 0)
+                    //if(strncmp(uri + info.f_offset - 11, "domain-name", 11) != 0)
+                    {
+                        fprintf(stderr, "error: exceptional domain name for \"%s\" (%d/%d) could not be extracted successfully as \"%s\" (offset: %d)\n",
+                                uri, i, p, extension_uri, info.f_offset);
+                        ++err_count;
+                    }
+                    /*
+                    else
+                        fprintf(stderr, "valid: \"%s\" -> \"%s\"\n", uri, info.f_tld);
+                    */
+                }
+            }
+            else
+            {
+                if(tld_descriptions[i].f_status == TLD_STATUS_UNUSED
+                && tld_descriptions[i].f_start_offset != USHRT_MAX
+                && strcmp(tld_descriptions[tld_descriptions[i].f_start_offset].f_tld, "*") == 0)
+                {
+                    /* this is a special case, an entry such as:
+                     *
+                     *     *.blah.com
+                     *
+                     * and that means the result is going to be SUCCESS
+                     * and VALID...
+                     */
+                    if(r != TLD_RESULT_SUCCESS
+                    || info.f_status != TLD_STATUS_VALID)
+                    {
+                        fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted as expected (returned: %d) [1]\n",
+                                uri, i, r);
+                        ++err_count;
+                    }
+                }
+                else if(r != TLD_RESULT_INVALID)
+                {
+                    fprintf(stderr, "error: domain name for \"%s\" (%d) could not be extracted as expected (returned: %d) [2]\n",
+                            uri, i, r);
+                    ++err_count;
+                }
+                else if(p != i)
+                {
+                    extension_uri[0] = '\0';
+                    cat_ext(p, extension_uri);
+                    if(strcmp(info.f_tld, extension_uri) != 0)
+                    {
+                        fprintf(stderr, "error: other domain name for \"%s\" (%d) could not be extracted successfully (returned: %d/%s != %s) [1]\n",
+                                uri, i, r, info.f_tld, extension_uri);
+                        ++err_count;
+                    }
+                    /*
+                    else
+                        fprintf(stderr, "?? invalid: \"%s\" -> \"%s\"\n", uri, info.f_tld); 
+                    */
+                }
+                else
+                {
+                    if(strncmp(uri + info.f_offset - 11, "domain-name", 11) != 0)
+                    {
+                        fprintf(stderr, "error: other domain name for \"%s\" (%d) could not be extracted successfully (returned: %d/%s) [2]\n",
+                                uri, i, r, info.f_tld);
+                        ++err_count;
+                    }
+                    /*
+                    else
+                        fprintf(stderr, "?? invalid: \"%s\" -> \"%s\"\n", uri, info.f_tld); 
+                    */
+                }
+            }
+        }
+    }
 }
 
 
@@ -268,31 +433,31 @@ void test_all()
  */
 void test_unknown()
 {
-	struct bad_data
-	{
-		const char *		f_uri;
-	};
-	struct bad_data	d[] =
-	{
-		{ "this.is.wrong" },
-		{ "missing.tld" },
-		{ ".net.absolutely.com.no.info.on.this" }
-	};
-	struct tld_info	info;
-	int i, max;
-	enum tld_result r;
+    struct bad_data
+    {
+        const char *        f_uri;
+    };
+    struct bad_data d[] =
+    {
+        { "this.is.wrong" },
+        { "missing.tld" },
+        { ".net.absolutely.com.no.info.on.this" }
+    };
+    struct tld_info info;
+    int i, max;
+    enum tld_result r;
 
-	max = sizeof(d) / sizeof(d[0]);
-	for(i = 0; i < max; ++i)
-	{
-		memset(&info, 0xFE, sizeof(info));
-		r = tld(d[i].f_uri, &info);
-		if(r != TLD_RESULT_NOT_FOUND)
-		{
-			fprintf(stderr, "error: the invalid URI \"%s\" was found by tld()!\n", d[i].f_uri);
-			++err_count;
-		}
-	}
+    max = sizeof(d) / sizeof(d[0]);
+    for(i = 0; i < max; ++i)
+    {
+        memset(&info, 0xFE, sizeof(info));
+        r = tld(d[i].f_uri, &info);
+        if(r != TLD_RESULT_NOT_FOUND)
+        {
+            fprintf(stderr, "error: the invalid URI \"%s\" was found by tld()!\n", d[i].f_uri);
+            ++err_count;
+        }
+    }
 }
 
 
@@ -300,95 +465,95 @@ void test_unknown()
 
 void test_invalid()
 {
-	struct tld_info	undefined_info;
-	struct tld_info	clear_info;
-	struct tld_info	info;
-	enum tld_result r;
+    struct tld_info undefined_info;
+    struct tld_info clear_info;
+    struct tld_info info;
+    enum tld_result r;
 
-	/*
-	 * We reset the undefined_info the same way we reset the info
-	 * structure because the alignment on 64bits may add another
-	 * 4 bytes at the end of the structure that are not otherwise
-	 * accessible.
-	 */
-	memset(&undefined_info, 0xFE, sizeof(undefined_info));
-	undefined_info.f_category = TLD_CATEGORY_UNDEFINED;
-	undefined_info.f_status   = TLD_STATUS_UNDEFINED;
-	undefined_info.f_country  = (const char *) 0;
-	undefined_info.f_tld      = (const char *) 0;
-	undefined_info.f_offset   = -1;
+    /*
+     * We reset the undefined_info the same way we reset the info
+     * structure because the alignment on 64bits may add another
+     * 4 bytes at the end of the structure that are not otherwise
+     * accessible.
+     */
+    memset(&undefined_info, 0xFE, sizeof(undefined_info));
+    undefined_info.f_category = TLD_CATEGORY_UNDEFINED;
+    undefined_info.f_status   = TLD_STATUS_UNDEFINED;
+    undefined_info.f_country  = (const char *) 0;
+    undefined_info.f_tld      = (const char *) 0;
+    undefined_info.f_offset   = -1;
 
-	memset(&clear_info, 0xFE, sizeof(clear_info));
+    memset(&clear_info, 0xFE, sizeof(clear_info));
 
-	/* test: NULL */
-	info = clear_info;
-	r = tld(NULL, &info);
-	if(r != TLD_RESULT_NULL)
-	{
-		fprintf(stderr, "error: the NULL URI did not return the TLD_RESULT_NULL result.\n");
-		++err_count;
-	}
-	if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
-	{
-		fprintf(stderr, "error: the NULL URI did not return a reset info structure.\n");
-		++err_count;
-	}
+    /* test: NULL */
+    info = clear_info;
+    r = tld(NULL, &info);
+    if(r != TLD_RESULT_NULL)
+    {
+        fprintf(stderr, "error: the NULL URI did not return the TLD_RESULT_NULL result.\n");
+        ++err_count;
+    }
+    if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
+    {
+        fprintf(stderr, "error: the NULL URI did not return a reset info structure.\n");
+        ++err_count;
+    }
 
-	/* test: "" */
-	info = clear_info;
-	r = tld("", &info);
-	if(r != TLD_RESULT_NULL)
-	{
-		fprintf(stderr, "error: the \"\" URI did not return the TLD_RESULT_NULL result.\n");
-		++err_count;
-	}
-	if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
-	{
-		fprintf(stderr, "error: the \"\" URI did not return a reset info structure.\n");
-		++err_count;
-	}
+    /* test: "" */
+    info = clear_info;
+    r = tld("", &info);
+    if(r != TLD_RESULT_NULL)
+    {
+        fprintf(stderr, "error: the \"\" URI did not return the TLD_RESULT_NULL result.\n");
+        ++err_count;
+    }
+    if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
+    {
+        fprintf(stderr, "error: the \"\" URI did not return a reset info structure.\n");
+        ++err_count;
+    }
 
-	/* test: ".." (two periods one after another) */
-	info = clear_info;
-	r = tld("test..com", &info);
-	if(r != TLD_RESULT_BAD_URI)
-	{
-		fprintf(stderr, "error: the \"test..com\" URI did not return the TLD_RESULT_BAD_URI result.\n");
-		++err_count;
-	}
-	if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
-	{
-		fprintf(stderr, "error: the \"test..com\" URI did not return a reset info structure.\n");
-		++err_count;
-	}
+    /* test: ".." (two periods one after another) */
+    info = clear_info;
+    r = tld("test..com", &info);
+    if(r != TLD_RESULT_BAD_URI)
+    {
+        fprintf(stderr, "error: the \"test..com\" URI did not return the TLD_RESULT_BAD_URI result.\n");
+        ++err_count;
+    }
+    if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
+    {
+        fprintf(stderr, "error: the \"test..com\" URI did not return a reset info structure.\n");
+        ++err_count;
+    }
 
-	/* test: ".." (two periods one after another) */
-	info = clear_info;
-	r = tld("more..test.com", &info);
-	if(r != TLD_RESULT_BAD_URI)
-	{
-		fprintf(stderr, "error: the \"more..test.com\" URI did not return the TLD_RESULT_BAD_URI result.\n");
-		++err_count;
-	}
-	if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
-	{
-		fprintf(stderr, "error: the \"more..test.com\" URI did not return a reset info structure.\n");
-		++err_count;
-	}
+    /* test: ".." (two periods one after another) */
+    info = clear_info;
+    r = tld("more..test.com", &info);
+    if(r != TLD_RESULT_BAD_URI)
+    {
+        fprintf(stderr, "error: the \"more..test.com\" URI did not return the TLD_RESULT_BAD_URI result.\n");
+        ++err_count;
+    }
+    if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
+    {
+        fprintf(stderr, "error: the \"more..test.com\" URI did not return a reset info structure.\n");
+        ++err_count;
+    }
 
-	/* test: "noperiodanywhere" (no periods anywhere) */
-	info = clear_info;
-	r = tld("noperiodanywhere", &info);
-	if(r != TLD_RESULT_NO_TLD)
-	{
-		fprintf(stderr, "error: the \"noperiodanywhere\" URI did not return the TLD_RESULT_NO_TLD result.\n");
-		++err_count;
-	}
-	if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
-	{
-		fprintf(stderr, "error: the \"noperiodanywhere\" URI did not return a reset info structure.\n");
-		++err_count;
-	}
+    /* test: "noperiodanywhere" (no periods anywhere) */
+    info = clear_info;
+    r = tld("noperiodanywhere", &info);
+    if(r != TLD_RESULT_NO_TLD)
+    {
+        fprintf(stderr, "error: the \"noperiodanywhere\" URI did not return the TLD_RESULT_NO_TLD result.\n");
+        ++err_count;
+    }
+    if(memcmp(&info, &undefined_info, sizeof(info)) != 0)
+    {
+        fprintf(stderr, "error: the \"noperiodanywhere\" URI did not return a reset info structure.\n");
+        ++err_count;
+    }
 }
 
 
@@ -396,32 +561,38 @@ void test_invalid()
 
 int main(int argc, char *argv[])
 {
-	fprintf(stderr, "testing tld version %s\n", tld_version());
+    fprintf(stderr, "testing tld version %s\n", tld_version());
 
-	if(argc > 1)
-	{
-		if(strcmp(argv[1], "-v") == 0)
-		{
-			verbose = 1;
-		}
-	}
+    if(argc > 1)
+    {
+        if(strcmp(argv[1], "-v") == 0)
+        {
+            verbose = 1;
+        }
+        else
+        {
+            fprintf(stderr, "error: unknown command line option \"%s\"\n", argv[1]);
+            exit(1);
+        }
+    }
 
-	/* call all the tests, one by one
-	 * failures are "recorded" in the err_count global variable
-	 * and the process stops with an error message and exit(1)
-	 * if err_count is not zero.
-	 */
-	test_all();
-	test_unknown();
-	test_invalid();
+    /* call all the tests, one by one
+     * failures are "recorded" in the err_count global variable
+     * and the process stops with an error message and exit(1)
+     * if err_count is not zero.
+     */
+    test_specific();
+    test_all();
+    test_unknown();
+    test_invalid();
 
-	if(err_count)
-	{
-		fprintf(stderr, "%d error%s occured.\n",
-					err_count, err_count != 1 ? "s" : "");
-	}
-	exit(err_count ? 1 : 0);
+    if(err_count)
+    {
+        fprintf(stderr, "%d error%s occured.\n",
+                    err_count, err_count != 1 ? "s" : "");
+    }
+    exit(err_count ? 1 : 0);
 }
 
-/* vim: ts=4 sw=4
+/* vim: ts=4 sw=4 et
  */

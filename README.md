@@ -39,6 +39,8 @@ The documentation can also be generated from the source using Doxygen.
 
 # Notes:
 
+* Version 1.6.0 properly handles sub-domains defined with an asterisk.
+
 * Version 1.5.9 has been updated to the latest version of the world TLDs.
   It also includes a fix to the email code so spaces are forbidden.
 

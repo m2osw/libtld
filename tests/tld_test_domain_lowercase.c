@@ -1,5 +1,5 @@
 /* TLD library -- test converting domain names to lowercase
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -22,10 +22,11 @@
  */
 
 /** \file
- * \brief Test the tld_domain_to_lowercase() function.
+ * \brief Test the tld_domain_to_lowercase() functions.
  *
  * This file implements various test to verify that the
- * tld_domain_to_lowercase() function works as expected.
+ * tld_domain_to_lowercase() function works as expected
+ * with valid and invalid names.
  */
 
 #include "libtld/tld.h"

@@ -1,5 +1,5 @@
 /* TLD library -- TLD, domain name, and sub-domain extraction
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -327,12 +327,13 @@
  */
 static int cmp(const char *a, const char *b, int n)
 {
-    /* if `a == "*"` then it always a match! */
+    /* if `a == "*"` then we have a bug in the table
     if(a[0] == '*'
     && a[1] == '\0')
     {
         return 0;
     }
+    */
 
     /* n represents the maximum number of characters to check in b */
     while(n > 0 && *a != '\0')
@@ -395,32 +396,43 @@ static int cmp(const char *a, const char *b, int n)
  */
 int search(int i, int j, const char *domain, int n)
 {
-    int p, r;
+    int auto_match = -1, p, r;
     const struct tld_description *tld;
 
-    while(i < j)
+    if(i < j)
     {
-        p = (j - i) / 2 + i;
-        tld = tld_descriptions + p;
-        r = cmp(tld->f_tld, domain, n);
-        if(r < 0)
+        /* the "*" breaks the binary search, we have to handle it specially */
+        tld = tld_descriptions + i;
+        if(tld->f_tld[0] == '*' && tld->f_tld[1] == '\0')
         {
-            /* eliminate the first half */
-            i = p + 1;
+            auto_match = i;
+            ++i;
         }
-        else if(r > 0)
+
+        while(i < j)
         {
-            /* eliminate the second half */
-            j = p;
-        }
-        else
-        {
-            /* match */
-            return p;
+            p = (j - i) / 2 + i;
+            tld = tld_descriptions + p;
+            r = cmp(tld->f_tld, domain, n);
+            if(r < 0)
+            {
+                /* eliminate the first half */
+                i = p + 1;
+            }
+            else if(r > 0)
+            {
+                /* eliminate the second half */
+                j = p;
+            }
+            else
+            {
+                /* match */
+                return p;
+            }
         }
     }
 
-    return -1;
+    return auto_match;
 }
 
 
@@ -556,7 +568,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
 {
     const char *end = uri;
     const char **level_ptr;
-    int level = 0, start_level, i, r, p;
+    int level = 0, start_level, i, r, p, offset;
     enum tld_result result;
 
     /* set defaults in the info structure */
@@ -598,7 +610,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         }
         ++end;
     }
-    /* if level is not at least 1 then there are no period */
+    /* if level is not at least 1 then there are no periods */
     if(level == 0)
     {
         /* no TLD */
@@ -633,6 +645,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         p = r;
         --level;
     }
+    offset = (int) (level_ptr[level] - uri);
 
     /* if there are exceptions we may need to search those now if level is 0 */
     if(level == 0)
@@ -644,29 +657,39 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         if(r != -1)
         {
             p = r;
+            offset = 0;
         }
     }
 
     info->f_status = tld_descriptions[p].f_status;
-    result = info->f_status == TLD_STATUS_VALID
-                ? TLD_RESULT_SUCCESS
-                : TLD_RESULT_INVALID;
-
-    /* did we hit an exception? */
-    if(tld_descriptions[p].f_status == TLD_STATUS_EXCEPTION)
+    switch(info->f_status)
     {
-        /* return the actual TLD and not the exception */
+    case TLD_STATUS_VALID:
+        result = TLD_RESULT_SUCCESS;
+        break;
+
+    case TLD_STATUS_EXCEPTION:
+        /* return the actual TLD and not the exception
+         * i.e. "nacion.ar" is valid and the TLD is just ".ar"
+         * even though top level ".ar" is forbidden by default
+         */
         p = tld_descriptions[p].f_exception_apply_to;
         level = start_level - tld_descriptions[p].f_exception_level;
+        offset = (int) (level_ptr[level] - uri);
         info->f_status = TLD_STATUS_VALID;
         result = TLD_RESULT_SUCCESS;
+        break;
+
+    default:
+        result = TLD_RESULT_INVALID;
+        break;
+
     }
 
-    /* return a valid result */
     info->f_category = tld_descriptions[p].f_category;
     info->f_country = tld_descriptions[p].f_country;
     info->f_tld = level_ptr[level];
-    info->f_offset = (int) (level_ptr[level] - uri);
+    info->f_offset = offset;
 
     free(level_ptr);
 

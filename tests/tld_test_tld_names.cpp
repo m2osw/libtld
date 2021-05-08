@@ -1,5 +1,5 @@
 /* TLD library -- test the TLD interface against the Public Suffix List
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -22,17 +22,20 @@
  */
 
 /** \file
- * \brief Test the tld_domain_to_lowercase() function.
+ * \brief Test the domain names against the public_suffix_list.dat file.
  *
- * This file implements various test to verify that the
- * tld() function works as expected with valid and
- * invalid names.
+ * Mozilla maintains a file named public_suffix_list.dat which includes
+ * all the domain names that are currently supported by the various
+ * companies managing them, including \em private names (such as the
+ * .omg.lol domain name).
  */
 
 // Qt headers make use of long long which is not considered a valid type
 #pragma GCC diagnostic ignored "-Wlong-long"
 
 #include "libtld/tld.h"
+
+#include <map>
 #include <string>
 #include <vector>
 #include <stdlib.h>
@@ -51,6 +54,48 @@ int verbose = 0;
  *
  * extern enum tld_result tld(const char *uri, struct tld_info *info);
  */
+
+/* special cases which we handle differently */
+std::map<std::string, std::string> g_special_cases = {
+    {
+        "*.bd",
+        "ac.bd,com.bd,co.bd,edu.bd,gov.bd,info.bd,mil.bd,net.bd,org.bd"
+    },
+    {
+        "*.er",
+        "com.er,edu.er,gov.er,net.er,org.er"
+    },
+    {
+        "*.ck",
+        "co.ck,org.ck,edu.ck,gov.ck,net.ck,gen.ck,biz.ck,info.ck"
+    },
+    {
+        "*.fk",
+        "co.fk,org.fk,gov.fk,ac.fk,nom.fk,net.fk"
+    },
+    {
+        "*.jm",
+        "com.jm,net.jm,org.jm,edu.jm,gov.jm,mil.jm"
+    },
+    {
+        "*.kh",
+        "per.kh,com.kh,edu.kh,gov.kh,mil.kh,net.kh,org.kh"
+    },
+    {
+        "*.mm",
+        "net.mm,com.mm,edu.mm,gov.mm,mil.mm,org.mm"
+    },
+    {
+        "*.np",
+        "com.np,edu.np,gov.np,mil.np,net.np,org.np"
+    },
+    {
+        "*.pg",
+        "com.pg,net.pg,ac.pg,gov.pg,mil.pg,org.pg"
+    },
+};
+
+
 
 struct tld_t
 {
@@ -129,10 +174,14 @@ QString tld_encode(const QString& tld, int& level)
 void test_load()
 {
     FILE *f = fopen("public_suffix_list.dat", "r");
-    if(f == NULL)
+    if(f == nullptr)
     {
-        fprintf(stderr, "error: could not open the \"public_suffix_list.dat\" file; did you start the test in the source directory?\n");
-        exit(1);
+        f = fopen("tests/public_suffix_list.dat", "r");
+        if(f == nullptr)
+        {
+            fprintf(stderr, "error: could not open the \"public_suffix_list.dat\" file; did you start the test in the source directory?\n");
+            exit(1);
+        }
     }
     char buf[256];
     buf[sizeof(buf) -1] = '\0';
@@ -160,11 +209,36 @@ void test_load()
             else if(s.length() > 1 && s[0] != '/' && s[1] != '/')
             {
                 // this is not a comment and not an empty line, that's a TLD
-                tld_t t;
-                t.f_name = s;
-                t.f_line = line;
-                tlds.push_back(t);
+                //
+                auto const it(g_special_cases.find(s));
+                if(it != g_special_cases.cend())
+                {
+                    std::string const replacement(it->second);
+                    std::string name;
+                    for(auto c : replacement)
+                    {
+                        if(c == ',')
+                        {
+                            tld_t t;
+                            t.f_name = name;
+                            t.f_line = line;
+                            tlds.push_back(t);
+                            name.clear();
+                        }
+                        else
+                        {
+                            name += c;
+                        }
+                    }
+                }
+                else
+                {
+                    tld_t t;
+                    t.f_name = s;
+                    t.f_line = line;
+                    tlds.push_back(t);
 //printf("found [%s]\n", s.c_str());
+                }
             }
         }
     }
@@ -208,8 +282,9 @@ void test_tlds()
             tld_result r = tld(base_tld.c_str(), &info);
             if(r != TLD_RESULT_INVALID)
             {
-                // we're good if invalid since that's what we expect in this case
-                // any other result is an error
+                // we're good if invalid since that's what we expect in this
+                // case (i.e. the "*" must be satisfied)
+                //
                 fprintf(stderr, "error: tld(\"%s\", &info) for \"%s\" expected %d, got %d instead.\n",
                             base_tld.c_str(),
                             it->f_name.c_str(),
@@ -225,21 +300,13 @@ void test_tlds()
             std::string url("we-want-to-test-just-one-domain-name");
             url += it->f_name.substr(1);
             r = tld(url.c_str(), &info);
-            if(r == TLD_RESULT_SUCCESS)
+            if(r != TLD_RESULT_SUCCESS)
             {
-                // if it worked then we have a problem
+                // this time, it had to succeed
                 //
                 fprintf(stderr,
-                        "error: tld(\"%s\", &info) accepted when 2nd or 3rd level names are not accepted by public_suffix_list.dat.\n",
-                        url.c_str());
-                ++err_count;
-            }
-            else if(r != TLD_RESULT_INVALID)
-            {
-                // we're good if invalid since that's what we expect in this case
-                // any other result is an error
-                fprintf(stderr, "error: tld(\"%s\", &info) for \"%s\" failed with %d.\n",
-                            url.c_str(), it->f_name.c_str(), r);
+                        "error: tld(\"%s\", &info) returned %d when 3rd or 4th level name is \"%s\" in public_suffix_list.dat and we provided that name.\n",
+                        url.c_str(), r, it->f_name.c_str());
                 ++err_count;
             }
         }

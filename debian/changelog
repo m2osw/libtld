@@ -1,3 +1,18 @@
+libtld (1.6.0.0~xenial) xenial; urgency=high
+
+  * Fixed the implementation to properly support "*" sub-domains.
+  * Updated the public_suffix_list.dat to the latest.
+  * Added an `mk` script to easily rebuild the library and tools.
+  * Allow the public_suffix_list.dat to be in the tests/... sub-folder.
+  * Updated the tests to pass with the latest version.
+  * Added a test to verify specific URLs (in tld_test.c).
+  * Fixed file description at the top of two tests.
+  * Added the .gitignore file.
+  * Replaced many tabs with spaces so diffs as expected.
+  * Updated the copyright year.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 07 May 2021 17:09:15 -0700
+
 libtld (1.5.14.0~xenial) xenial; urgency=high
 
   * Fixed the compile of QString() with QChar() that does not offer a `char`.

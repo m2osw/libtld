@@ -1,5 +1,5 @@
 /* TLD library -- TLD validation command line tools
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -83,15 +83,15 @@ void check_uri(char const * uri)
 
         if(verbose)
         {
-            std::cout << "URI:      " << uri                               << std::endl;
-            std::cout << "Category: " << static_cast<int>(info.f_category) << std::endl;
-            std::cout << "Status:   " << static_cast<int>(info.f_status)   << std::endl;
-            if(info.f_country != nullptr)
+            std::cout << "URI:      " << uri                               << std::endl;        // LCOV_EXCL_LINE
+            std::cout << "Category: " << static_cast<int>(info.f_category) << std::endl;        // LCOV_EXCL_LINE
+            std::cout << "Status:   " << static_cast<int>(info.f_status)   << std::endl;        // LCOV_EXCL_LINE
+            if(info.f_country != nullptr)                                                       // LCOV_EXCL_LINE
             {
-                std::cout << "Country:  " << info.f_country                    << std::endl;
+                std::cout << "Country:  " << info.f_country                    << std::endl;    // LCOV_EXCL_LINE
             }
-            std::cout << "TLD:      " << info.f_tld                        << std::endl;
-            std::cout << "Offset:   " << info.f_offset                     << std::endl;
+            std::cout << "TLD:      " << info.f_tld                        << std::endl;        // LCOV_EXCL_LINE
+            std::cout << "Offset:   " << info.f_offset                     << std::endl;        // LCOV_EXCL_LINE
         }
     }
     if(result != TLD_RESULT_SUCCESS)

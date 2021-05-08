@@ -1,5 +1,5 @@
 /* TLD library -- TLD, domain name, and sub-domain extraction
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -117,6 +117,9 @@ struct tld_description
      * The string is read-only and cannot ever be modified.
      * However, we do not return this string to the caller. Instead
      * we return a pointer inside the caller's string.
+     *
+     * The string may be "*" which means that any name is valid but
+     * a name is required for a valid match at this level.
      */
     const char *                f_tld;
 

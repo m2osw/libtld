@@ -6,10 +6,10 @@ Source: https://snapwebsites.org/project/libtld
 License: MIT
 Disclaimer: This package is part of the Snap! C++ system. It is not a native Debian package.
 Copyright:
- Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
 
 Files: tests/public_suffix_list.dat
-Copyright: Copyright (c) 2007-2017 Mozilla Foundation
+Copyright: Copyright (c) 2007-2021 Mozilla Foundation
 License: Mozilla Public License, v. 2.0
  Mozilla Public License
  Version 2.0
@@ -369,5 +369,5 @@ License: Mozilla Public License, v. 2.0
  as defined by the Mozilla Public License, v. 2.0.
 
 Files: CMakeLists.txt debian/* dev/* doc/* include/* package/* php/* src/* tests/*
-Copyright: Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+Copyright: Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
 License: MIT

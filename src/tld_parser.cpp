@@ -1,5 +1,5 @@
 /* TLD library -- XML to C++ parser
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -87,7 +87,7 @@ public:
 };
 
 /// Type used to hold the list of all the info structures.
-typedef QMap<QString, tld_info>    tld_info_map_t;
+typedef std::map<QString, tld_info>    tld_info_map_t;
 
 /// Type used to hold the list of all the countries.
 typedef QMap<QString, int>    country_map_t;
@@ -270,7 +270,8 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                         }
                         int level(0);
                         QString const value_name(tld_encode(*nm, level));
-                        if(map.contains(value_name))
+                        auto it(map.find(value_name));
+                        if(it != map.end())
                         {
                             std::cerr << "error: found TLD \"" << nm->toUtf8().data() << "\" more than once.\n"; // LCOV_EXCL_LINE
                             exit(1); // LCOV_EXCL_LINE
@@ -283,7 +284,7 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                         tld.f_tld = *nm;
                         tld.f_inverted = value_name;
                         // no reason, we're not inside a forbid tag
-                        // no exception apply to, we're not inside an exception
+                        // no exception to apply, we're not inside an exception
                         tld.f_offset = 0;
                         tld.f_start_offset = USHRT_MAX;
                         tld.f_end_offset = USHRT_MAX;
@@ -316,7 +317,8 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                                 {
                                     int level(0);
                                     QString const value_name(tld_encode(*nm, level));
-                                    if(map.contains(value_name))
+                                    auto it(map.find(value_name));
+                                    if(it != map.end())
                                     {
                                         std::cerr << "error: found TLD \"" << nm->toUtf8().data() << "\" more than once (exceptions section).\n"; // LCOV_EXCL_LINE
                                         exit(1); // LCOV_EXCL_LINE
@@ -360,12 +362,14 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                                 {
                                     int level(0);
                                     QString const value_name(tld_encode(*nm, level));
-                                    if(map.contains(value_name))
+                                    auto it(map.find(value_name));
+                                    if(it != map.end())
                                     {
                                         // in this case there could be a forbidden
                                         // entry that is in the same category and
                                         // that means the TLD needs another unspecified
-                                        // level (i.e. any another sub-domain.)
+                                        // level (i.e. any other sub-domain is part of
+                                        // the TLD.)
                                         //
                                         if(map[value_name].f_category_name != category
                                         || map[value_name].f_country != country
@@ -379,7 +383,7 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                                         map[sub_name] = map[value_name];
                                         ++map[sub_name].f_level;
                                         map[sub_name].f_inverted = sub_name;
-                                        map[sub_name].f_reason_name = "unused"; // for *.example.com, .blah.example.com is a valid TLD, but not a valid URL (actual name missing)
+                                        map[sub_name].f_reason_name = ""; // for *.example.com, .blah.example.com is a valid TLD, but not a valid URL (actual name missing)
                                     }
 
                                     tld_info tld;
@@ -422,7 +426,7 @@ void verify_data(tld_info_map_t& map)
                               it != map.end();
                               ++it)
     {
-        QString t(it->f_tld);
+        QString t(it->second.f_tld);
         if(t.length() > max_tld_length)
         {
             max_tld_length = t.length();
@@ -516,7 +520,7 @@ void verify_data(tld_info_map_t& map)
                 case 0x0E4C: // Thai Character Thanthakhat
                     break;
 
-                default:
+                default: // LCOV_EXCL_LINE
                     std::cerr << "error: a TLD can only be composed of letters and numbers and dashes; problem found in \"" // LCOV_EXCL_LINE
                         << t.toUtf8().data() << "\" -- letter: &#x" << std::hex << static_cast<int>(c.unicode()) << std::dec << "; chr(" << c.unicode() << ")\n";  // LCOV_EXCL_LINE
                     exit(1); // LCOV_EXCL_LINE
@@ -526,80 +530,80 @@ void verify_data(tld_info_map_t& map)
             //else we're good
         }
 
-        if(it->f_category_name == "international")
+        if(it->second.f_category_name == "international")
         {
-            it->f_category = "TLD_CATEGORY_INTERNATIONAL";
+            it->second.f_category = "TLD_CATEGORY_INTERNATIONAL";
         }
-        else if(it->f_category_name == "professionals")
+        else if(it->second.f_category_name == "professionals")
         {
-            it->f_category = "TLD_CATEGORY_PROFESSIONALS";
+            it->second.f_category = "TLD_CATEGORY_PROFESSIONALS";
         }
-        else if(it->f_category_name == "language")
+        else if(it->second.f_category_name == "language")
         {
-            it->f_category = "TLD_CATEGORY_LANGUAGE";
+            it->second.f_category = "TLD_CATEGORY_LANGUAGE";
         }
-        else if(it->f_category_name == "groups")
+        else if(it->second.f_category_name == "groups")
         {
-            it->f_category = "TLD_CATEGORY_GROUPS";
+            it->second.f_category = "TLD_CATEGORY_GROUPS";
         }
-        else if(it->f_category_name == "region")
+        else if(it->second.f_category_name == "region")
         {
-            it->f_category = "TLD_CATEGORY_REGION";
+            it->second.f_category = "TLD_CATEGORY_REGION";
         }
-        else if(it->f_category_name == "technical")
+        else if(it->second.f_category_name == "technical")
         {
-            it->f_category = "TLD_CATEGORY_TECHNICAL";
+            it->second.f_category = "TLD_CATEGORY_TECHNICAL";
         }
-        else if(it->f_category_name == "country")
+        else if(it->second.f_category_name == "country")
         {
-            it->f_category = "TLD_CATEGORY_COUNTRY";
+            it->second.f_category = "TLD_CATEGORY_COUNTRY";
         }
-        else if(it->f_category_name == "entrepreneurial")
+        else if(it->second.f_category_name == "entrepreneurial")
         {
-            it->f_category = "TLD_CATEGORY_ENTREPRENEURIAL";
+            it->second.f_category = "TLD_CATEGORY_ENTREPRENEURIAL";
         }
-        else if(it->f_category_name == "brand")
+        else if(it->second.f_category_name == "brand")
         {
-            it->f_category = "TLD_CATEGORY_BRAND";
+            it->second.f_category = "TLD_CATEGORY_BRAND";
         }
         else
         {
-            std::cerr << "error: unknown category \"" << it->f_category_name.toUtf8().data() << "\"\n"; // LCOV_EXCL_LINE
+            std::cerr << "error: unknown category \"" << it->second.f_category_name.toUtf8().data() << "\"\n"; // LCOV_EXCL_LINE
             exit(1); // LCOV_EXCL_LINE
         }
 
         // if within a <forbid> tag we have a reason too
-        if(it->f_reason_name == "proposed")
+        if(it->second.f_reason_name == "proposed")
         {
-            it->f_reason = "TLD_STATUS_PROPOSED";
+            it->second.f_reason = "TLD_STATUS_PROPOSED";
         }
-        else if(it->f_reason_name == "deprecated")
+        else if(it->second.f_reason_name == "deprecated")
         {
-            it->f_reason = "TLD_STATUS_DEPRECATED";
+            it->second.f_reason = "TLD_STATUS_DEPRECATED";
         }
-        else if(it->f_reason_name == "unused")
+        else if(it->second.f_reason_name == "unused")
         {
-            it->f_reason = "TLD_STATUS_UNUSED";
+            it->second.f_reason = "TLD_STATUS_UNUSED";
         }
-        else if(it->f_reason_name == "reserved")
+        else if(it->second.f_reason_name == "reserved")
         {
-            it->f_reason = "TLD_STATUS_RESERVED";
+            it->second.f_reason = "TLD_STATUS_RESERVED";
         }
-        else if(it->f_reason_name == "infrastructure")
+        else if(it->second.f_reason_name == "infrastructure")
         {
-            it->f_reason = "TLD_STATUS_INFRASTRUCTURE";
+            it->second.f_reason = "TLD_STATUS_INFRASTRUCTURE";
         }
-        else if(!it->f_reason_name.isEmpty())
+        else if(!it->second.f_reason_name.isEmpty())
         {
-            std::cerr << "error: unknown reason \"" << it->f_reason_name.toUtf8().data() << "\"\n"; // LCOV_EXCL_LINE
+            std::cerr << "error: unknown reason \"" << it->second.f_reason_name.toUtf8().data() << "\"\n"; // LCOV_EXCL_LINE
             exit(1); // LCOV_EXCL_LINE
         }
         else
         {
-            it->f_reason = "TLD_STATUS_VALID";
+            it->second.f_reason = "TLD_STATUS_VALID";
         }
     }
-    // At time of writing it is 21 characters
+    // At time of writing the longest TLD is 21 characters
     //std::cout << "longest TLD is " << max_tld_length << "\n";
 }
 
@@ -679,7 +683,8 @@ void save_offset(tld_info_map_t& map, const QString& tld, int offset)
 {
     int e = tld.lastIndexOf(static_cast<int>('!'), -2);
     QString parent = tld.left(e + 1);
-    if(!map.contains(parent))
+    auto it(map.find(parent));
+    if(it == map.end())
     {
         std::cerr << "error: TLD \"" << tld.toUtf8().data() // LCOV_EXCL_LINE
                     << "\" does not have a corresponding TLD at the previous level (i.e. \"" // LCOV_EXCL_LINE
@@ -722,9 +727,9 @@ void output_tlds(tld_info_map_t& map,
                             it != map.end();
                             ++it)
     {
-        if(max_level < it->f_level)
+        if(max_level < it->second.f_level)
         {
-            max_level = it->f_level;
+            max_level = it->second.f_level;
         }
     }
 
@@ -736,9 +741,9 @@ void output_tlds(tld_info_map_t& map,
                                 it != map.end();
                                 ++it)
         {
-            if(it->f_level == level)
+            if(it->second.f_level == level)
             {
-                it->f_offset = i;
+                it->second.f_offset = i;
                 ++i;
             }
         }
@@ -757,7 +762,7 @@ void output_tlds(tld_info_map_t& map,
                                 it != map.end();
                                 ++it)
         {
-            if(it->f_level == level)
+            if(it->second.f_level == level)
             {
                 if(i != 0)
                 {
@@ -765,31 +770,31 @@ void output_tlds(tld_info_map_t& map,
                 }
                 unsigned short apply_to(USHRT_MAX);
                 //unsigned char exception_level(USHRT_MAX);
-                QString status(it->f_reason);
-                if(!it->f_exception_apply_to.isEmpty())
+                QString status(it->second.f_reason);
+                if(!it->second.f_exception_apply_to.isEmpty())
                 {
                     status = "TLD_STATUS_EXCEPTION";
-                    apply_to = map[it->f_exception_apply_to].f_offset;
+                    apply_to = map[it->second.f_exception_apply_to].f_offset;
                 }
-                out << "\t/* " << i << " */ { " << it->f_category.toUtf8().data()
+                out << "\t/* " << i << " */ { " << it->second.f_category.toUtf8().data()
                                     << ", " << status.toUtf8().data()
-                                    << ", " << it->f_start_offset
-                                    << ", " << it->f_end_offset
+                                    << ", " << it->second.f_start_offset
+                                    << ", " << it->second.f_end_offset
                                     << ", " << apply_to
-                                    << ", " << it->f_level
+                                    << ", " << it->second.f_level
                                     << ", \"";
-                save_offset(map, it->f_inverted, i);
+                save_offset(map, it->second.f_inverted, i);
                 // we only have to save the current level
-                int e = it->f_inverted.lastIndexOf(static_cast<int>('!'), -2);
-                QString base(it->f_inverted.mid(e + 1, it->f_inverted.length() - e - 2));
+                int e = it->second.f_inverted.lastIndexOf(static_cast<int>('!'), -2);
+                QString base(it->second.f_inverted.mid(e + 1, it->second.f_inverted.length() - e - 2));
                 if(base.length() > base_max)
                 {
                     base_max = base.length();
                 }
                 output_utf8(base);
-                if(it->f_category == "TLD_CATEGORY_COUNTRY")
+                if(it->second.f_category == "TLD_CATEGORY_COUNTRY")
                 {
-                    out << "\", tld_country" << countries[it->f_country];
+                    out << "\", tld_country" << countries[it->second.f_country];
                 }
                 else
                 {
@@ -833,7 +838,7 @@ void output_header()
     out << " * This list of TLDs was auto-generated using snap_path_parser.cpp.\n";
     out << " * Fix the parser or XML file used as input instead of this file.\n";
     out << " *\n";
-    out << " * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved.\n";
+    out << " * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved.\n";
     out << " *\n";
     out << " * Permission is hereby granted, free of charge, to any person obtaining a\n";
     out << " * copy of this software and associated documentation files (the\n";
