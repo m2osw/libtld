@@ -162,7 +162,11 @@ QString tld_encode(const QString& tld, int& level)
     int j(split.size() - 1);
     while(i < j)
     {
+#if QT_VERSION_MAJOR > 5 || (QT_VERSION_MAJOR == 5 && QT_VERSION_MINOR >= 14)
+        split.swapItemsAt(i, j);
+#else
         split.swap(i, j);
+#endif
         ++i;
         --j;
     }
