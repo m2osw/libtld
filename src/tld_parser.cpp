@@ -50,6 +50,16 @@ namespace snap
 {
 
 
+QStringList split_string(QString const & str, int sep)
+{
+#if QT_VERSION_MAJOR > 5 || (QT_VERSION_MAJOR == 5 && QT_VERSION_MINOR >= 14)
+    return str.split(QChar(sep), Qt::SkipEmptyParts);
+#else
+    return str.split(QChar(sep), QString::SkipEmptyParts);
+#endif
+}
+
+
 /** \brief [internal] Class used to transform the XML data to TLD info structures.
  * \internal
  *
@@ -157,7 +167,7 @@ QString tld_encode(const QString& tld, int& level)
     }
 
     // break it up to easily invert it
-    QStringList split = result.split(static_cast<int>('!'), QString::SkipEmptyParts);
+    QStringList split = split_string(result, '!');
     int i(0);
     int j(split.size() - 1);
     while(i < j)
@@ -260,7 +270,7 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                     names.replace("\n", " ");
                     names.replace("\r", " ");
                     names.replace("\t", " ");
-                    QStringList const name_list(names.split(" ", QString::SkipEmptyParts));
+                    QStringList const name_list(split_string(names, ' '));
                     for(auto nm(name_list.begin());
                              nm != name_list.end();
                              ++nm)
@@ -314,7 +324,7 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                                 names.replace("\n", " ");
                                 names.replace("\r", " ");
                                 names.replace("\t", " ");
-                                QStringList const name_list(names.split(" ", QString::SkipEmptyParts));
+                                QStringList const name_list(split_string(names, ' '));
                                 for(auto nm(name_list.begin());
                                          nm != name_list.end();
                                          ++nm)
@@ -359,7 +369,7 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                                 names.replace("\n", " ");
                                 names.replace("\r", " ");
                                 names.replace("\t", " ");
-                                QStringList name_list(names.split(" ", QString::SkipEmptyParts));
+                                QStringList name_list(split_string(names, ' '));
                                 for(QStringList::iterator nm = name_list.begin();
                                                           nm != name_list.end();
                                                           ++nm)
