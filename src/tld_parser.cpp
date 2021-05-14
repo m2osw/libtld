@@ -52,7 +52,7 @@ namespace snap
 
 QStringList split_string(QString const & str, int sep)
 {
-#if QT_VERSION_MAJOR > 5 || (QT_VERSION_MAJOR == 5 && QT_VERSION_MINOR >= 14)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     return str.split(QChar(sep), Qt::SkipEmptyParts);
 #else
     return str.split(QChar(sep), QString::SkipEmptyParts);
@@ -172,7 +172,7 @@ QString tld_encode(const QString& tld, int& level)
     int j(split.size() - 1);
     while(i < j)
     {
-#if QT_VERSION_MAJOR > 5 || (QT_VERSION_MAJOR == 5 && QT_VERSION_MINOR >= 14)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
         split.swapItemsAt(i, j);
 #else
         split.swap(i, j);
