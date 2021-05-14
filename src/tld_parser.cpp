@@ -46,7 +46,7 @@
  * This namespace is used internally by the TLD parser too which loads the
  * XML data and transforms it to a .c file for the TLD library.
  */
-namespace snap
+namespace tld_detail
 {
 
 
@@ -939,18 +939,18 @@ int main(int argc, char *argv[])
         std::cerr << "  --help | -h    prints out this help screen" << std::endl;
         exit(1);
     }
-    snap::tld_info_map_t map;
-    snap::country_map_t countries;
-    //snap::tld_info_letters_t letters;
-    snap::read_tlds(argv[1], map, countries);
-    snap::verify_data(map);
-    snap::setup_output(argv[1]);
-    snap::output_header();
-    snap::output_countries(countries);
-    snap::output_tlds(map, countries);
-    //snap::output_offsets(map, letters); -- letters is not computed
-    snap::output_footer();
-    //snap::output_map(map);
+    tld_detail::tld_info_map_t map;
+    tld_detail::country_map_t countries;
+    //tld_detail::tld_info_letters_t letters;
+    tld_detail::read_tlds(argv[1], map, countries);
+    tld_detail::verify_data(map);
+    tld_detail::setup_output(argv[1]);
+    tld_detail::output_header();
+    tld_detail::output_countries(countries);
+    tld_detail::output_tlds(map, countries);
+    //tld_detail::output_offsets(map, letters); -- letters is not computed
+    tld_detail::output_footer();
+    //tld_detail::output_map(map);
 
     return 0;
 }
