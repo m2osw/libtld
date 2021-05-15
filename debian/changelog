@@ -1,3 +1,11 @@
+libtld (1.6.2.0~xenial) xenial; urgency=high
+
+  * Changed the Qt 5.14 test with QT_VERSION_CHECK().
+  * Added a few more updates so it compiles under Ubuntu 21.04.
+  * Moved code from a "snap" namespace to a "tld_detail".
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 May 2021 09:07:40 -0700
+
 libtld (1.6.1.0~xenial) xenial; urgency=high
 
   * Added a couple of fixes to support Qt 5.14 and newer.
