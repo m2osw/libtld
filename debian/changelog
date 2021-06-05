@@ -1,3 +1,9 @@
+libtld (1.6.2.1~bionic) bionic; urgency=high
+
+  * Bumped build version to rebuild on Launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 04 Jun 2021 17:45:11 -0700
+
 libtld (1.6.2.0~xenial) xenial; urgency=high
 
   * Changed the Qt 5.14 test with QT_VERSION_CHECK().
