@@ -1,8 +1,4 @@
-#
-# File:         src/CMakeLists.txt
-# Object:       Definitions to create the build environment with cmake
-#
-# Copyright:    Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libtld
 # contact@m2osw.com
@@ -35,10 +31,10 @@ include_directories(
     ${tld_library_SOURCE_DIR}
     ${QT_INCLUDES}
 )
-add_executable(tld_parser
+add_executable(${PROJECT_NAME}
     tld_parser.cpp
 )
-target_link_libraries(tld_parser
+target_link_libraries(${PROJECT_NAME}
     ${QT_LIBRARIES}
 )
 
@@ -46,7 +42,7 @@ target_link_libraries(tld_parser
 ## TLD data
 ##
 project(tld_data)
-set( TLD_DATA_C ${PROJECT_SOURCE_DIR}/tld_data.c )
+set(TLD_DATA_C ${PROJECT_SOURCE_DIR}/tld_data.c)
 add_custom_command(
     OUTPUT ${TLD_DATA_C}
     COMMAND tld_parser ${PROJECT_SOURCE_DIR}
@@ -54,7 +50,7 @@ add_custom_command(
     MAIN_DEPENDENCY tld_data.xml
     DEPENDS tld_parser
 )
-add_custom_target( ${PROJECT_NAME} ALL DEPENDS ${TLD_DATA_C} )
+add_custom_target(${PROJECT_NAME} ALL DEPENDS ${TLD_DATA_C})
 define_property(SOURCE
     PROPERTY GENERATED
     BRIEF_DOCS "The tld_data.c file is a table of all the TLDs defined in tld_data.xml"
@@ -76,7 +72,7 @@ add_library(tld SHARED
     tld_emails.cpp
     tld_object.cpp
 )
-set_target_properties( tld PROPERTIES
+set_target_properties(tld PROPERTIES
     VERSION ${LIBTLD_VERSION_MAJOR}.${LIBTLD_VERSION_MINOR}
     SOVERSION ${LIBTLD_VERSION_MAJOR}
 )
