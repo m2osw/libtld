@@ -1,3 +1,9 @@
+libtld (1.6.2.2~bionic) bionic; urgency=high
+
+  * Bumped build version to rebuild on Launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 24 Aug 2021 14:07:21 -0700
+
 libtld (1.6.2.1~bionic) bionic; urgency=high
 
   * Bumped build version to rebuild on Launchpad.
