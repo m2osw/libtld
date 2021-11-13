@@ -26,7 +26,7 @@
 # THE SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.10.2)
 
 project(tld_library)
 
