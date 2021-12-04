@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <boost/algorithm/string.hpp>
-#include <QtCore/QString>
+//#include <QtCore/QString>
 
 
 
@@ -106,18 +106,28 @@ typedef std::vector<tld_t> string_vector_t;
 string_vector_t tlds;
 
 
+char to_hex(int v)
+{
+    if(v >= 10)
+    {
+        return v - 10 + 'a';
+    }
+
+    return v + '0';
+}
+
+
 /** \brief Encode a URL.
  *
  * This function transforms the characters in a valid URI string.
  */
-QString tld_encode(const QString& tld, int& level)
+std::string tld_encode(const std::string& tld, int& level)
 {
-    QString result;
+    std::string result;
     level = 0;
 
-    QByteArray utf8 = tld.toUtf8();
-    int max(utf8.length());
-    const char *p = utf8.data();
+    int max(tld.length());
+    const char *p = tld.data();
     for(int l = 0; l < max; ++l)
     {
         char c(p[l]);
@@ -148,9 +158,17 @@ QString tld_encode(const QString& tld, int& level)
                 exit(1);
             }
             result += '%';
-            QString v(QString("%1").arg(c & 255, 2, 16, QLatin1Char('0')));
-            result += v[0];
-            result += v[1];
+            int byte(c & 255);
+            if(byte < 16)
+            {
+                result += '0';
+                result += to_hex(byte);
+            }
+            else
+            {
+                result += to_hex(byte >> 4);
+                result += to_hex(byte & 15);
+            }
         }
     }
     // at this time the maximum level we declared is 4 but there are cases
@@ -328,34 +346,32 @@ void test_tlds()
             std::string url("www.this-is-a-long-domain-name-that-should-not-make-it-in-a-tld.");
             url += it->f_name;
             int level;
-            QString utf16(QString::fromUtf8(url.c_str()));
-            QString u(tld_encode(utf16, level));
-            QByteArray uri(u.toUtf8());
-            tld_result r = tld(uri.data(), &info);
+            std::string uri(tld_encode(url, level));
+            tld_result r = tld(uri.c_str(), &info);
             if(r == TLD_RESULT_SUCCESS || r == TLD_RESULT_INVALID)
             {
                 // it succeeded, but is it the right length?
-                utf16 = QString::fromUtf8(it->f_name.c_str());
-                u = tld_encode(utf16, level);
-                if(strlen(info.f_tld) != static_cast<size_t>(u.size() + 1))
+                uri = tld_encode(it->f_name, level);
+                if(strlen(info.f_tld) != static_cast<size_t>(uri.size() + 1))
                 {
                     fprintf(stderr, "error:%d: tld(\"%s\", &info) length mismatch (\"%s\", %d/%d).\n",
                             it->f_line,
-                            uri.data(),
+                            uri.c_str(),
                             info.f_tld,
                             static_cast<int>(strlen(info.f_tld)),
-                            static_cast<int>((u.size() + 1)));
+                            static_cast<int>((uri.size() + 1)));
 // s3-website.ap-northeast-2.amazonaws.com
-QString s(QString::fromUtf8(it->f_name.c_str()));
+std::string s(it->f_name);
 fprintf(stderr, "%d> %s [%s] {%s} -> %d ",
         r,
         it->f_name.c_str(),
-        u.toUtf8().data(),
+        uri.c_str(),
         info.f_tld,
-        s.length());
-for(int i(0); i < s.length(); ++i) {
-fprintf(stderr, "&#x%04X;", s.at(i).unicode());
-}
+        static_cast<int>(s.length()));
+// TODO: s is UTF-8 so we'd have to convert to char32_t if we want to do that
+//for(int i(0); i < s.length(); ++i) {
+//fprintf(stderr, "&#x%04X;", s.at(i).unicode());
+//}
 fprintf(stderr, "\n");
                     ++err_count;
                 }
@@ -363,16 +379,17 @@ fprintf(stderr, "\n");
             else
             {
                 //fprintf(stderr, "error: tld(\"%s\", &info) failed.\n", it->f_name.c_str());
-QString s(QString::fromUtf8(it->f_name.c_str()));
+std::string s(it->f_name);
 printf("error:%d: tld(\"%s\", &info) failed with %d [%s] -> %d ",
         it->f_line,
         it->f_name.c_str(),
         r,
-        u.toUtf8().data(),
-        s.length());
-for(int i(0); i < s.length(); ++i) {
-printf("&#x%04X;", s.at(i).unicode());
-}
+        uri.c_str(),
+        static_cast<int>(s.length()));
+// TODO: s is UTF-8 so we'd have to convert to char32_t if we want to do that
+//for(int i(0); i < s.length(); ++i) {
+//printf("&#x%04X;", s.at(i).unicode());
+//}
 printf("\n");
                 ++err_count;
             }

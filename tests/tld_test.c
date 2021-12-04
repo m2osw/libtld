@@ -39,7 +39,7 @@
  * the library does not give direct access by default... (although maybe we
  * could give users access to the data)
  */
-#include "tld_data.h"
+#include <libtld/tld_data.h>
 extern const struct tld_description tld_descriptions[];
 extern unsigned short tld_start_offset;
 extern unsigned short tld_end_offset;

@@ -53,10 +53,6 @@ AddDoxygenTarget( libtld
 ##
 project(example)
 
-include_directories(
-    "${PROJECT_BINARY_DIR}/../include"
-    "${PROJECT_SOURCE_DIR}/../include"
-)
 add_executable(${PROJECT_NAME}
     example.c
 )

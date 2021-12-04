@@ -1,9 +1,4 @@
-#
-# File:         CMakeLists.txt
-# Object:       Definitions to create the build environment with cmake
-#
-# Copyright:    Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
-#               All Rights Reserved.
+# Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libtld
 # contact@m2osw.com
@@ -27,12 +22,46 @@
 # THE SOFTWARE.
 #
 
-project(libtld_include)
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libtld/tld.h.in ${CMAKE_CURRENT_BINARY_DIR}/libtld/tld.h)
-
-install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/libtld
-    DESTINATION include
-    COMPONENT development
+##
+## TLD compiler
+##
+project(tldc)
+add_executable(${PROJECT_NAME}
+    tldc.cpp
 )
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${tld_library_BINARY_DIR}/include
+        ${tld_library_SOURCE_DIR}/include
+)
+target_link_libraries(${PROJECT_NAME}
+    tld
+)
+install(
+    TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+    COMPONENT runtime
+)
+
+##
+## TLD verification command line tool
+##
+project(validate-tld)
+add_executable(${PROJECT_NAME}
+    validate_tld.cpp
+)
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${tld_library_BINARY_DIR}/include
+        ${tld_library_SOURCE_DIR}/include
+)
+target_link_libraries(${PROJECT_NAME}
+    tld
+)
+install(
+    TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+    COMPONENT runtime
+)
+
+# vim: ts=4 sw=4 et

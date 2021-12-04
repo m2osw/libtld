@@ -40,29 +40,23 @@ endif()
 # (must be included in a project even though it is not made
 # specific to that project)
 #
-find_package( SnapCMakeModules REQUIRED )
-find_package( Boost            REQUIRED )
-find_package( Qt5Core          REQUIRED )
-find_package( Qt5Xml           REQUIRED )
-find_package( SnapDoxygen               )
+find_package(SnapCMakeModules REQUIRED)
+find_package(Boost            REQUIRED)
+find_package(SnapDoxygen              )
 
-SnapGetVersion( LIBTLD ${CMAKE_CURRENT_SOURCE_DIR} )
+SnapGetVersion(LIBTLD ${CMAKE_CURRENT_SOURCE_DIR})
 
-include_directories( SYSTEM
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Xml_INCLUDE_DIRS}
-)
-set( QT_LIBRARIES
-    Qt5::Core
-    Qt5::Xml
+include_directories(
+    ${PROJECT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 
+add_subdirectory( libtld  )
+add_subdirectory( tools   )
 add_subdirectory( cmake   )
-add_subdirectory( include )
-add_subdirectory( src     )
-add_subdirectory( doc     )
 add_subdirectory( tests   )
+add_subdirectory( doc     )
 add_subdirectory( package )
 
 # vim: ts=4 sw=4 et

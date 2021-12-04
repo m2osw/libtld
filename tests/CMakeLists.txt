@@ -31,12 +31,12 @@
 ##
 
 # The reference to the src folder is required by the internal test
-include_directories(
-    ${tld_library_BINARY_DIR}/include
-    ${tld_library_BINARY_DIR}/src
-    ${tld_library_SOURCE_DIR}/include
-    ${tld_library_SOURCE_DIR}/src
-)
+#include_directories(
+#    ${tld_library_BINARY_DIR}/include
+#    ${tld_library_BINARY_DIR}/src
+#    ${tld_library_SOURCE_DIR}/include
+#    ${tld_library_SOURCE_DIR}/src
+#)
 
 # Tool to generate the &#...; entities for UTF-8 domain names
 project(hex)
@@ -49,8 +49,12 @@ project(tld_internal_test)
 add_executable(${PROJECT_NAME}
     tld_internal_test.c
 )
-add_dependencies( ${PROJECT_NAME} tld_data ) # Add this so tld_parser will guarantee to build *first*
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+#add_dependencies( ${PROJECT_NAME} tld_data ) # Add this so tld_parser will guarantee to build *first*
+add_test(
+    NAME ${PROJECT_NAME}
+    COMMAND ${PROJECT_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Test the library as an end user
 project(tld_test)

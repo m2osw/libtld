@@ -217,6 +217,7 @@ private:
     tld_email_list_t    f_email_list = tld_email_list_t();
 };
 #endif
+/*#ifdef __cplusplus*/
 
 #endif
 /*#ifndef LIB_TLD_H*/

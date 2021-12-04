@@ -33,9 +33,9 @@
  * includes it within itself.
  */
 
-#include "tld.c"
-#include "tld_data.c"
-#include "tld_domain_to_lowercase.c"
+#include <libtld/tld.c>
+#include <libtld/tld_data.c>
+#include <libtld/tld_domain_to_lowercase.c>
 
 #include <stdlib.h>
 #include <string.h>
