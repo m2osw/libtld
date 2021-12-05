@@ -37,6 +37,7 @@
 // C++ lib
 //
 #include    <fstream>
+#include    <iostream>
 
 
 // C lib
@@ -196,15 +197,15 @@ std::string const & tld_compiler::get_input_folder() const
 }
 
 
-void tld_compiler::set_output_folder(std::string const & path)
+void tld_compiler::set_output(std::string const & output)
 {
-    f_output_folder = path;
+    f_output = output;
 }
 
 
-std::string const & tld_compiler::get_output_folder() const
+std::string const & tld_compiler::get_output() const
 {
-    return f_output_folder;
+    return f_output;
 }
 
 
@@ -261,10 +262,14 @@ void tld_compiler::find_files(std::string const & path)
         switch(e->d_type )
         {
         case DT_DIR:
-            find_files(path + '/' + name);
-            if(get_errno() != 0)
+            if(strcmp(e->d_name, ".") != 0
+            && strcmp(e->d_name, "..") != 0)
             {
-                break;
+                find_files(path + '/' + name);
+                if(get_errno() != 0)
+                {
+                    break;
+                }
             }
             break;
 
@@ -276,6 +281,7 @@ void tld_compiler::find_files(std::string const & path)
                 // collect .ini files
                 //
                 f_input_files.push_back(path + '/' + name);
+std::cerr << "--- found \"" << path + '/' + name << "\"\n";
             }
             break;
 

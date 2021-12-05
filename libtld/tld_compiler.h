@@ -69,8 +69,8 @@ class tld_compiler
 public:
     void                    set_input_folder(std::string const & path);
     std::string const &     get_input_folder() const;
-    void                    set_output_folder(std::string const & path);
-    std::string const &     get_output_folder() const;
+    void                    set_output(std::string const & filename);
+    std::string const &     get_output() const;
     bool                    compile();
     int                     get_errno() const;
     std::string const &     get_errmsg() const;
@@ -132,7 +132,7 @@ private:
     void                    parse_tld();
 
     std::string             f_input_folder = "/usr/share/libtld/tlds";
-    std::string             f_output_folder = "/var/lib/libtld";
+    std::string             f_output = "/var/lib/libtld/tlds.tld";
     int                     f_errno = 0;
     std::string             f_errmsg = std::string();
     paths_t                 f_input_files = paths_t();

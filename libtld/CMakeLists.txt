@@ -67,10 +67,11 @@ configure_file(
 )
 add_library(${PROJECT_NAME} SHARED
     tld.c
+    tld_compiler.cpp
+    tld_data.c
     tld_domain_to_lowercase.c
     tld_emails.cpp
     tld_object.cpp
-    tld_compiler.cpp
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${LIBTLD_VERSION_MAJOR}.${LIBTLD_VERSION_MINOR}
@@ -93,16 +94,13 @@ install(
 project(tld_static)
 add_library(${PROJECT_NAME} STATIC
     tld.c
+    tld_compiler.cpp
+    tld_data.c
     tld_domain_to_lowercase.c
     tld_emails.cpp
     tld_object.cpp
     tld_compiler.cpp
 )
-#target_include_directories(${PROJECT_NAME}
-#    PUBLIC
-#        ${PROJECT_BINARY_DIR}
-#        ${PROJECT_SOURCE_DIR}
-#)
 # We need the -fPIC to use this library as extension of PHP, etc.
 set_target_properties(tld_static PROPERTIES COMPILE_FLAGS -fPIC)
 

@@ -23,7 +23,7 @@
 
 // self
 //
-#include <libtld/tld.h>
+#include <libtld/tld_compiler.h>
 
 
 // C++ lib
@@ -42,12 +42,14 @@ public:
 
     std::ostream &  error();
     int             exit_code() const;
+    void            set_input_path(std::string const & path);
     void            set_output(std::string const & output);
 
     void            run();
 
 private:
     int             f_errcnt = 0;
+    std::string     f_input_path = std::string();
     std::string     f_output = std::string();
 };
 
@@ -65,6 +67,12 @@ int compiler::exit_code() const
 }
 
 
+void compiler::set_input_path(std::string const & path)
+{
+    f_input_path = path;
+}
+
+
 void compiler::set_output(std::string const & output)
 {
     f_output = output;
@@ -79,6 +87,13 @@ void compiler::run()
         return;
     }
 
+    tld_compiler c;
+    c.set_input_folder(f_input_path);
+    c.set_output(f_output);
+    if(!c.compile())
+    {
+        return;
+    }
 }
 
 
@@ -87,7 +102,8 @@ void usage(char * progname)
 {
     std::cout << "Usage: " << progname << " [--opts] [<output>]\n";
     std::cout << "Where --opts is one or more of the following:\n";
-    std::cout << "    --help | -h         prints out this help screen\n";
+    std::cout << "    --help | -h             prints out this help screen\n";
+    std::cout << "    --source | -s <folder>  define the source (input) folder\n";
 }
 
 
@@ -104,6 +120,20 @@ int main(int argc, char * argv[])
             {
                 usage(argv[0]);
                 return 1;
+            }
+            else if(strcmp(argv[i], "-s") == 0
+                 || strcmp(argv[i], "--source") == 0)
+            {
+                ++i;
+                if(i >= argc)
+                {
+                    tldc.error()
+                        << "error: argument missing for --source.\n";
+                }
+                else
+                {
+                    tldc.set_input_path(argv[i]);
+                }
             }
             else
             {
