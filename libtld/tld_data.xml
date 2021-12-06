@@ -30,7 +30,7 @@
 <!DOCTYPE tld [
 <!ELEMENT tld (area)+>
 <!ELEMENT area (#PCDATA|forbid|exceptions)*>
-<!ATTLIST area category (international|professionals|language|groups|region|technical|country|entrepreneurial) #REQUIRED
+<!ATTLIST area category (international|professionals|language|group|region|technical|country|entrepreneurial) #REQUIRED
                country CDATA ""
                nic CDATA "">
 <!ELEMENT forbid (#PCDATA)>
@@ -510,7 +510,7 @@
     .&#x8C37;&#x6B4C; <!-- Charleston Road Registry Inc. -->
     .&#x901A;&#x8CA9; <!-- Amazon EU S.à r.l. -->
     .&#x96FB;&#x8A0A;&#x76C8;&#x79D1; <!-- PCCW Enterprises Limited -->
-    .&#x9999;&#x683C;&#x91CC;&#x62C9; <!-- Shangri¿La International Hotel Management Limited -->
+    .&#x9999;&#x683C;&#x91CC;&#x62C9; <!-- Shangri-La International Hotel Management Limited -->
     .&#xC0BC;&#xC131; <!-- Samsung (Korean) -->
     .&#x20915;&#x20949;&#x2092E; <!-- VeriSign Sarl -->
     .&#x20928;&#x2091F; <!-- VeriSign Sarl -->
@@ -610,7 +610,7 @@
     .cat .eus .gal .irish .scot
     <forbid reason="proposed">.bzh .ker .lli</forbid>
   </area>
-  <area category="groups">
+  <area category="group">
     .gay
     <forbid reason="proposed">.kids .nai .fc</forbid>
   </area>

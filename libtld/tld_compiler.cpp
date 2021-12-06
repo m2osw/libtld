@@ -307,9 +307,9 @@ void tld_definition::set_named_parameter(
                         break;
 
                     case 'g':
-                        if(value == "groups")
+                        if(value == "group")
                         {
-                            category = TLD_CATEGORY_GROUPS;
+                            category = TLD_CATEGORY_GROUP;
                         }
                         break;
 
@@ -357,7 +357,11 @@ void tld_definition::set_named_parameter(
                     {
                         if(!set_category(category))
                         {
-                            errmsg = "\"category\" defined a second time (\"" + value + "\").";
+                            errmsg = "\"category\" of \""
+                                   + get_name()
+                                   + "\" defined a second time (\""
+                                   + value
+                                   + "\").";
                         }
                         return;
                     }
@@ -743,6 +747,7 @@ void tld_compiler::process_input_files()
 void tld_compiler::process_file(std::string const & filename)
 {
     f_globals.clear();
+    f_current_tld.clear();
 
     struct stat s;
     int r(stat(filename.c_str(), &s));
@@ -1270,7 +1275,7 @@ void tld_compiler::parse_line()
     default:
         f_errno = EINVAL;
         f_errmsg = "invalid line, not recognized as a TLD definition nor a variable definition";
-print_tokens();
+//print_tokens();
         break;
 
     }
@@ -1360,7 +1365,7 @@ void tld_compiler::parse_tld()
     {
         f_errno = EINVAL;
         f_errmsg = "a TLD must end with a closing square bracket (]) and not be empty";
-print_tokens();
+//print_tokens();
         return;
     }
 

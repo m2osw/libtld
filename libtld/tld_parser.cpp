@@ -245,7 +245,7 @@ void read_tlds(const QString& path, tld_info_map_t& map, country_map_t& countrie
                 exit(1); // LCOV_EXCL_LINE
             }
 
-            // Category (international|professionals|language|groups|region|country)
+            // Category (international|professionals|language|group|region|country)
             QString category(e.attribute("category", "country"));
             QString country;
             if(category == "country")
@@ -556,9 +556,9 @@ void verify_data(tld_info_map_t& map)
         {
             it->second.f_category = "TLD_CATEGORY_LANGUAGE";
         }
-        else if(it->second.f_category_name == "groups")
+        else if(it->second.f_category_name == "group")
         {
-            it->second.f_category = "TLD_CATEGORY_GROUPS";
+            it->second.f_category = "TLD_CATEGORY_GROUP";
         }
         else if(it->second.f_category_name == "region")
         {

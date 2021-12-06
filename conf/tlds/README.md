@@ -211,33 +211,33 @@ A TLD name cannot be defined more than once.
 
 The following are the currently supported variables.
 
-### `type=normal|forbidden|exception`
+### `status=valid|exception|proposed|deprecated|unused|reserved|infrastructure|example`
 
-The type of TLD name definition. We currently support three types:
+The status of TLD name definition. We currently support:
 
-* Normal (the default if not otherwise specified)
-* Forbidden
-* Exception
+* Valid (default if defined)
+* Proposed -- not yet accepted (.mail)
+* Deprecated -- was in use at some point, not usable anymore (.freight.aero)
+* Unused -- the domain is assigned, it was never used (.ye)
+* Infrastructure -- used by backends (.arpa)
+* Example -- a domain which represents an example (test.ru)
 
-The type can be indicated with a special character right after the opening
-bracket (`[!` or `[?`) or as the `type` variable.
+The `exception` status can be indicated with the `?` special character
+right after the opening bracket (`[?`) used to define the TLD name.
 
-### `category=international|professionals|language|groups|region|technical|country|entrepreneurial`
+By default this parameter is set to `undefined`. The compiler will
+automatically fix the value based on other values if still `undefined` once
+ready to generate the output.
+
+Pretty much all statuses other than `valid` mean that the TLD should be
+viewed as undefined. For the most part, the other values are kept to track
+changes over time. However, in some cases, they are required. For example,
+the `.ye` TLD must be used with a second level name (i.e.
+`<your-name>.com.ye`). That means the `.ye` entry must be marked as `unused`.
+
+### `category=international|professionals|language|group|region|technical|country|entrepreneurial`
 
 The `category` of the TLD name.
-
-### `reason=valid|deprecated|exception|infrastructure|proposed|reserved|undefined|unused`
-
-You can forbid a TLD name. A TLD which is not found in our tables is
-considered `undefined`. However, at times there are _sub-definitions_ that
-get added and later deprecated. There are also domain names which are still
-_proposed_.
-
-The `reason` defines why a TLD name is defines in our tables. The special
-_undefined_ value is used when a TLD cannot be found. You should not have
-any TLD explicitly defined and marked as _undefined_.
-
-By default `reason` is set to _valid_.
 
 ### `country=...`
 
