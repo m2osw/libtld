@@ -48,10 +48,18 @@
 
 
 
-void tld_definition::add_tld(std::string const & tld)
+bool tld_definition::add_tld(std::string const & tld)
 {
+    if((f_set & SET_TLD) != 0)
+    {
+        return false;
+    }
+    // f_set |= SET_TLD; -- reset_set_flags() sets this one
+
     f_tld.push_back(tld);
     f_name.clear();
+
+    return true;
 }
 
 
@@ -76,9 +84,17 @@ std::string tld_definition::get_name() const
 }
 
 
-void tld_definition::set_status(tld_status status)
+bool tld_definition::set_status(tld_status status)
 {
+    if((f_set & SET_STATUS) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_STATUS;
+
     f_status = status;
+
+    return true;
 }
 
 
@@ -88,9 +104,17 @@ tld_status tld_definition::get_status() const
 }
 
 
-void tld_definition::set_category(tld_category category)
+bool tld_definition::set_category(tld_category category)
 {
+    if((f_set & SET_CATEGORY) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_CATEGORY;
+
     f_category = category;
+
+    return true;
 }
 
 
@@ -100,10 +124,19 @@ tld_category tld_definition::get_category() const
 }
 
 
-void tld_definition::set_country(std::string const & country)
+bool tld_definition::set_country(std::string const & country)
 {
+    if((f_set & SET_COUNTRY) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_COUNTRY;
+
+    // TODO: verify country name
     f_country = country;
     f_category = TLD_CATEGORY_COUNTRY;
+
+    return true;
 }
 
 
@@ -113,9 +146,37 @@ std::string const & tld_definition::get_country() const
 }
 
 
-void tld_definition::set_nic(std::string const & nic)
+bool tld_definition::set_region(tld_region region)
 {
+    if((f_set & SET_REGION) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_REGION;
+
+    f_region = region;
+
+    return true;
+}
+
+
+tld_region tld_definition::get_region() const
+{
+    return f_region;
+}
+
+
+bool tld_definition::set_nic(std::string const & nic)
+{
+    if((f_set & SET_NIC) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_NIC;
+
     f_nic = nic;
+
+    return true;
 }
 
 
@@ -125,9 +186,17 @@ std::string const & tld_definition::get_nic() const
 }
 
 
-void tld_definition::set_description(std::string const & description)
+bool tld_definition::set_description(std::string const & description)
 {
+    if((f_set & SET_DESCRIPTION) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_DESCRIPTION;
+
     f_description = description;
+
+    return true;
 }
 
 
@@ -135,6 +204,357 @@ std::string const & tld_definition::get_description() const
 {
     return f_description;
 }
+
+
+bool tld_definition::set_note(std::string const & note)
+{
+    if((f_set & SET_NOTE) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_NOTE;
+
+    f_note = note;
+
+    return true;
+}
+
+
+std::string const & tld_definition::get_note() const
+{
+    return f_note;
+}
+
+
+bool tld_definition::set_apply_to(std::string const & apply_to)
+{
+    if((f_set & SET_APPLY_TO) != 0)
+    {
+        return false;
+    }
+    f_set |= SET_APPLY_TO;
+
+    f_apply_to = apply_to;
+
+    return true;
+}
+
+
+std::string const & tld_definition::get_apply_to() const
+{
+    return f_apply_to;
+}
+
+
+void tld_definition::reset_set_flags()
+{
+    f_set = SET_TLD;
+}
+
+
+void tld_definition::set_named_parameter(
+      std::string const & name
+    , std::string const & value
+    , std::string & errmsg)
+{
+    if(!name.empty())
+    {
+        switch(name[0])
+        {
+        case 'a':
+            if(name == "apply_to")
+            {
+                if(!set_apply_to(value))
+                {
+                    errmsg = "\"apply_to\" defined a second time (\"" + value + "\").";
+                }
+                return;
+            }
+            break;
+
+        case 'c':
+            if(name == "category")
+            {
+                if(!value.empty())
+                {
+                    tld_category category(TLD_CATEGORY_UNDEFINED);
+                    switch(value[0])
+                    {
+                    case 'b':
+                        if(value == "brand")
+                        {
+                            category = TLD_CATEGORY_BRAND;
+                        }
+                        break;
+
+                    case 'c':
+                        if(value == "country")
+                        {
+                            category = TLD_CATEGORY_LOCATION;
+                            if(!set_region(TLD_REGION_COUNTRY))
+                            {
+                                errmsg = "\"category\" / \"region\" defined a twice (\"" + value + "\").";
+                                return;
+                            }
+                        }
+                        break;
+
+                    case 'e':
+                        if(value == "entrepreneurial")
+                        {
+                            category = TLD_CATEGORY_ENTREPRENEURIAL;
+                        }
+                        break;
+
+                    case 'g':
+                        if(value == "groups")
+                        {
+                            category = TLD_CATEGORY_GROUPS;
+                        }
+                        break;
+
+                    case 'i':
+                        if(value == "international")
+                        {
+                            category = TLD_CATEGORY_INTERNATIONAL;
+                        }
+                        break;
+
+                    case 'l':
+                        if(value == "language")
+                        {
+                            category = TLD_CATEGORY_LANGUAGE;
+                        }
+                        else if(value == "location")
+                        {
+                            category = TLD_CATEGORY_LOCATION;
+                        }
+                        break;
+
+                    case 'p':
+                        if(value == "professionals")
+                        {
+                            category = TLD_CATEGORY_PROFESSIONALS;
+                        }
+                        break;
+
+                    case 'r':
+                        if(value == "region")
+                        {
+                            category = TLD_CATEGORY_REGION;
+                        }
+                        break;
+
+                    case 't':
+                        if(value == "technical")
+                        {
+                            category = TLD_CATEGORY_TECHNICAL;
+                        }
+                        break;
+
+                    }
+                    if(category != TLD_CATEGORY_UNDEFINED)
+                    {
+                        if(!set_category(category))
+                        {
+                            errmsg = "\"category\" defined a second time (\"" + value + "\").";
+                        }
+                        return;
+                    }
+                }
+                errmsg = "unknown \"category\": \"" + value + "\".";
+                return;
+            }
+            if(name == "country")
+            {
+                if(!set_country(value))
+                {
+                    errmsg = "\"country\" defined a second time (\"" + value + "\").";
+                }
+                return;
+            }
+            break;
+
+        case 'd':
+            if(name == "description")
+            {
+                if(!set_description(value))
+                {
+                    errmsg = "\"description\" defined a second time (\"" + value + "\").";
+                }
+                return;
+            }
+            break;
+
+        case 'n':
+            if(name == "nic")
+            {
+                if(!set_nic(value))
+                {
+                    errmsg = "\"nic\" defined a second time (\"" + value + "\").";
+                }
+                return;
+            }
+            if(name == "note")
+            {
+                if(!set_note(value))
+                {
+                    errmsg = "\"note\" defined a second time (\"" + value + "\").";
+                }
+                return;
+            }
+            break;
+
+        case 'r':
+            if(name == "region")
+            {
+                if(!value.empty())
+                {
+                    tld_region region(TLD_REGION_UNDEFINED);
+                    switch(value[0])
+                    {
+                    case 'a':
+                        if(value == "area")
+                        {
+                            region = TLD_REGION_AREA;
+                        }
+                        break;
+
+                    case 'c':
+                        if(value == "city")
+                        {
+                            region = TLD_REGION_CITY;
+                        }
+                        else if(value == "country")
+                        {
+                            region = TLD_REGION_COUNTRY;
+                        }
+                        else if(value == "county")
+                        {
+                            region = TLD_REGION_COUNTY;
+                        }
+                        break;
+
+                    case 'p':
+                        if(value == "province")
+                        {
+                            region = TLD_REGION_PROVINCE;
+                        }
+                        break;
+
+                    case 's':
+                        if(value == "state")
+                        {
+                            region = TLD_REGION_STATE;
+                        }
+                        break;
+
+                    case 'u':
+                        if(value == "union")
+                        {
+                            region = TLD_REGION_UNION;
+                        }
+                        break;
+
+                    }
+                    if(region != TLD_REGION_UNDEFINED)
+                    {
+                        if(!set_region(region))
+                        {
+                            errmsg = "\"region\" defined a second time (\"" + value + "\").";
+                        }
+                        return;
+                    }
+                }
+                errmsg = "unknown \"region\": \"" + value + "\".";
+                return;
+            }
+            break;
+
+        case 's':
+            if(name == "status")
+            {
+                if(!value.empty())
+                {
+                    tld_status status(TLD_STATUS_UNDEFINED);
+                    switch(value[0])
+                    {
+                    case 'd':
+                        if(value == "deprecated")
+                        {
+                            status = TLD_STATUS_DEPRECATED;
+                        }
+                        break;
+
+                    case 'e':
+                        if(value == "example")
+                        {
+                            status = TLD_STATUS_EXAMPLE;
+                        }
+                        else if(value == "exception")
+                        {
+                            status = TLD_STATUS_EXCEPTION;
+                        }
+                        break;
+
+                    case 'i':
+                        if(value == "infrastructure")
+                        {
+                            status = TLD_STATUS_INFRASTRUCTURE;
+                        }
+                        break;
+
+                    case 'p':
+                        if(value == "proposed")
+                        {
+                            status = TLD_STATUS_PROPOSED;
+                        }
+                        break;
+
+                    case 'r':
+                        if(value == "reserved")
+                        {
+                            status = TLD_STATUS_RESERVED;
+                        }
+                        break;
+
+                    case 'v':
+                        if(value == "valid")
+                        {
+                            status = TLD_STATUS_VALID;
+                        }
+                        break;
+
+                    case 'u':
+                        if(value == "unused")
+                        {
+                            status = TLD_STATUS_UNUSED;
+                        }
+                        break;
+
+                    }
+                    if(status != TLD_STATUS_UNDEFINED)
+                    {
+                        if(!set_status(status))
+                        {
+                            errmsg = "\"status\" defined a second time (\"" + value + "\").";
+                        }
+                        return;
+                    }
+                }
+                errmsg = "unknown \"status\": \"" + value + "\".";
+                return;
+            }
+            break;
+
+        }
+    }
+
+    errmsg = "unknown variable name \"" + name + "\".";
+}
+
+
+
 
 
 
@@ -239,6 +659,18 @@ std::string const & tld_compiler::get_errmsg() const
 }
 
 
+int tld_compiler::get_line() const
+{
+    return f_line;
+}
+
+
+std::string const & tld_compiler::get_filename() const
+{
+    return f_filename;
+}
+
+
 void tld_compiler::find_files(std::string const & path)
 {
     DIR * d = opendir(path.c_str());
@@ -281,7 +713,6 @@ void tld_compiler::find_files(std::string const & path)
                 // collect .ini files
                 //
                 f_input_files.push_back(path + '/' + name);
-std::cerr << "--- found \"" << path + '/' + name << "\"\n";
             }
             break;
 
@@ -301,6 +732,10 @@ void tld_compiler::process_input_files()
     for(auto const & filename : f_input_files)
     {
         process_file(filename);
+        if(get_errno() != 0)
+        {
+            return;
+        }
     }
 }
 
@@ -662,6 +1097,13 @@ void tld_compiler::read_line()
                     {
                         break;
                     }
+                    if(c == '['
+                    || c == '='
+                    || c == ']')
+                    {
+                        ungetc(c);
+                        break;
+                    }
                     append_wc(value, c);
                 }
 
@@ -828,6 +1270,7 @@ void tld_compiler::parse_line()
     default:
         f_errno = EINVAL;
         f_errmsg = "invalid line, not recognized as a TLD definition nor a variable definition";
+print_tokens();
         break;
 
     }
@@ -882,11 +1325,13 @@ void tld_compiler::parse_variable()
             return;
         }
 
-        if(name != "status"
-        && name != "category"
+        // name != "apply_to" -- I don't think that would be useful as a global
+        if(name != "category"
         && name != "country"
+        && name != "description"
         && name != "nic"
-        && name != "description")
+        && name != "note"
+        && name != "status")
         {
             f_errno = EINVAL;
             f_errmsg = "variable with name \"" + name + "\" is not supported.";
@@ -897,113 +1342,10 @@ void tld_compiler::parse_variable()
     }
     else
     {
-        if(name == "status")
-        {
-            if(value == "valid")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_VALID);
-            }
-            else if(value == "proposed")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_PROPOSED);
-            }
-            else if(value == "deprecated")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_DEPRECATED);
-            }
-            else if(value == "unused")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_UNUSED);
-            }
-            else if(value == "reserved")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_RESERVED);
-            }
-            else if(value == "infrastructure")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_INFRASTRUCTURE);
-            }
-            else if(value == "undefined")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_UNDEFINED);
-            }
-            else if(value == "exception")
-            {
-                f_definitions[f_current_tld].set_status(TLD_STATUS_EXCEPTION);
-            }
-            else
-            {
-                f_errno = EINVAL;
-                f_errmsg = "unknown status \"" + value + "\".";
-                return;
-            }
-        }
-        else if(name == "category")
-        {
-            if(value == "international")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_INTERNATIONAL);
-            }
-            else if(value == "professionals")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_PROFESSIONALS);
-            }
-            else if(value == "language")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_LANGUAGE);
-            }
-            else if(value == "groups")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_GROUPS);
-            }
-            else if(value == "region")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_REGION);
-            }
-            else if(value == "technical")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_TECHNICAL);
-            }
-            else if(value == "country")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_COUNTRY);
-            }
-            else if(value == "entrepreneurial")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_ENTREPRENEURIAL);
-            }
-            else if(value == "brand")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_BRAND);
-            }
-            else if(value == "undefined")
-            {
-                f_definitions[f_current_tld].set_category(TLD_CATEGORY_UNDEFINED);
-            }
-            else
-            {
-                f_errno = EINVAL;
-                f_errmsg = "unknown category \"" + value + "\".";
-                return;
-            }
-        }
-        else if(name == "country")
-        {
-            // TODO: verify country name
-            f_definitions[f_current_tld].set_country(value);
-        }
-        else if(name == "nic")
-        {
-            f_definitions[f_current_tld].set_nic(value);
-        }
-        else if(name == "description")
-        {
-            f_definitions[f_current_tld].set_description(value);
-        }
-        else
+        f_definitions[f_current_tld].set_named_parameter(name, value, f_errmsg);
+        if(!f_errmsg.empty())
         {
             f_errno = EINVAL;
-            f_errmsg = "unknown variable name \"" + name + "\".";
             return;
         }
     }
@@ -1018,6 +1360,7 @@ void tld_compiler::parse_tld()
     {
         f_errno = EINVAL;
         f_errmsg = "a TLD must end with a closing square bracket (]) and not be empty";
+print_tokens();
         return;
     }
 
@@ -1067,7 +1410,12 @@ void tld_compiler::parse_tld()
             return;
 
         case TOKEN_WILD_CARD:
-            tld.add_tld("*");
+            if(!tld.add_tld("*"))
+            {
+                f_errno = EINVAL;
+                f_errmsg = "the TLD cannot be edited anymore (\"*\").";
+                return;
+            }
             ++idx;
             break;
 
@@ -1100,7 +1448,12 @@ void tld_compiler::parse_tld()
 
                     }
                 }
-                tld.add_tld(segment);
+                if(!tld.add_tld(segment))
+                {
+                    f_errno = EINVAL;
+                    f_errmsg = "the TLD cannot be edited anymore (\"" + segment + "\").";
+                    return;
+                }
             }
             break;
 
@@ -1134,6 +1487,44 @@ void tld_compiler::parse_tld()
 
     f_current_tld = tld.get_name();
     f_definitions[f_current_tld] = tld;
+
+    // add the globals to this definition
+    //
+    for(auto const & g : f_globals)
+    {
+        f_definitions[f_current_tld].set_named_parameter(g.first, g.second, f_errmsg);
+        if(!f_errmsg.empty())
+        {
+            // this should not happen since the globals are defined in a map
+            //
+            f_errno = EINVAL;
+            return;
+        }
+    }
+
+    f_definitions[f_current_tld].reset_set_flags();
+}
+
+
+void tld_compiler::print_tokens()
+{
+    for(auto const & t : f_tokens)
+    {
+        std::cerr
+            << t.get_filename()
+            << ":"
+            << t.get_line()
+            << ": "
+            << static_cast<int>(t.get_token())
+            << " = \""
+            << t.get_value()
+            << "\"\n";
+
+        //std::string const &     get_filename() const;
+        //int                     get_line() const;
+        //token_t                 get_token() const;
+        //std::string const &     get_value() const;
+    }
 }
 
 

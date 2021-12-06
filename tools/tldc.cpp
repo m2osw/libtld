@@ -92,6 +92,19 @@ void compiler::run()
     c.set_output(f_output);
     if(!c.compile())
     {
+        ++f_errcnt;
+        std::cerr
+            << "error:"
+            << c.get_filename()
+            << ":"
+            << c.get_line()
+            << ": "
+            << c.get_errmsg()
+            << " (errno: "
+            << c.get_errno()
+            << ", "
+            << strerror(c.get_errno())
+            << ")\n";
         return;
     }
 }

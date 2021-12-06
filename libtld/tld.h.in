@@ -56,7 +56,8 @@ enum tld_category
     TLD_CATEGORY_GROUPS,
     TLD_CATEGORY_REGION,
     TLD_CATEGORY_TECHNICAL,
-    TLD_CATEGORY_COUNTRY,
+    TLD_CATEGORY_COUNTRY,   // TODO: remove: TLD_CATEGORY_LOCATION + TLD_REGION_COUNTRY 
+    TLD_CATEGORY_LOCATION,
     TLD_CATEGORY_ENTREPRENEURIAL,
     TLD_CATEGORY_BRAND,
     TLD_CATEGORY_UNDEFINED
@@ -70,12 +71,25 @@ enum tld_status
     TLD_STATUS_UNUSED,
     TLD_STATUS_RESERVED,
     TLD_STATUS_INFRASTRUCTURE,
+    TLD_STATUS_EXAMPLE,
     TLD_STATUS_UNDEFINED,
 
     /* The following status is never returned. It is used internally to handle
      * exceptions (i.e. usually 2nd level domain names that should not be.)
      */
     TLD_STATUS_EXCEPTION = 100
+};
+
+enum tld_region
+{
+    TLD_REGION_UNDEFINED,
+    TLD_REGION_AREA,            // i.e. Asia
+    TLD_REGION_UNION,           // i.e. Europe
+    TLD_REGION_COUNTRY,
+    TLD_REGION_PROVINCE,        // section of a country
+    TLD_REGION_STATE,           // states have their own separate laws
+    TLD_REGION_COUNTY,          // section of a country or state
+    TLD_REGION_CITY,
 };
 
 enum tld_result

@@ -732,7 +732,6 @@
     .store.bb .tv.bb
   </area>
   <area category="country" country="Belarus">
-    <!-- .ac.be is not official but we still require it here -->
     .by .com.by .gov.by .mil.by .of.by
   </area>
   <area category="country" country="Belgium">

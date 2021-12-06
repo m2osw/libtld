@@ -41,28 +41,53 @@ public:
     typedef std::list<std::string>                  tld_t;
     typedef std::map<std::string, tld_definition>   map_t;
 
-    void                    add_tld(std::string const & tld);
+    static constexpr std::uint32_t      SET_TLD =         0x0001;
+    static constexpr std::uint32_t      SET_STATUS =      0x0002;
+    static constexpr std::uint32_t      SET_CATEGORY =    0x0004;
+    static constexpr std::uint32_t      SET_COUNTRY =     0x0008;
+    static constexpr std::uint32_t      SET_NIC =         0x0010;
+    static constexpr std::uint32_t      SET_DESCRIPTION = 0x0020;
+    static constexpr std::uint32_t      SET_NOTE =        0x0040;
+    static constexpr std::uint32_t      SET_APPLY_TO =    0x0080;
+    static constexpr std::uint32_t      SET_REGION =      0x0100;
+
+    bool                    add_tld(std::string const & tld);
     tld_t const &           get_tld() const;
     std::string             get_name() const;
-    void                    set_status(tld_status status);
+    bool                    set_status(tld_status status);
     tld_status              get_status() const;
-    void                    set_category(tld_category category);
+    bool                    set_category(tld_category category);
     tld_category            get_category() const;
-    void                    set_country(std::string const & country);
+    bool                    set_country(std::string const & country);
     std::string const &     get_country() const;
-    void                    set_nic(std::string const & nic);
+    bool                    set_region(tld_region region);
+    tld_region              get_region() const;
+    bool                    set_nic(std::string const & nic);
     std::string const &     get_nic() const;
-    void                    set_description(std::string const & description);
+    bool                    set_description(std::string const & description);
     std::string const &     get_description() const;
+    bool                    set_note(std::string const & note);
+    std::string const &     get_note() const;
+    bool                    set_apply_to(std::string const & apply_to);
+    std::string const &     get_apply_to() const;
+    void                    reset_set_flags();
+    void                    set_named_parameter(
+                                  std::string const & name
+                                , std::string const & value
+                                , std::string & errmsg);
 
 private:
+    int                     f_set = 0;
     tld_t                   f_tld = tld_t();
     mutable std::string     f_name = std::string();
     tld_status              f_status = TLD_STATUS_VALID;
     tld_category            f_category = TLD_CATEGORY_UNDEFINED;
     std::string             f_country = std::string();
+    tld_region              f_region = TLD_REGION_UNDEFINED;
     std::string             f_nic = std::string();
     std::string             f_description = std::string();
+    std::string             f_note = std::string();
+    std::string             f_apply_to = std::string();
 };
 class tld_compiler
 {
@@ -74,6 +99,8 @@ public:
     bool                    compile();
     int                     get_errno() const;
     std::string const &     get_errmsg() const;
+    int                     get_line() const;
+    std::string const &     get_filename() const;
 
 private:
     typedef std::vector<std::string>                paths_t;
@@ -130,6 +157,7 @@ private:
     void                    parse_line();
     void                    parse_variable();
     void                    parse_tld();
+    void                    print_tokens();
 
     std::string             f_input_folder = "/usr/share/libtld/tlds";
     std::string             f_output = "/var/lib/libtld/tlds.tld";
