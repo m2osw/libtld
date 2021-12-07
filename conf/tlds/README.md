@@ -71,6 +71,10 @@ The equal sign is used between a variable name and its value.
 
 The dot is used to separate various TLD names.
 
+**Note:** Obviously, this means the periods have nothing to do with a
+possible hierarchy since these are _just_ domain name segment separators.
+Similarly, the backslash is not a separator.
+
 ### Domain Name (Any Unicode character other than `.`, `*`, `[`, and `]`)
 
 When defining a TLD name, any Unicode character is considered valid
@@ -108,14 +112,42 @@ have spaces, tabs, newlines, or some special character that you want to keep
 in the string.
 
 A string can include a quotation mark if escaped by a backslash. The backslash
-can also be escaped by itself (a single backslash is also viewed as a
-backslash in the resulting string).
+can also be escaped by itself (see the Backslash section for more information).
 
 Strings can be written between double or single quotes.
 
 **Note:** a variable value can be written without quotes, in that case, the
           blanks between each token are collapsed to one space and the value
           cannot include newlines.
+
+### Backslash (`\\.` or `\\xXX` or `\\uXXXX` or `\\UXXXXXX`)
+
+We accept backslashed characters anywhere in the document.
+
+The syntax accomodates special characters and Unicode characters of 2, 4, or
+6 digits. You can start the number with zeroes if necessary.
+
+The following are the supported backslash characters:
+
+* `\\` -- insert a backslash
+* `\"` -- insert a double quote
+* `\'` -- insert a single quote
+* '\0` -- Null character
+* '\a` -- Bell/Alert/Audible
+* '\b` -- Backspace, Bell character for some applications
+* '\t` -- Tab character
+* '\f` -- Form feed
+* '\r` -- Carriage return
+* '\n` -- Line feed
+* '\v` -- Vertical Tab
+* '\;` -- Semicolon
+* '\#` -- Number sign
+* '\=` -- Equals sign
+* '\:` -- Colon
+* `\xXX` -- insert the character defined by hexadecimal number XX
+* `\uXXXX` -- insert the character defined by hexadecimal number XXXX
+* `\UXXXXXX` -- insert the character defined by hexadecimal number XXXXXX
+
 
 ### Space (`[:blank:]+`)
 

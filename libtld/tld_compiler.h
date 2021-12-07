@@ -38,7 +38,7 @@
 class tld_definition
 {
 public:
-    typedef std::list<std::string>                  tld_t;
+    typedef std::vector<std::string>                tld_t;
     typedef std::map<std::string, tld_definition>   map_t;
 
     static constexpr std::uint32_t      SET_TLD =         0x0001;
@@ -51,7 +51,7 @@ public:
     static constexpr std::uint32_t      SET_APPLY_TO =    0x0080;
     static constexpr std::uint32_t      SET_REGION =      0x0100;
 
-    bool                    add_tld(std::string const & tld);
+    bool                    add_tld(std::string const & tld, std::string & errmsg);
     tld_t const &           get_tld() const;
     std::string             get_name() const;
     bool                    set_status(tld_status status);
@@ -149,11 +149,12 @@ private:
     void                    find_files(std::string const & path);
     void                    process_input_files();
     void                    process_file(std::string const & filename);
+    bool                    get_backslash(char32_t & c);
     void                    read_line();
     bool                    is_space(char32_t wc) const;
     char32_t                getc();
     void                    ungetc(char32_t c);
-    void                    append_wc(std::string & value, char32_t wc);
+    bool                    append_wc(std::string & value, char32_t wc);
     void                    parse_line();
     void                    parse_variable();
     void                    parse_tld();

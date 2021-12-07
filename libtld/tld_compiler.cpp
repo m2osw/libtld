@@ -48,13 +48,68 @@
 
 
 
-bool tld_definition::add_tld(std::string const & tld)
+bool tld_definition::add_tld(std::string const & tld, std::string & errmsg)
 {
     if((f_set & SET_TLD) != 0)
     {
+        errmsg = "the TLD cannot be edited anymore (cannot add \""
+               + tld
+               + "\" to \""
+               + get_name()
+               + "\").";
         return false;
     }
     // f_set |= SET_TLD; -- reset_set_flags() sets this one
+
+    if(tld.empty())
+    {
+        errmsg = "a TLD segment cannot be an empty string.";
+        return false;
+    }
+
+    if(tld.front() == '-'
+    || tld.back() == '-')
+    {
+        errmsg = "a TLD segment (\""
+               + tld
+               + "\") cannot start or end with a dash ('-').";
+        return false;
+    }
+
+    for(auto const & c : tld)
+    {
+        switch(c)
+        {
+        case '-':
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            break;
+
+        default:
+            if((c < 'a' || c > 'z')
+            && (c < 'A' || c > 'Z')
+            && (c < '0' || c > '9')
+            && static_cast<unsigned char>(c) < 0x80)
+            {
+                errmsg = "this TLD segment: \""
+                       + tld
+                       + "\" includes unsupported character: '"
+                       + c
+                       + "'.";
+                return false;
+            }
+            break;
+
+        }
+    }
 
     f_tld.push_back(tld);
     f_name.clear();
@@ -794,6 +849,123 @@ void tld_compiler::process_file(std::string const & filename)
 }
 
 
+bool tld_compiler::get_backslash(char32_t & c)
+{
+    c = getc();
+    if(c == CHAR_ERR)
+    {
+        return false;
+    }
+
+    int count(0);
+    switch(c)
+    {
+    case CHAR_EOF:
+        c = '\\';
+        return true;
+
+    case '\\':
+    case '\'':
+    case '"':
+    case ';':
+    case '#':
+    case '=':
+    case ':':
+        return true;
+
+    // TODO: support octal
+    //
+    case '0': // null
+        c = 0x0;
+        return true;
+
+    case 'a': // bell
+        c = 0x07;
+        return true;
+
+    case 'b': // backspace
+        c = 0x08;
+        return true;
+
+    case 't': // tab
+        c = 0x09;
+        return true;
+
+    case 'f': // form feed
+        c = 0x0C;
+        return true;
+
+    case 'r': // carriage return
+        c = 0x0D;
+        return true;
+
+    case 'n': // line feed
+        c = 0x0A;
+        return true;
+
+    case 'x':
+    case 'X':
+        count = 2;
+        break;
+
+    case 'u':
+        count = 4;
+        break;
+
+    case 'U':
+        count = 6; // in C/C++ this is 8
+        break;
+
+    }
+
+    c = 0;
+    for(int i(0); i < count; ++i)
+    {
+        char32_t d(getc());
+        if(d == CHAR_ERR)
+        {
+            f_errno = EINVAL;
+            f_errmsg = "unexpected error while reading escape Unicode character.";
+            return false;
+        }
+        if(d == CHAR_EOF)
+        {
+            break;
+        }
+        c <<= 4;
+        if(d >= 'a' && d <= 'f')
+        {
+            c |= d - 'a' + 10;
+        }
+        else if(d >= 'A' && d <= 'F')
+        {
+            c |= d - 'A' + 10;
+        }
+        else if(d >= '0' && d <= '9')
+        {
+            c |= d - '0';
+        }
+        else
+        {
+            if(i == 0)
+            {
+                f_errno = EINVAL;
+                f_errmsg = "a Unicode character must include at least one hexdecimal digit.";
+                return false;
+            }
+
+            // premature end is okay by us
+            //
+            c >>= 4;        // cancel the shift
+            ungetc(d);
+            break;
+        }
+    }
+
+    return true;
+}
+
+
 void tld_compiler::read_line()
 {
     f_tokens.clear();
@@ -942,33 +1114,15 @@ void tld_compiler::read_line()
                     }
                     if(c == '\\')
                     {
-                        c = getc();
-                        if(c == CHAR_ERR)
+                        if(!get_backslash(c))
                         {
                             return;
-                        }
-                        switch(c)
-                        {
-                        case CHAR_EOF:
-                            f_errno = EINVAL;
-                            f_errmsg = "missing closing quote (";
-                            f_errmsg += static_cast<char>(quote);
-                            f_errmsg += ") for string.";
-                            return;
-
-                        case '"':
-                        case '\'':
-                        case '\\':
-                            break;
-
-                        default:
-                            // for anything else, keep the backslash as is
-                            value += '\\';
-                            break;
-
                         }
                     }
-                    append_wc(value, c);
+                    if(!append_wc(value, c))
+                    {
+                        return;
+                    }
                 }
 
                 f_tokens.emplace_back(
@@ -1089,9 +1243,20 @@ void tld_compiler::read_line()
                 // anything else represents a "word"
                 //
                 std::string value;
-                value += static_cast<char>(c);
                 for(;;)
                 {
+                    if(c == '\\')
+                    {
+                        if(!get_backslash(c))
+                        {
+                            return;
+                        }
+                    }
+                    if(!append_wc(value, c))
+                    {
+                        return;
+                    }
+
                     c = getc();
                     if(c == CHAR_ERR)
                     {
@@ -1102,14 +1267,14 @@ void tld_compiler::read_line()
                     {
                         break;
                     }
-                    if(c == '['
+                    if(c == '.'
+                    || c == '['
                     || c == '='
                     || c == ']')
                     {
                         ungetc(c);
                         break;
                     }
-                    append_wc(value, c);
                 }
 
                 f_tokens.emplace_back(
@@ -1221,7 +1386,7 @@ void tld_compiler::ungetc(char32_t c)
 }
 
 
-void tld_compiler::append_wc(std::string & value, char32_t wc)
+bool tld_compiler::append_wc(std::string & value, char32_t wc)
 {
     if(wc < 0x80)
     {
@@ -1236,8 +1401,15 @@ void tld_compiler::append_wc(std::string & value, char32_t wc)
     {
         if(wc >= 0xD800 && wc <= 0xDFFF)
         {
-            // surrogates
-            throw std::logic_error("trying to encode a surrogate character");
+            // you can't directly use a surrogate
+            //
+            // TODO: convert to hex number instead of base 10
+            //
+            f_errno = EINVAL;
+            f_errmsg = "trying to encode a surrogate Unicode code \""
+                     + std::to_string(static_cast<std::uint32_t>(wc))
+                     + "\" (base 10).";
+            return false;
         }
 
         value += static_cast<char>(((wc >> 12) & 0x0F) | 0xE0);
@@ -1253,8 +1425,16 @@ void tld_compiler::append_wc(std::string & value, char32_t wc)
     }
     else if(wc != CHAR_EOF)
     {
-        throw std::logic_error("trying to encode an invalid Unicode character");
+        // TODO: convert to hex number instead of base 10
+        //
+        f_errno = EINVAL;
+        f_errmsg = "trying to encode invalid Unicode character \""
+                 + std::to_string(static_cast<std::uint32_t>(wc))
+                 + "\" (base 10).";
+        return false;
     }
+
+    return true;
 }
 
 
@@ -1415,10 +1595,9 @@ void tld_compiler::parse_tld()
             return;
 
         case TOKEN_WILD_CARD:
-            if(!tld.add_tld("*"))
+            if(!tld.add_tld("*", f_errmsg))
             {
                 f_errno = EINVAL;
-                f_errmsg = "the TLD cannot be edited anymore (\"*\").";
                 return;
             }
             ++idx;
@@ -1453,10 +1632,9 @@ void tld_compiler::parse_tld()
 
                     }
                 }
-                if(!tld.add_tld(segment))
+                if(!tld.add_tld(segment, f_errmsg))
                 {
                     f_errno = EINVAL;
-                    f_errmsg = "the TLD cannot be edited anymore (\"" + segment + "\").";
                     return;
                 }
             }
