@@ -32,10 +32,12 @@
 // self
 //
 #include    "libtld/tld_compiler.h"
+#include    "libtld/tld_file.h"
 
 
 // C++ lib
 //
+#include    <algorithm>
 #include    <fstream>
 #include    <iostream>
 
@@ -48,12 +50,657 @@
 
 
 
-bool tld_definition::add_tld(std::string const & tld, std::string & errmsg)
+
+
+tld_string::tld_string(string_id_t id, std::string const & s)
+    : f_id(id)
+    , f_string(s)
+{
+}
+
+
+string_id_t tld_string::get_id() const
+{
+    return f_id;
+}
+
+
+std::string const & tld_string::get_string() const
+{
+    return f_string;
+}
+
+
+std::string::size_type tld_string::length() const
+{
+    return f_string.length();
+}
+
+
+void tld_string::set_found_in(string_id_t id)
+{
+    f_found_in = id;
+}                   
+
+
+string_id_t tld_string::get_found_in() const
+{
+    return f_found_in;
+}
+
+
+
+
+
+
+
+
+
+
+string_id_t tld_string_manager::add_string(std::string const & s)
+{
+    string_id_t id(find_string(s));
+
+    if(id == STRING_ID_NULL)
+    {
+        id = ++f_next_id;
+        tld_string::pointer_t str(std::make_shared<tld_string>(id, s));
+        f_strings_by_string[s] = str;
+        f_strings_by_id[id] = str;
+
+        f_total_length += s.length();
+        if(s.length() > f_max_length)
+        {
+            f_max_length = s.length();
+        }
+    }
+
+    return id;
+}
+
+
+string_id_t tld_string_manager::find_string(std::string const & s)
+{
+    auto it(f_strings_by_string.find(s));
+    if(it == f_strings_by_string.end())
+    {
+        return STRING_ID_NULL;
+    }
+
+    return it->second->get_id();
+}
+
+
+std::string tld_string_manager::get_string(string_id_t id) const
+{
+    auto it(f_strings_by_id.find(id));
+    if(it == f_strings_by_id.end())
+    {
+        return std::string();
+    }
+    return it->second->get_string();
+}
+
+
+string_id_t tld_string_manager::get_next_string_id() const
+{
+    return f_next_id;
+}
+
+
+std::size_t tld_string_manager::size() const
+{
+    return f_strings_by_id.size();
+}
+
+
+std::size_t tld_string_manager::max_length() const
+{
+    return f_max_length;
+}
+
+
+std::size_t tld_string_manager::total_length() const
+{
+    return f_total_length;
+}
+
+
+std::string const & tld_string_manager::compressed_strings() const
+{
+    return f_merged_strings;
+}
+
+
+std::size_t tld_string_manager::compressed_length() const
+{
+    return f_merged_strings.length();
+}
+
+
+std::string::size_type tld_string_manager::end_start_match(std::string const & s1, std::string const & s2)
+{
+    char const *c1(s1.c_str() + s1.length());
+    char const *c2(s2.c_str());
+    for(std::string::size_type max(std::min(s1.length(), s2.length()) - 1);
+        max > 0;
+        --max)
+    {
+        if(strncmp(c1 - max, c2, max) == 0)
+        {
+            return max;
+        }
+    }
+    return 0;
+}
+
+
+void tld_string_manager::merge_strings()
+{
+    // we want to save all the strings as P-strings (a.k.a. "Pascal" strings)
+    // with the size of the string inside our table; as a result, this means
+    // all our strings can be merged in one superstring (i.e. no '\0' at all)
+    //
+    // (i.e. the implementation of the tld library makes use of a length in
+    // various places, so having the length pre-computed allows us to avoid
+    // an strlen() call each time we need it)
+
+    // first we check for strings fully included in another string; those
+    // do not need any special handling so we eliminate them first
+    //
+//std::cout << "info: find included strings" << std::endl;
+    for(auto & s1 : f_strings_by_id)
+    {
+        for(auto & s2 : f_strings_by_id)
+        {
+            if(s1.first != s2.first
+            && s2.second->get_found_in() == STRING_ID_NULL
+            && s1.second->length() > s2.second->length()
+            && s1.second->get_string().find(s2.second->get_string()) != std::string::npos)
+            {
+                s2.second->set_found_in(s1.first);
+                ++f_included_count;
+                f_included_length += s2.second->length();
+                break;
+            }
+        }
+    }
+
+    // at this time I implemented a simplified superstring implementation;
+    // I just look for the longest merge between two strings and use that
+    // then move on to the next string; it's probably 50% correct already
+    //
+    // note: at the time I tested this one, I saved just under 2Kb so I
+    // don't want to sweat it too much either, that said, with all the
+    // compression, we save 2/3rd of the space (at the moment, a little
+    // under 50Kb final instead of over 150Kb without any compression)
+    //
+//std::cout << "info: find mergeable strings" << std::endl;
+    while(merge_two_strings()); // TODO: This is dead slow...
+
+    // now we have all the strings merged (or not if not possible)
+    // create one big resulting string of the result
+    //
+//std::cout << "info: generate final super-string" << std::endl;
+    for(auto s : f_strings_by_id)
+    {
+        if(s.second->get_found_in() == STRING_ID_NULL)
+        {
+            f_merged_strings += s.second->get_string();
+        }
+    }
+//std::cout << "final super-string: ["
+//    << f_merged_strings
+//    << "] length="
+//    << f_merged_strings.length()
+//    << std::endl;
+}
+
+
+bool tld_string_manager::merge_two_strings()
+{
+    string_id_t id1(STRING_ID_NULL);
+    string_id_t id2(STRING_ID_NULL);
+    std::string::size_type best(0);
+    for(auto & s1 : f_strings_by_id)
+    {
+        if(s1.second->get_found_in() == STRING_ID_NULL
+        && f_strings_reviewed.find(s1.first) == f_strings_reviewed.end())
+        {
+            for(auto & s2 : f_strings_by_id)
+            {
+                if(s1.first != s2.first
+                && s2.second->get_found_in() == STRING_ID_NULL)
+                {
+                    std::string const & str1(s1.second->get_string());
+                    std::string const & str2(s2.second->get_string());
+                    std::string::size_type const d(end_start_match(str1, str2));
+
+                    if(d > best)
+                    {
+                        best = d;
+                        id1 = s1.first;
+                        id2 = s2.first;
+                    }
+                }
+            }
+            f_strings_reviewed.insert(s1.first);
+        }
+    }
+
+    if(best > 0)
+    {
+        std::string const & str1(f_strings_by_id[id1]->get_string());
+        std::string const & str2(f_strings_by_id[id2]->get_string());
+
+        std::string const merged(str1 + str2.substr(best));
+#if 0
+std::cout << "\n"
+<< "Found " << best
+<< ": [" << str1
+<< "] vs [" << str2
+<< "] -> [" << merged
+<< "]" << std::endl;
+#endif
+
+        string_id_t merged_id(add_string(merged));
+
+        f_strings_by_id[id1]->set_found_in(merged_id);
+        f_strings_by_id[id2]->set_found_in(merged_id);
+
+        ++f_merged_count;
+        f_merged_length += best;
+        return true;
+    }
+
+    // no merge happened
+    //
+    return false;
+}
+
+
+std::size_t tld_string_manager::included_count() const
+{
+    return f_included_count;
+}
+
+
+std::size_t tld_string_manager::included_length() const
+{
+    return f_included_length;
+}
+
+
+std::size_t tld_string_manager::merged_count() const
+{
+    return f_merged_count;
+}
+
+
+std::size_t tld_string_manager::merged_length() const
+{
+    return f_merged_length;
+}
+
+
+std::size_t tld_string_manager::get_string_offset(std::string const & s) const
+{
+    return f_merged_strings.find(s);
+}
+
+
+std::size_t tld_string_manager::get_string_offset(string_id_t id) const
+{
+    auto it(f_strings_by_id.find(id));
+    if(it == f_strings_by_id.end())
+    {
+        return std::string::npos;
+    }
+
+    return get_string_offset(it->second->get_string());
+}
+
+
+
+
+
+
+
+
+void tld_tag_manager::add(tags_t const & tags)
+{
+    // transform the tags in an array as we will save in the output
+    //
+    tags_table_t const table(tags_to_table(tags));
+
+    // if another description has the exact same tags, do not duplicate
+    //
+    for(auto const & it : f_tags)
+    {
+        if(it == table)
+        {
+            return;
+        }
+    }
+
+    // save the result in the vector if not found
+    //
+    f_tags.push_back(table);
+}
+
+
+void tld_tag_manager::merge()
+{
+    std::set<int> processed_tags;
+    std::set<int> processed_intermediates;
+    std::set<int> unhandled_tags;
+    std::set<int> unhandled_intermediates;
+    tags_vector_t intermediate_tags;
+
+    for(auto t1(f_tags.begin()); t1 != f_tags.end(); ++t1)
+    {
+        processed_tags.insert(std::distance(f_tags.begin(), t1));
+
+        auto best_match(f_tags.end());
+        auto best_intermediate_match(intermediate_tags.end());
+        std::size_t best(0);
+        std::size_t best_swapped(0);
+
+        // check against other unmerged tags
+        //
+        for(auto t2(f_tags.begin()); t2 != f_tags.end(); ++t2)
+        {
+            if(processed_tags.find(std::distance(f_tags.begin(), t2)) != processed_tags.end())
+            {
+                // this was already used up, ignore
+                continue;
+            }
+
+            std::size_t const d1(end_start_match(*t1, *t2));
+            std::size_t const d2(end_start_match(*t2, *t1));
+            if(d2 > d1)
+            {
+                if(d2 > best_swapped)
+                {
+                    best_swapped = d2;
+                    best_match = t2;
+                }
+            }
+            else
+            {
+                if(d1 > best)
+                {
+                    best = d1;
+                    best_match = t2;
+                }
+            }
+        }
+
+        // check against already merged tags
+        //
+        for(auto ti(intermediate_tags.begin()); ti != intermediate_tags.end(); ++ti)
+        {
+            if(processed_intermediates.find(std::distance(intermediate_tags.begin(), ti)) != processed_intermediates.end())
+            {
+                // TBD: I may just want to remove those used up intermediates
+                //      and I think I don't need this test at all
+                continue;
+            }
+
+            std::size_t const d1(end_start_match(*t1, *ti));
+            std::size_t const d2(end_start_match(*ti, *t1));
+            if(d2 > d1
+            && d2 > best_swapped)
+            {
+                best_swapped = d2;
+                best_intermediate_match = ti;
+            }
+            else if(d1 > best)
+            {
+                best = d1;
+                best_intermediate_match = ti;
+            }
+        }
+
+        if(best_intermediate_match != intermediate_tags.end())
+        {
+            if(best_swapped > best)
+            {
+                tags_table_t merged(*best_intermediate_match);
+                merged.insert(
+                          merged.end()
+                        , t1->begin() + best_swapped
+                        , t1->end());
+                intermediate_tags.push_back(merged);
+            }
+            else
+            {
+                tags_table_t merged(*t1);
+                merged.insert(
+                          merged.end()
+                        , best_intermediate_match->begin() + best
+                        , best_intermediate_match->end());
+                intermediate_tags.push_back(merged);
+            }
+
+            processed_intermediates.insert(std::distance(intermediate_tags.begin(), best_intermediate_match));
+        }
+        else if(best_match != f_tags.end())
+        {
+            // we found a best match meaning that we can merged t1 & t2 a bit
+            //
+            if(best_swapped > best)
+            {
+                tags_table_t merged(*best_match);
+                merged.insert(
+                          merged.end()
+                        , t1->begin() + best_swapped
+                        , t1->end());
+                intermediate_tags.push_back(merged);
+            }
+            else
+            {
+                tags_table_t merged(*t1);
+                merged.insert(
+                          merged.end()
+                        , best_match->begin() + best
+                        , best_match->end());
+                intermediate_tags.push_back(merged);
+            }
+
+            processed_tags.insert(std::distance(f_tags.begin(), best_match));
+        }
+        else
+        {
+            // no merging possible, keep item as is for final
+            //
+            unhandled_tags.insert(std::distance(f_tags.begin(), t1));
+        }
+    }
+
+    // repeat with the intermediate (which is unlikely to generate much
+    // more merging, but we never know...)
+    //
+    bool repeat(false);
+    do
+    {
+        repeat = false;
+
+        for(std::size_t i1(0); i1 < intermediate_tags.size(); ++i1)
+        {
+            if(processed_intermediates.find(i1) != processed_intermediates.end())
+            {
+                continue;
+            }
+
+            processed_intermediates.insert(i1);
+
+            std::size_t best_intermediate_match(static_cast<std::size_t>(-1));
+            std::size_t best(0);
+            std::size_t best_swapped(0);
+
+            // check against other unmerged tags
+            //
+            for(std::size_t i2(0); i2 < intermediate_tags.size(); ++i2)
+            {
+                if(processed_intermediates.find(i2) != processed_intermediates.end())
+                {
+                    // this was already used up, ignore
+                    continue;
+                }
+
+                std::size_t const d1(end_start_match(intermediate_tags[i1], intermediate_tags[i2]));
+                std::size_t const d2(end_start_match(intermediate_tags[i2], intermediate_tags[i1]));
+                if(d2 > d1
+                && d2 > best_swapped)
+                {
+                    best_swapped = d2;
+                    best_intermediate_match = i2;
+                }
+                else if(d1 > best)
+                {
+                    best = d1;
+                    best_intermediate_match = i2;
+                }
+            }
+
+            if(best_intermediate_match != static_cast<std::size_t>(-1))
+            {
+                repeat = true;
+
+                if(best_swapped > best)
+                {
+                    tags_table_t merged(intermediate_tags[best_intermediate_match]);
+                    merged.insert(
+                              merged.end()
+                            , intermediate_tags[i1].begin() + best_swapped
+                            , intermediate_tags[i1].end());
+                    intermediate_tags.push_back(merged);
+                }
+                else
+                {
+                    tags_table_t merged(intermediate_tags[i1]);
+                    merged.insert(
+                              merged.end()
+                            , intermediate_tags[best_intermediate_match].begin() + best
+                            , intermediate_tags[best_intermediate_match].end());
+                    intermediate_tags.push_back(merged);
+                }
+            }
+            else
+            {
+                // no merging possible, keep item as is for now
+                //
+                unhandled_intermediates.insert(i1);
+            }
+        }
+    }
+    while(repeat);
+
+    // once done merging, we end up with a set of tables which we can
+    // merge all together and any tag table can then be found in this
+    // final super-table
+    //
+    for(auto const & idx : unhandled_tags)
+    {
+        f_merged_tags.insert(
+                  f_merged_tags.end()
+                , f_tags[idx].begin()
+                , f_tags[idx].end());
+    }
+
+    for(auto const & idx : unhandled_intermediates)
+    {
+        f_merged_tags.insert(
+                  f_merged_tags.end()
+                , intermediate_tags[idx].begin()
+                , intermediate_tags[idx].end());
+    }
+}
+
+
+tld_tag_manager::tags_table_t const & tld_tag_manager::merged_tags() const
+{
+    return f_merged_tags;
+}
+
+
+std::size_t tld_tag_manager::merged_size() const
+{
+    return f_merged_tags.size();
+}
+
+
+std::size_t tld_tag_manager::get_tag_offset(tags_t const & tags) const
+{
+    tags_table_t const table(tags_to_table(tags));
+    auto it(std::search(
+            f_merged_tags.begin(), f_merged_tags.end(),
+            table.begin(), table.end()));
+    if(it == f_merged_tags.end())
+    {
+        throw std::logic_error("tags not found in the list of merged tags.");
+    }
+
+    return std::distance(f_merged_tags.begin(), it);
+}
+
+
+tld_tag_manager::tags_table_t tld_tag_manager::tags_to_table(tags_t const & tags) const
+{
+    tld_tag_manager::tags_table_t table;
+    for(auto const & t : tags)
+    {
+        table.push_back(t.first);
+        table.push_back(t.second);
+    }
+    return table;
+}
+
+
+std::size_t tld_tag_manager::end_start_match(tags_table_t const & tag1, tags_table_t const & tag2)
+{
+    for(std::string::size_type max(std::min(tag1.size(), tag2.size()) - 1);
+        max > 0;
+        --max)
+    {
+        if(std::equal(tag1.end() - max, tag1.end(), tag2.begin()))
+        {
+            return max;
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tld_definition::tld_definition(tld_string_manager & strings)
+    : f_strings(strings)
+{
+}
+
+
+bool tld_definition::add_segment(
+          std::string const & segment
+        , std::string & errmsg)
 {
     if((f_set & SET_TLD) != 0)
     {
         errmsg = "the TLD cannot be edited anymore (cannot add \""
-               + tld
+               + segment
                + "\" to \""
                + get_name()
                + "\").";
@@ -61,22 +708,22 @@ bool tld_definition::add_tld(std::string const & tld, std::string & errmsg)
     }
     // f_set |= SET_TLD; -- reset_set_flags() sets this one
 
-    if(tld.empty())
+    if(segment.empty())
     {
         errmsg = "a TLD segment cannot be an empty string.";
         return false;
     }
 
-    if(tld.front() == '-'
-    || tld.back() == '-')
+    if(segment.front() == '-'
+    || segment.back() == '-')
     {
         errmsg = "a TLD segment (\""
-               + tld
+               + segment
                + "\") cannot start or end with a dash ('-').";
         return false;
     }
 
-    for(auto const & c : tld)
+    for(auto const & c : segment)
     {
         switch(c)
         {
@@ -96,11 +743,10 @@ bool tld_definition::add_tld(std::string const & tld, std::string & errmsg)
         default:
             if((c < 'a' || c > 'z')
             && (c < 'A' || c > 'Z')
-            && (c < '0' || c > '9')
             && static_cast<unsigned char>(c) < 0x80)
             {
                 errmsg = "this TLD segment: \""
-                       + tld
+                       + segment
                        + "\" includes unsupported character: '"
                        + c
                        + "'.";
@@ -111,31 +757,130 @@ bool tld_definition::add_tld(std::string const & tld, std::string & errmsg)
         }
     }
 
-    f_tld.push_back(tld);
-    f_name.clear();
+    f_tld.push_back(f_strings.add_string(segment));
 
     return true;
 }
 
 
-tld_definition::tld_t const & tld_definition::get_tld() const
+tld_definition::segments_t const & tld_definition::get_segments() const
 {
     return f_tld;
 }
 
 
+/** \brief The domain name with periods separating each segment.
+ *
+ * This function rebuilds the full domain name. The idea is to have a way
+ * to write error messages about various errors including the domain name.
+ *
+ * \return The name of the domain with each segment separated by periods.
+ */
 std::string tld_definition::get_name() const
 {
-    if(f_name.empty())
+    std::string name;
+
+    for(auto const & segment : f_tld)
     {
-        for(auto const & segment : f_tld)
+        std::string const s(f_strings.get_string(segment));
+        if(s.empty())
         {
-            f_name += '.';
-            f_name += segment;
+            throw std::logic_error("a segment string is not defined");
+        }
+        name += '.';
+        name += s;
+    }
+
+    return name;
+}
+
+
+/** \brief Get the full TLD as a reversed domain name.
+ *
+ * This function re-assembles the domain segments in a full name in reverse
+ * order. This is used to properly sort sub-domain names (still part of the
+ * TLD) by their parent domain name.
+ *
+ * We use '!' as the separate instead of the '.' because some domain names
+ * have a dash in their as the order still needs to be correct and '.' > '-'
+ * when we need the opposite, but '!' < '-'.
+ *
+ * \return The concatenated domain name in reverse order with '!' as separators.
+ */
+std::string tld_definition::get_inverted_name() const
+{
+    std::string name;
+
+    for(auto it(f_tld.rbegin()); it != f_tld.rend(); ++it)
+    {
+        std::string const s(f_strings.get_string(*it));
+        if(s.empty())
+        {
+            throw std::logic_error("a segment string is not defined");
+        }
+        name += '!';
+        name += s;
+    }
+
+    return name;
+}
+
+
+std::string tld_definition::get_parent_name() const
+{
+    std::string name;
+
+    bool skip_first(true);
+    for(auto const & segment : f_tld)
+    {
+        std::string const s(f_strings.get_string(segment));
+        if(s.empty())
+        {
+            throw std::logic_error("a segment string is not defined");
+        }
+        if(skip_first)
+        {
+            skip_first = false;
+        }
+        else
+        {
+            name += '.';
+            name += s;
         }
     }
 
-    return f_name;
+    return name;
+}
+
+
+std::string tld_definition::get_parent_inverted_name() const
+{
+    std::string name;
+
+    for(std::size_t idx(f_tld.size() - 1); idx > 0; --idx)
+    {
+        std::string const s(f_strings.get_string(f_tld[idx]));
+        if(s.empty())
+        {
+            throw std::logic_error("a segment string is not defined");
+        }
+        name += '!';
+        name += s;
+    }
+
+    return name;
+}
+
+
+void tld_definition::set_index(int idx)
+{
+    f_index = idx;
+}
+
+
+int tld_definition::get_index() const
+{
+    return f_index;
 }
 
 
@@ -159,128 +904,6 @@ tld_status tld_definition::get_status() const
 }
 
 
-bool tld_definition::set_category(tld_category category)
-{
-    if((f_set & SET_CATEGORY) != 0)
-    {
-        return false;
-    }
-    f_set |= SET_CATEGORY;
-
-    f_category = category;
-
-    return true;
-}
-
-
-tld_category tld_definition::get_category() const
-{
-    return f_category;
-}
-
-
-bool tld_definition::set_country(std::string const & country)
-{
-    if((f_set & SET_COUNTRY) != 0)
-    {
-        return false;
-    }
-    f_set |= SET_COUNTRY;
-
-    // TODO: verify country name
-    f_country = country;
-    f_category = TLD_CATEGORY_COUNTRY;
-
-    return true;
-}
-
-
-std::string const & tld_definition::get_country() const
-{
-    return f_country;
-}
-
-
-bool tld_definition::set_region(tld_region region)
-{
-    if((f_set & SET_REGION) != 0)
-    {
-        return false;
-    }
-    f_set |= SET_REGION;
-
-    f_region = region;
-
-    return true;
-}
-
-
-tld_region tld_definition::get_region() const
-{
-    return f_region;
-}
-
-
-bool tld_definition::set_nic(std::string const & nic)
-{
-    if((f_set & SET_NIC) != 0)
-    {
-        return false;
-    }
-    f_set |= SET_NIC;
-
-    f_nic = nic;
-
-    return true;
-}
-
-
-std::string const & tld_definition::get_nic() const
-{
-    return f_nic;
-}
-
-
-bool tld_definition::set_description(std::string const & description)
-{
-    if((f_set & SET_DESCRIPTION) != 0)
-    {
-        return false;
-    }
-    f_set |= SET_DESCRIPTION;
-
-    f_description = description;
-
-    return true;
-}
-
-
-std::string const & tld_definition::get_description() const
-{
-    return f_description;
-}
-
-
-bool tld_definition::set_note(std::string const & note)
-{
-    if((f_set & SET_NOTE) != 0)
-    {
-        return false;
-    }
-    f_set |= SET_NOTE;
-
-    f_note = note;
-
-    return true;
-}
-
-
-std::string const & tld_definition::get_note() const
-{
-    return f_note;
-}
-
-
 bool tld_definition::set_apply_to(std::string const & apply_to)
 {
     if((f_set & SET_APPLY_TO) != 0)
@@ -289,15 +912,46 @@ bool tld_definition::set_apply_to(std::string const & apply_to)
     }
     f_set |= SET_APPLY_TO;
 
+    if(!apply_to.empty())
+    {
+        if(apply_to[0] == '.')
+        {
+            // remove the introductory period if present
+            //
+            f_apply_to = apply_to.substr(1);
+            return true;
+        }
+    }
     f_apply_to = apply_to;
 
     return true;
 }
 
 
-std::string const & tld_definition::get_apply_to() const
+std::string tld_definition::get_apply_to() const
 {
     return f_apply_to;
+}
+
+
+void tld_definition::add_tag(
+      std::string const & tag_name
+    , std::string const & value
+    , std::string & errmsg)
+{
+    if(tag_name.empty())
+    {
+        errmsg = "tag name cannot be empty.";
+        return;
+    }
+
+    f_tags[f_strings.add_string(tag_name)] = f_strings.add_string(value);
+}
+
+
+tags_t const & tld_definition::get_tags() const
+{
+    return f_tags;
 }
 
 
@@ -323,209 +977,6 @@ void tld_definition::set_named_parameter(
                 {
                     errmsg = "\"apply_to\" defined a second time (\"" + value + "\").";
                 }
-                return;
-            }
-            break;
-
-        case 'c':
-            if(name == "category")
-            {
-                if(!value.empty())
-                {
-                    tld_category category(TLD_CATEGORY_UNDEFINED);
-                    switch(value[0])
-                    {
-                    case 'b':
-                        if(value == "brand")
-                        {
-                            category = TLD_CATEGORY_BRAND;
-                        }
-                        break;
-
-                    case 'c':
-                        if(value == "country")
-                        {
-                            category = TLD_CATEGORY_LOCATION;
-                            if(!set_region(TLD_REGION_COUNTRY))
-                            {
-                                errmsg = "\"category\" / \"region\" defined a twice (\"" + value + "\").";
-                                return;
-                            }
-                        }
-                        break;
-
-                    case 'e':
-                        if(value == "entrepreneurial")
-                        {
-                            category = TLD_CATEGORY_ENTREPRENEURIAL;
-                        }
-                        break;
-
-                    case 'g':
-                        if(value == "group")
-                        {
-                            category = TLD_CATEGORY_GROUP;
-                        }
-                        break;
-
-                    case 'i':
-                        if(value == "international")
-                        {
-                            category = TLD_CATEGORY_INTERNATIONAL;
-                        }
-                        break;
-
-                    case 'l':
-                        if(value == "language")
-                        {
-                            category = TLD_CATEGORY_LANGUAGE;
-                        }
-                        else if(value == "location")
-                        {
-                            category = TLD_CATEGORY_LOCATION;
-                        }
-                        break;
-
-                    case 'p':
-                        if(value == "professionals")
-                        {
-                            category = TLD_CATEGORY_PROFESSIONALS;
-                        }
-                        break;
-
-                    case 'r':
-                        if(value == "region")
-                        {
-                            category = TLD_CATEGORY_REGION;
-                        }
-                        break;
-
-                    case 't':
-                        if(value == "technical")
-                        {
-                            category = TLD_CATEGORY_TECHNICAL;
-                        }
-                        break;
-
-                    }
-                    if(category != TLD_CATEGORY_UNDEFINED)
-                    {
-                        if(!set_category(category))
-                        {
-                            errmsg = "\"category\" of \""
-                                   + get_name()
-                                   + "\" defined a second time (\""
-                                   + value
-                                   + "\").";
-                        }
-                        return;
-                    }
-                }
-                errmsg = "unknown \"category\": \"" + value + "\".";
-                return;
-            }
-            if(name == "country")
-            {
-                if(!set_country(value))
-                {
-                    errmsg = "\"country\" defined a second time (\"" + value + "\").";
-                }
-                return;
-            }
-            break;
-
-        case 'd':
-            if(name == "description")
-            {
-                if(!set_description(value))
-                {
-                    errmsg = "\"description\" defined a second time (\"" + value + "\").";
-                }
-                return;
-            }
-            break;
-
-        case 'n':
-            if(name == "nic")
-            {
-                if(!set_nic(value))
-                {
-                    errmsg = "\"nic\" defined a second time (\"" + value + "\").";
-                }
-                return;
-            }
-            if(name == "note")
-            {
-                if(!set_note(value))
-                {
-                    errmsg = "\"note\" defined a second time (\"" + value + "\").";
-                }
-                return;
-            }
-            break;
-
-        case 'r':
-            if(name == "region")
-            {
-                if(!value.empty())
-                {
-                    tld_region region(TLD_REGION_UNDEFINED);
-                    switch(value[0])
-                    {
-                    case 'a':
-                        if(value == "area")
-                        {
-                            region = TLD_REGION_AREA;
-                        }
-                        break;
-
-                    case 'c':
-                        if(value == "city")
-                        {
-                            region = TLD_REGION_CITY;
-                        }
-                        else if(value == "country")
-                        {
-                            region = TLD_REGION_COUNTRY;
-                        }
-                        else if(value == "county")
-                        {
-                            region = TLD_REGION_COUNTY;
-                        }
-                        break;
-
-                    case 'p':
-                        if(value == "province")
-                        {
-                            region = TLD_REGION_PROVINCE;
-                        }
-                        break;
-
-                    case 's':
-                        if(value == "state")
-                        {
-                            region = TLD_REGION_STATE;
-                        }
-                        break;
-
-                    case 'u':
-                        if(value == "union")
-                        {
-                            region = TLD_REGION_UNION;
-                        }
-                        break;
-
-                    }
-                    if(region != TLD_REGION_UNDEFINED)
-                    {
-                        if(!set_region(region))
-                        {
-                            errmsg = "\"region\" defined a second time (\"" + value + "\").";
-                        }
-                        return;
-                    }
-                }
-                errmsg = "unknown \"region\": \"" + value + "\".";
                 return;
             }
             break;
@@ -613,6 +1064,37 @@ void tld_definition::set_named_parameter(
 }
 
 
+void tld_definition::set_start_offset(uint16_t start)
+{
+    if(f_start_offset == USHRT_MAX)
+    {
+        f_start_offset = start;
+    }
+}
+
+
+void tld_definition::set_end_offset(uint16_t end)
+{
+    f_end_offset = end;
+}
+
+
+uint16_t tld_definition::get_start_offset() const
+{
+    return f_start_offset;
+}
+
+
+uint16_t tld_definition::get_end_offset() const
+{
+    return f_end_offset;
+}
+
+
+
+
+
+
 
 
 
@@ -637,6 +1119,13 @@ std::string const & tld_compiler::token::get_filename() const
 {
     return f_filename;
 }
+
+
+tld_string_manager & tld_compiler::get_string_manager()
+{
+    return f_strings;
+}
+
 
 
 int tld_compiler::token::get_line() const
@@ -697,6 +1186,28 @@ bool tld_compiler::compile()
     }
 
     process_input_files();
+    if(get_errno() != 0)
+    {
+        return false;
+    }
+
+    define_default_category();
+    if(get_errno() != 0)
+    {
+        return false;
+    }
+
+    // the merge feature is going to add merged strings to the table which
+    // are not going to be found in the description tables, so here we want
+    // to save the total number of strings prior to the merge process
+    //
+    f_strings_count = static_cast<string_id_t>(f_strings.size());
+
+    f_strings.merge_strings();
+
+    compress_tags();
+
+    output_tlds();
     if(get_errno() != 0)
     {
         return false;
@@ -801,7 +1312,8 @@ void tld_compiler::process_input_files()
 
 void tld_compiler::process_file(std::string const & filename)
 {
-    f_globals.clear();
+    f_global_variables.clear();
+    f_global_tags.clear();
     f_current_tld.clear();
 
     struct stat s;
@@ -1195,7 +1707,8 @@ void tld_compiler::read_line()
                     if((c < 'A' || c > 'Z')
                     && (c < 'a' || c > 'z')
                     && (c < '0' || c > '9')
-                    && c != '_')
+                    && c != '_'
+                    && c != '/')
                     {
                         break;
                     }
@@ -1472,6 +1985,30 @@ void tld_compiler::parse_variable()
         return;
     }
 
+    std::string const & name(f_tokens[0].get_value());
+    std::string::size_type const pos(name.find('/'));
+    bool const is_tag(pos != std::string::npos);
+    if(is_tag)
+    {
+        if(name.substr(0, pos) != "tag")
+        {
+            f_errno = EINVAL;
+            f_errmsg = "variable name \""
+                + name
+                + "\" does not start with \"tag/...\".";
+            return;
+        }
+        std::string::size_type const more(name.find('/', pos + 1));
+        if(more != std::string::npos)
+        {
+            f_errno = EINVAL;
+            f_errmsg = "variable name \""
+                + name
+                + "\" cannot include more than one slash (/).";
+            return;
+        }
+    }
+
     std::string value;
     if(f_tokens.size() > 3UL)
     {
@@ -1488,7 +2025,7 @@ void tld_compiler::parse_variable()
                 return;
             }
             if(idx != 2)
-            {   
+            {
                 value += ' ';
             }
             value = f_tokens[idx].get_value();
@@ -1499,39 +2036,53 @@ void tld_compiler::parse_variable()
         value = f_tokens[2].get_value();
     }
 
-    std::string const & name(f_tokens[0].get_value());
-
-    if(f_current_tld.empty())
+    if(is_tag)
     {
-        if(f_globals.find(name) != f_globals.end())
+        std::string const tag_name(name.substr(pos + 1));
+        if(f_current_tld.empty())
         {
-            f_errno = EINVAL;
-            f_errmsg = "\"" + name + "\" global variable defined more than once.";
-            return;
+            f_global_tags[tag_name] = value;
         }
-
-        // name != "apply_to" -- I don't think that would be useful as a global
-        if(name != "category"
-        && name != "country"
-        && name != "description"
-        && name != "nic"
-        && name != "note"
-        && name != "status")
+        else
         {
-            f_errno = EINVAL;
-            f_errmsg = "variable with name \"" + name + "\" is not supported.";
-            return;
+            f_definitions[f_current_tld]->add_tag(tag_name, value, f_errmsg);
+            if(!f_errmsg.empty())
+            {
+                f_errno = EINVAL;
+                return;
+            }
         }
-
-        f_globals[name] = value;
     }
     else
     {
-        f_definitions[f_current_tld].set_named_parameter(name, value, f_errmsg);
-        if(!f_errmsg.empty())
+        if(f_current_tld.empty())
         {
-            f_errno = EINVAL;
-            return;
+            if(f_global_variables.find(name) != f_global_variables.end())
+            {
+                f_errno = EINVAL;
+                f_errmsg = "\"" + name + "\" global variable defined more than once.";
+                return;
+            }
+
+            // name != "apply_to" -- I don't think that would be useful as a global
+            if(pos != std::string::npos     // any tag
+            && name != "status")
+            {
+                f_errno = EINVAL;
+                f_errmsg = "variable with name \"" + name + "\" is not supported. Missing \"tag/\"?";
+                return;
+            }
+
+            f_global_variables[name] = value;
+        }
+        else
+        {
+            f_definitions[f_current_tld]->set_named_parameter(name, value, f_errmsg);
+            if(!f_errmsg.empty())
+            {
+                f_errno = EINVAL;
+                return;
+            }
         }
     }
 }
@@ -1579,7 +2130,7 @@ void tld_compiler::parse_tld()
         }
     }
 
-    tld_definition tld;
+    tld_definition::pointer_t tld(std::make_shared<tld_definition>(f_strings));
 
     // a TLD always starts with a dot, but we do not force the user to enter it
     //
@@ -1595,7 +2146,7 @@ void tld_compiler::parse_tld()
             return;
 
         case TOKEN_WILD_CARD:
-            if(!tld.add_tld("*", f_errmsg))
+            if(!tld->add_segment("*", f_errmsg))
             {
                 f_errno = EINVAL;
                 return;
@@ -1632,7 +2183,7 @@ void tld_compiler::parse_tld()
 
                     }
                 }
-                if(!tld.add_tld(segment, f_errmsg))
+                if(!tld->add_segment(segment, f_errmsg))
                 {
                     f_errno = EINVAL;
                     return;
@@ -1668,14 +2219,17 @@ void tld_compiler::parse_tld()
         }
     }
 
-    f_current_tld = tld.get_name();
+    // use the '!' (0x21) for sorting, because '.' (0x2E) is after '-' (0x2D)
+    // and there is no '!' allowed in domain names (so far)
+    //
+    f_current_tld = tld->get_inverted_name();
     f_definitions[f_current_tld] = tld;
 
     // add the globals to this definition
     //
-    for(auto const & g : f_globals)
+    for(auto const & g : f_global_variables)
     {
-        f_definitions[f_current_tld].set_named_parameter(g.first, g.second, f_errmsg);
+        f_definitions[f_current_tld]->set_named_parameter(g.first, g.second, f_errmsg);
         if(!f_errmsg.empty())
         {
             // this should not happen since the globals are defined in a map
@@ -1685,7 +2239,19 @@ void tld_compiler::parse_tld()
         }
     }
 
-    f_definitions[f_current_tld].reset_set_flags();
+    for(auto const & g : f_global_tags)
+    {
+        f_definitions[f_current_tld]->add_tag(g.first, g.second, f_errmsg);
+        if(!f_errmsg.empty())
+        {
+            // this should not happen since the globals are defined in a map
+            //
+            f_errno = EINVAL;
+            return;
+        }
+    }
+
+    f_definitions[f_current_tld]->reset_set_flags();
 }
 
 
@@ -1710,6 +2276,356 @@ void tld_compiler::print_tokens()
     }
 }
 
+
+void tld_compiler::define_default_category()
+{
+    string_id_t const category_id(f_strings.add_string("category"));
+    string_id_t const country_id(f_strings.add_string("country"));
+
+    for(auto const & d : f_definitions)
+    {
+        tags_t const & tags(d.second->get_tags());
+        auto it(tags.find(category_id));
+        if(it == tags.end())
+        {
+            // there is no category yet, let's determine that now
+            //
+            if(tags.find(country_id) != tags.end())
+            {
+                d.second->add_tag("category", "country", f_errmsg);
+                if(!f_errmsg.empty())
+                {
+                    f_errno = EINVAL;
+                    return;
+                }
+            }
+            else
+            {
+                f_errmsg = "domain \""
+                    + d.second->get_name()
+                    + "\" has no category and we had no way to determine a default category.";
+                f_errno = EINVAL;
+                return;
+            }
+        }
+    }
+}
+
+
+void tld_compiler::compress_tags()
+{
+    for(auto const & d : f_definitions)
+    {
+        f_tags.add(d.second->get_tags());
+    }
+
+    f_tags.merge();
+}
+
+
+uint16_t tld_compiler::find_definition(std::string name) const
+{
+    if(!name.empty())
+    {
+        if(name[0] != '.')
+        {
+            name = '.' + name;
+        }
+        for(auto const & it : f_definitions)
+        {
+            if(it.second->get_name() == name)
+            {
+                return it.second->get_index();
+            }
+        }
+    }
+
+    return USHRT_MAX;
+}
+
+
+void tld_compiler::output_tlds()
+{
+    // determine the longest TLD in terms of levels
+    // (i.e. number of periods)
+    //
+    f_tld_max_level = 0;
+    for(auto const & d : f_definitions)
+    {
+        std::size_t const level(d.second->get_segments().size());
+        if(f_tld_max_level < level)
+        {
+            f_tld_max_level = level;
+        }
+    }
+
+    std::ofstream out;
+    out.open(f_output);
+    if(!out)
+    {
+        int const e(errno);
+        std::cerr
+            << "error: could not open output file \""
+            << f_output
+            << "\", errno: "
+            << e
+            << ", "
+            << strerror(e)
+            << ".\n";
+        return;
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    tld_header header =
+    {
+        .f_version_major = 1,
+        .f_version_minor = 0,
+        .f_pad0 = 0,
+        .f_tld_max_level = f_tld_max_level,
+        .f_tld_start_offset = USHRT_MAX,
+        .f_tld_end_offset = USHRT_MAX,
+        .f_created_on = f_created_on,
+    };
+#pragma GCC diagnostic pop
+
+    // define the "offsets" (indices) of all the items
+    //
+    // the index will be used for the `apply_to` below to properly
+    // determine the exception
+    //
+    int i(0);
+    for(uint8_t level(f_tld_max_level); level > 0; --level)
+    {
+        for(auto const & d : f_definitions)
+        {
+            if(d.second->get_segments().size() == level)
+            {
+                d.second->set_index(i);
+                ++i;
+            }
+        }
+    }
+
+    // now we create the TLD table with the largest levels first,
+    // as we do so we save the index of the start and stop
+    // points of each level in the previous level (hence the
+    // need for a level 0 entry)
+    //
+    // we create the table in memory; we need the level 0 offsets in
+    // the header before we can start saving the results in the output
+    // file...
+    //
+    std::vector<tld_description> descriptions;
+    i = 0;
+    for(uint8_t level(header.f_tld_max_level); level > 0; --level)
+    {
+        for(auto const & d : f_definitions)
+        {
+            if(d.second->get_segments().size() == level)
+            {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+                tld_description description =
+                {
+                    // make sure it's set to exception if we have an "apply to"
+                    // (probably not required since we can check whether we do
+                    // have an apply to)
+                    //
+                    .f_status = static_cast<uint8_t>(d.second->get_apply_to().empty()
+                                    ? d.second->get_status()
+                                    : TLD_STATUS_EXCEPTION),
+                    .f_exception_level = level,
+                    .f_exception_apply_to = find_definition(d.second->get_apply_to()),
+                    .f_start_offset = d.second->get_start_offset(),
+                    .f_end_offset = d.second->get_end_offset(),
+                    .f_tld = static_cast<uint16_t>(d.second->get_segments()[0]),
+                    .f_tags = static_cast<uint16_t>(f_tags.get_tag_offset(d.second->get_tags())),
+                    .f_tags_count = static_cast<uint16_t>(d.second->get_tags().size()),
+                };
+#pragma GCC diagnostic pop
+
+                std::string const parent_name(d.second->get_parent_inverted_name());
+                if(parent_name.empty())
+                {
+                    if(f_tld_start_offset == USHRT_MAX)
+                    {
+                        f_tld_start_offset = i;
+                    }
+                    f_tld_end_offset = i + 1;
+                }
+                else
+                {
+                    auto it(f_definitions.find(parent_name));
+                    if(it == f_definitions.end())
+                    {
+                        f_errno = EINVAL;
+                        f_errmsg = "parent domain \""
+                            + parent_name
+                            + "\" not found.";
+                        return;
+                    }
+                    it->second->set_start_offset(i);
+                    it->second->set_end_offset(i + 1);
+                }
+
+                descriptions.push_back(description);
+
+                ++i;
+            }
+        }
+    }
+
+    header.f_tld_start_offset = f_tld_start_offset;
+    header.f_tld_end_offset = f_tld_end_offset;
+
+    tld_hunk header_hunk;
+    header_hunk.f_name = TLD_HEADER;
+    header_hunk.f_size = sizeof(tld_header);
+
+    tld_hunk descriptions_hunk;
+    descriptions_hunk.f_name = TLD_DESCRIPTIONS;
+    descriptions_hunk.f_size = sizeof(tld_description) * f_definitions.size();
+
+    tld_hunk tags_hunk;
+    tags_hunk.f_name = TLD_TAGS;
+    tags_hunk.f_size = f_tags.merged_tags().size() * sizeof(uint32_t); // NOT sizeof(tld_tags) because the merged vector is not one to one equivalent
+
+    tld_hunk string_offsets_hunk;
+    string_offsets_hunk.f_name = TLD_STRING_OFFSETS;
+    string_offsets_hunk.f_size = static_cast<std::size_t>(f_strings_count) * sizeof(tld_string_offset);
+
+    tld_hunk string_lengths_hunk;
+    string_lengths_hunk.f_name = TLD_STRING_LENGTHS;
+    string_lengths_hunk.f_size = static_cast<std::size_t>(f_strings_count) * sizeof(tld_string_length);
+
+    tld_hunk strings_hunk;
+    strings_hunk.f_name = TLD_STRINGS;
+    strings_hunk.f_size = f_strings.compressed_length();
+
+    tld_magic magic;
+    magic.f_riff = TLD_MAGIC;
+    magic.f_size = sizeof(magic.f_type)
+        + sizeof(tld_hunk) + header_hunk.f_size
+        + sizeof(tld_hunk) + descriptions_hunk.f_size
+        + sizeof(tld_hunk) + tags_hunk.f_size
+        + sizeof(tld_hunk) + string_offsets_hunk.f_size
+        + sizeof(tld_hunk) + string_lengths_hunk.f_size
+        + sizeof(tld_hunk) + strings_hunk.f_size;
+    magic.f_type = TLD_TLDS;
+
+    out.write(reinterpret_cast<char const *>(&magic), sizeof(magic));
+
+    // header
+    //
+    out.write(reinterpret_cast<char const *>(&header_hunk), sizeof(header_hunk));
+    out.write(reinterpret_cast<char const *>(&header), sizeof(header));
+
+    // descriptions
+    //
+    out.write(reinterpret_cast<char const *>(&descriptions_hunk), sizeof(descriptions_hunk));
+    out.write(reinterpret_cast<char const *>(descriptions.data()), descriptions.size() * sizeof(tld_description));
+
+    // tags
+    //
+    out.write(reinterpret_cast<char const *>(&tags_hunk), sizeof(tags_hunk));
+    out.write(reinterpret_cast<char const *>(f_tags.merged_tags().data()), tags_hunk.f_size);
+
+    // strings: offsets
+    //
+    out.write(reinterpret_cast<char const *>(&string_offsets_hunk), sizeof(string_offsets_hunk));
+    for(string_id_t idx(1); idx <= f_strings_count; ++idx)
+    {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+        tld_string_offset offset =
+        {
+            .f_string_offset = static_cast<uint32_t>(f_strings.get_string_offset(idx)),
+        };
+#pragma GCC diagnostic pop
+        out.write(reinterpret_cast<char const *>(&offset), sizeof(offset));
+    }
+
+    // strings: lengths
+    //
+    out.write(reinterpret_cast<char const *>(&string_lengths_hunk), sizeof(string_lengths_hunk));
+    for(string_id_t idx(1); idx <= f_strings_count; ++idx)
+    {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+        tld_string_length length =
+        {
+            .f_string_length = static_cast<uint16_t>(f_strings.get_string(idx).length()),
+        };
+#pragma GCC diagnostic pop
+        out.write(reinterpret_cast<char const *>(&length), sizeof(length));
+    }
+
+    // strings: actual strings
+    //
+    out.write(reinterpret_cast<char const *>(&strings_hunk), sizeof(strings_hunk));
+    out.write(f_strings.compressed_strings().c_str(), strings_hunk.f_size);
+}
+
+
+void tld_compiler::output_to_json(std::ostream & out) const
+{
+    out << "{\n";
+    out << "\"version\":\"" << TLD_FILE_VERSION_MAJOR
+                     << '.' << TLD_FILE_VERSION_MINOR << "\",\n";
+    out << "\"created-on\":" << f_created_on << ",\n";
+    out << "\"max-level\":" << static_cast<int>(f_tld_max_level) << ",\n";
+    out << "\"tld-start-offset\":" << f_tld_start_offset << ",\n";
+    out << "\"tld-end-offset\":" << f_tld_end_offset << ",\n";
+    out << "\"descriptions\":[\n";
+    for(std::size_t idx(0); idx < f_definitions.size(); ++idx)
+    {
+        auto it(std::find_if(
+              f_definitions.begin()
+            , f_definitions.end()
+            , [idx](auto const & d)
+                {
+                    return d.second->get_index() == static_cast<int>(idx);
+                }));
+        if(it == f_definitions.end())
+        {
+            std::cerr << "error: could not find definition at index "
+                << idx
+                << "\n";
+            return;
+        }
+        //out << "\"index\":\"" << it->second->get_index() << "\"";
+
+        out << (idx == 0 ? "" : ",\n");
+
+        //out << "/* " << it->second->get_name() << " */ ";
+
+        out << "{\"tld\":\"" << f_strings.get_string(it->second->get_segments()[0]) << "\"";
+
+        out << ",\"status\":\"" << tld_status_to_string(it->second->get_status()) << "\"";
+
+        if(!it->second->get_apply_to().empty())
+        {
+            out << ",\"apply-to\":\"" << it->second->get_apply_to() << "\"";
+        }
+
+        if(it->second->get_start_offset() != USHRT_MAX)
+        {
+            out << ",\"start-offset\":" << it->second->get_start_offset();
+            out << ",\"end-offset\":" << it->second->get_end_offset();
+        }
+
+        for(auto const & t : it->second->get_tags())
+        {
+            out << ",\"" << f_strings.get_string(t.first)
+                << "\":\"" << f_strings.get_string(t.second)
+                << "\"";
+        }
+
+        out << "}";
+    }
+    out << "]}\n";
+}
 
 
 // vim: ts=4 sw=4 et

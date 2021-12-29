@@ -29,17 +29,126 @@
  * TLDs.
  */
 
+// self
+//
 #include "libtld/tld.h"
 
 #ifdef __cplusplus
-#include <list>
-#include <map>
-#include <vector>
+
+// C++ lib
+//
+#include    <iostream>
+#include    <list>
+#include    <map>
+#include    <memory>
+#include    <set>
+#include    <vector>
+
+// C lib
+//
+#include    <limits.h>
+
+
+typedef uint32_t                            string_id_t;
+typedef std::map<string_id_t, string_id_t>  tags_t;
+typedef uint32_t                            tag_id_t;
+
+constexpr string_id_t       STRING_ID_NULL = 0;
+
+class tld_string
+{
+public:
+    typedef std::shared_ptr<tld_string>             pointer_t;
+    typedef std::map<std::string, pointer_t>        map_by_string_t;
+    typedef std::map<string_id_t, pointer_t>        map_by_id_t;
+
+                            tld_string(string_id_t id, std::string const & s);
+
+    string_id_t             get_id() const;
+    std::string const &     get_string() const;
+    std::string::size_type  length() const;
+    void                    set_found_in(string_id_t id);
+    string_id_t             get_found_in() const;
+
+private:
+    string_id_t             f_id = STRING_ID_NULL;
+    std::string             f_string = std::string();
+    string_id_t             f_found_in = STRING_ID_NULL;
+};
+
+
+class tld_string_manager
+{
+public:
+    string_id_t                 add_string(std::string const & s);
+    string_id_t                 find_string(std::string const & s);
+    std::string                 get_string(string_id_t id) const;
+    string_id_t                 get_next_string_id() const;
+    std::size_t                 size() const;
+    std::size_t                 max_length() const;
+    std::size_t                 total_length() const;
+    std::string const &         compressed_strings() const;
+    std::size_t                 compressed_length() const;
+    void                        merge_strings();
+    std::size_t                 included_count() const;
+    std::size_t                 included_length() const;
+    std::size_t                 merged_count() const;
+    std::size_t                 merged_length() const;
+    std::size_t                 get_string_offset(std::string const & s) const;
+    std::size_t                 get_string_offset(string_id_t id) const;
+
+private:
+    typedef std::set<string_id_t>   set_id_t;
+
+    std::string::size_type      end_start_match(
+                                      std::string const & s1
+                                    , std::string const & s2);
+    bool                        merge_two_strings();
+
+    string_id_t                 f_next_id = STRING_ID_NULL;
+    tld_string::map_by_string_t f_strings_by_string = tld_string::map_by_string_t();
+    tld_string::map_by_id_t     f_strings_by_id = tld_string::map_by_id_t();
+    set_id_t                    f_strings_reviewed = set_id_t();
+    std::size_t                 f_max_length = 0;
+    std::size_t                 f_total_length = 0;
+    std::size_t                 f_included_count = 0;
+    std::size_t                 f_included_length = 0;
+    std::size_t                 f_merged_count = 0;
+    std::size_t                 f_merged_length = 0;
+    std::string                 f_merged_strings = std::string();
+};
+
+
+class tld_tag_manager
+{
+public:
+    typedef std::vector<string_id_t>    tags_table_t;
+
+    void                        add(tags_t const & tags);
+    void                        merge();
+    tags_table_t const &        merged_tags() const;
+    std::size_t                 merged_size() const;
+    std::size_t                 get_tag_offset(tags_t const & tags) const;
+
+private:
+    typedef std::vector<tags_table_t>   tags_vector_t;
+
+    tags_table_t                tags_to_table(tags_t const & tags) const;
+    std::size_t                 end_start_match(
+                                      tags_table_t const & s1
+                                    , tags_table_t const & s2);
+
+    tags_vector_t               f_tags = tags_vector_t();
+    tags_table_t                f_merged_tags = tags_table_t();
+};
+
+
 class tld_definition
 {
 public:
-    typedef std::vector<std::string>                tld_t;
-    typedef std::map<std::string, tld_definition>   map_t;
+    typedef std::shared_ptr<tld_definition>         pointer_t;
+    typedef std::vector<string_id_t>                segments_t;
+    typedef std::map<std::string, pointer_t>        map_t;
 
     static constexpr std::uint32_t      SET_TLD =         0x0001;
     static constexpr std::uint32_t      SET_STATUS =      0x0002;
@@ -51,44 +160,70 @@ public:
     static constexpr std::uint32_t      SET_APPLY_TO =    0x0080;
     static constexpr std::uint32_t      SET_REGION =      0x0100;
 
-    bool                    add_tld(std::string const & tld, std::string & errmsg);
-    tld_t const &           get_tld() const;
+                            tld_definition(tld_definition const &) = default;
+                            tld_definition(tld_string_manager & strings);
+
+    tld_definition &        operator = (tld_definition const &);
+
+    bool                    add_segment(std::string const & segment, std::string & errmsg);
+    segments_t const &      get_segments() const;
     std::string             get_name() const;
+    std::string             get_inverted_name() const;
+    std::string             get_parent_name() const;
+    std::string             get_parent_inverted_name() const;
+
+    void                    set_index(int idx);
+    int                     get_index() const;
+
     bool                    set_status(tld_status status);
     tld_status              get_status() const;
-    bool                    set_category(tld_category category);
-    tld_category            get_category() const;
-    bool                    set_country(std::string const & country);
-    std::string const &     get_country() const;
-    bool                    set_region(tld_region region);
-    tld_region              get_region() const;
-    bool                    set_nic(std::string const & nic);
-    std::string const &     get_nic() const;
-    bool                    set_description(std::string const & description);
-    std::string const &     get_description() const;
-    bool                    set_note(std::string const & note);
-    std::string const &     get_note() const;
+
     bool                    set_apply_to(std::string const & apply_to);
-    std::string const &     get_apply_to() const;
+    std::string             get_apply_to() const;
+
+    void                    add_tag(
+                                  std::string const & tag_name
+                                , std::string const & value
+                                , std::string & errmsg);
+    tags_t const &          get_tags() const;
+
     void                    reset_set_flags();
     void                    set_named_parameter(
                                   std::string const & name
                                 , std::string const & value
                                 , std::string & errmsg);
 
+    void                    set_start_offset(uint16_t start);
+    void                    set_end_offset(uint16_t end);
+    uint16_t                get_start_offset() const;
+    uint16_t                get_end_offset() const;
+
 private:
+    tld_string_manager &    f_strings;
+
     int                     f_set = 0;
-    tld_t                   f_tld = tld_t();
-    mutable std::string     f_name = std::string();
+    segments_t              f_tld = segments_t();
+    int                     f_index = 0;
     tld_status              f_status = TLD_STATUS_VALID;
-    tld_category            f_category = TLD_CATEGORY_UNDEFINED;
-    std::string             f_country = std::string();
-    tld_region              f_region = TLD_REGION_UNDEFINED;
-    std::string             f_nic = std::string();
-    std::string             f_description = std::string();
-    std::string             f_note = std::string();
     std::string             f_apply_to = std::string();
+
+    tags_t                  f_tags = tags_t();
+
+    uint16_t                f_start_offset = USHRT_MAX;
+    uint16_t                f_end_offset = USHRT_MAX;
+
+    // using tags instead of specific fields so that way
+    // we can put anything we want in those entries
+    //
+    //tld_category            f_category = TLD_CATEGORY_UNDEFINED;
+    //string_id_t             f_country = STRING_ID_NULL;
+    //tld_region              f_region = TLD_REGION_UNDEFINED;
+    //string_id_t             f_nic = STRING_ID_NULL;
+    //string_id_t             f_description = STRING_ID_NULL;
+    //string_id_t             f_note = STRING_ID_NULL;
 };
+
+
 class tld_compiler
 {
 public:
@@ -101,6 +236,8 @@ public:
     std::string const &     get_errmsg() const;
     int                     get_line() const;
     std::string const &     get_filename() const;
+    tld_string_manager &    get_string_manager();
+    void                    output_to_json(std::ostream & out) const;
 
 private:
     typedef std::vector<std::string>                paths_t;
@@ -159,13 +296,18 @@ private:
     void                    parse_variable();
     void                    parse_tld();
     void                    print_tokens();
+    void                    define_default_category();
+    void                    compress_tags();
+    uint16_t                find_definition(std::string name) const;
+    void                    output_tlds();
 
     std::string             f_input_folder = "/usr/share/libtld/tlds";
     std::string             f_output = "/var/lib/libtld/tlds.tld";
     int                     f_errno = 0;
     std::string             f_errmsg = std::string();
     paths_t                 f_input_files = paths_t();
-    values_t                f_globals = values_t();
+    values_t                f_global_variables = values_t();
+    values_t                f_global_tags = values_t();
     std::string             f_current_tld = std::string();
     tld_definition::map_t   f_definitions = tld_definition::map_t();
     token::vector_t         f_tokens = token::vector_t();
@@ -175,6 +317,13 @@ private:
     std::string             f_filename = std::string();
     char32_t                f_ungetc[1] = {};
     std::string::size_type  f_ungetc_pos = 0;
+    tld_string_manager      f_strings = tld_string_manager();
+    string_id_t             f_strings_count = 0;
+    tld_tag_manager         f_tags = tld_tag_manager();
+    time_t                  f_created_on = time(nullptr);
+    uint8_t                 f_tld_max_level = 0;
+    uint16_t                f_tld_start_offset = USHRT_MAX;
+    uint16_t                f_tld_end_offset = USHRT_MAX;
 };
 #endif
 /*#ifdef __cplusplus*/

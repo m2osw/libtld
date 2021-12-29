@@ -21,14 +21,17 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// self
+// libtld lib
 //
-#include <libtld/tld_compiler.h>
+#include    <libtld/tld_compiler.h>
+#include    <libtld/tld_file.h>
 
 
 // C++ lib
 //
+#include    <fstream>
 #include    <iostream>
+#include    <sstream>
 
 
 // C lib
@@ -39,18 +42,23 @@
 class compiler
 {
 public:
-
     std::ostream &  error();
     int             exit_code() const;
     void            set_input_path(std::string const & path);
     void            set_output(std::string const & output);
+    void            set_verify(bool verify);
+    void            set_output_json(bool verify);
 
     void            run();
 
 private:
+    void            verify_output(tld_compiler & c);
+
     int             f_errcnt = 0;
     std::string     f_input_path = std::string();
     std::string     f_output = std::string();
+    bool            f_verify = false;
+    bool            f_output_json = false;
 };
 
 
@@ -79,11 +87,37 @@ void compiler::set_output(std::string const & output)
 }
 
 
+void compiler::set_verify(bool verify)
+{
+    f_verify = verify;
+}
+
+
+void compiler::set_output_json(bool output_json)
+{
+    f_output_json = output_json;
+}
+
+
 void compiler::run()
 {
     if(f_errcnt != 0)
     {
         // command line found errors, return immediately
+        return;
+    }
+
+    if(f_input_path.empty())
+    {
+        ++f_errcnt;
+        std::cerr << "error: an input path is required.\n";
+        return;
+    }
+
+    if(f_output.empty())
+    {
+        ++f_errcnt;
+        std::cerr << "error: an output filename is required.\n";
         return;
     }
 
@@ -107,7 +141,131 @@ void compiler::run()
             << ")\n";
         return;
     }
+
+    std::cout << "Number of strings:        " << c.get_string_manager().size()         << "\n";
+    std::cout << "Longest string:           " << c.get_string_manager().max_length()   << "\n";
+    std::cout << "Total string length:      " << c.get_string_manager().total_length() << "\n";
+    std::cout << "Included strings:         " << c.get_string_manager().included_count() << " (saved length: " << c.get_string_manager().included_length() << ")\n";
+    std::cout << "Mergeable strings:        " << c.get_string_manager().merged_count() << " (saved length: " << c.get_string_manager().merged_length() << ")\n";
+    std::cout << "Compressed string length: " << c.get_string_manager().compressed_length() << "\n";
+    // TODO: add info about tags
+
+    if(f_output_json)
+    {
+        std::string filename;
+        std::string::size_type const dot(f_output.rfind('.'));
+        if(dot != std::string::npos
+        && dot > 0
+        && f_output[dot - 1] != '/')
+        {
+            filename = f_output.substr(0, dot) + ".json";
+        }
+        else
+        {
+            filename = f_output + ".json";
+        }
+        std::ofstream out;
+        out.open(filename);
+        if(out.is_open())
+        {
+            c.output_to_json(out);
+        }
+        else
+        {
+            ++f_errcnt;
+            std::cerr
+                << "error: could not open JSON output file: \""
+                << filename
+                << "\".\n";
+            return;
+        }
+    }
+
+    if(f_verify)
+    {
+        verify_output(c);
+    }
 }
+
+
+void compiler::verify_output(tld_compiler & c)
+{
+    tld_file * file(nullptr);
+    tld_file_error err(tld_file_load(f_output.c_str(), &file));
+    if(err != TLD_FILE_ERROR_NONE)
+    {
+        ++f_errcnt;
+        std::cerr << "error: could not load output file \""
+            << f_output
+            << "\" -- err: "
+            << tld_file_errstr(err)
+            << " ("
+            << static_cast<int>(err)
+            << ").\n";
+        return;
+    }
+
+    // generate a JSON from what was just loaded
+    // and it has to match the compiler's JSON
+    //
+    char * json(tld_file_to_json(file));
+    if(json == nullptr)
+    {
+        ++f_errcnt;
+        std::cerr << "error: conversion of file to JSON failed.\n";
+        return;
+    }
+
+    // save the verification JSON to a file if we also saved the
+    // JSON of the compiler to a file
+    //
+    if(f_output_json)
+    {
+        std::string filename;
+        std::string::size_type const dot(f_output.rfind('.'));
+        if(dot != std::string::npos
+        && dot > 0
+        && f_output[dot - 1] != '/')
+        {
+            filename = f_output.substr(0, dot) + "-verify.json";
+        }
+        else
+        {
+            filename = f_output + "-verify.json";
+        }
+        std::ofstream out;
+        out.open(filename);
+        if(out.is_open())
+        {
+            out.write(json, strlen(json));
+        }
+        else
+        {
+            ++f_errcnt;
+            std::cerr
+                << "error: could not open JSON output file: \""
+                << filename
+                << "\".\n";
+            return;
+        }
+    }
+
+    std::stringstream compiler_json;
+    c.output_to_json(compiler_json);
+
+    if(compiler_json.str() != json)
+    {
+        ++f_errcnt;
+        std::cerr
+            << "error: compiler & verification JSON differ."
+            << (f_output_json
+                ? " Check the two .json output files to see the differences."
+                : " Try using the --output-json command line option to get the .json files to find the differences.")
+            << "\n";
+        return;
+    }
+}
+
 
 
 
@@ -147,6 +305,14 @@ int main(int argc, char * argv[])
                 {
                     tldc.set_input_path(argv[i]);
                 }
+            }
+            else if(strcmp(argv[i], "--verify") == 0)
+            {
+                tldc.set_verify(true);
+            }
+            else if(strcmp(argv[i], "--output-json") == 0)
+            {
+                tldc.set_output_json(true);
             }
             else
             {

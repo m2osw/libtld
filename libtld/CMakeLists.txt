@@ -57,6 +57,16 @@
 ##    FULL_DOCS "Once packaged, the tld_data.c file doesn't need to be regenerated (assuming the date and time of the source package is properly taken in account.)"
 ##)
 
+set(LIBTLD_SOURCES
+    tld.c
+    tld_compiler.cpp
+    tld_data.c
+    tld_domain_to_lowercase.c
+    tld_emails.cpp
+    tld_file.cpp
+    tld_object.cpp
+)
+
 ##
 ## TLD library
 ##
@@ -66,12 +76,7 @@ configure_file(
     ${PROJECT_BINARY_DIR}/tld.h
 )
 add_library(${PROJECT_NAME} SHARED
-    tld.c
-    tld_compiler.cpp
-    tld_data.c
-    tld_domain_to_lowercase.c
-    tld_emails.cpp
-    tld_object.cpp
+    ${LIBTLD_SOURCES}
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${LIBTLD_VERSION_MAJOR}.${LIBTLD_VERSION_MINOR}
@@ -93,13 +98,7 @@ install(
 ##
 project(tld_static)
 add_library(${PROJECT_NAME} STATIC
-    tld.c
-    tld_compiler.cpp
-    tld_data.c
-    tld_domain_to_lowercase.c
-    tld_emails.cpp
-    tld_object.cpp
-    tld_compiler.cpp
+    ${LIBTLD_SOURCES}
 )
 # We need the -fPIC to use this library as extension of PHP, etc.
 set_target_properties(tld_static PROPERTIES COMPILE_FLAGS -fPIC)

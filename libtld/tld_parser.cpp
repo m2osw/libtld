@@ -144,7 +144,7 @@ QString tld_encode(const QString& tld, int& level)
             // add/remove as appropriate
             if(c == '/' || c == ':' || c == '&')
             {
-                std::cerr << "error: character (^" << c << ") is not allowed in TLDs.\n"; // LCOV_EXCL_LINE
+                std::cerr << "error: character (" << c << ") is not allowed in TLDs.\n"; // LCOV_EXCL_LINE
                 exit(1); // LCOV_EXCL_LINE
             }
             result += '%';
