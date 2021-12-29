@@ -2,6 +2,20 @@
 ABOUT libtld
 ============
 
+The libtld project is a dearly optimized C and C++ library used to verify a
+TLD (i.e. it can directly be used in your C or C++ projects). This is
+important if you want to verify an SSL certificate because invalid TLDs
+should always be ignored. If you are using PHP, there is an extension offered
+to run in PHP.
+
+The library also supports verifying email addresses, which is notoriously
+difficult if you want to properly support all possible valid email addresses.
+
+The newer version also includes a TLD compiler which lets you edit the list
+of TLDs and recompile them in a .tld file which the library can use on the
+fly (i.e. that means you can update the list of TLD without having to
+recompile the whole library to take the update in account).
+
 The project can be found online at this URI:
 
     https://snapwebsites.org/project/libtld
@@ -10,7 +24,7 @@ That page has some basic documentation and latest information about the
 library.
 
 
-INSTALLING UNDER UBUNTU 16.04+
+INSTALLING UNDER UBUNTU 18.04+
 ==============================
 
 Packages are available on launchpad in the
@@ -27,16 +41,14 @@ REQUIREMENTS
 
 The library requirements are:
 
-* Qt 4.8+ -- to compile the `tld_parser.cpp` which generates the `tld_data.c`
-file
 * boost -- for the C++ code
+* cmake -- the tool to generate the Makefile (no auto-tool or configure!)
 * doxygen -- currently required with the new cmake scheme
 * dot (optional) -- recommanded if you want more complete documentations
-* php5-dev -- if you want to create the PHP extension
-* cmake -- the tool to generate the Makefile (no auto-tool or configure!)
-* make -- to run the Makefile
 * gcc & g++ -- to compile everything
 * gcov & lcov -- to run coverage tests and generate HTML as output
+* make -- to run the Makefile
+* php5-dev -- if you want to create the PHP extension
 
 
 BUILDING
@@ -69,6 +81,31 @@ You may test a URI from the command line, once you installed everything
 
     # Invalid test:
     validate_tld https://snapwebsites.organization/project/libtld
+
+
+COMPILING TLDs
+==============
+
+The library let you compile TLD .ini files in a .tld file. By default,
+the library does so at compile time and installs a .tld file in
+`/usr/share/libtld/domains.tld`. However, the list of TLDs changes often
+now that it is possible to add your own top level domain names such as
+your brand (`.google`), a place (`.berlin`) or a generic name (`.gay`).
+
+The default files are placed under `/usr/share/libtld/tlds`. You can add
+your own `.ini` files under `/var/lib/libtld/tlds` where it will
+automatically be picked up. Then the compiler command line is:
+
+    tldc --source /usr/share/libtld/tlds /var/lib/libtld/domains.tld
+
+You may have to (are likely to need to) use `sudo` as the `domains.tld`
+will likely be root by default. The ownership can always be changed.
+Make sure to keep the file readable by all the users that may run a
+tool using the libtld.
+
+**Fallback:** The library still includes a `tld_data.c` file which includes
+the tables from when the library was compiled. By default, this is going to
+be used if the external `domains.tld` file cannot be read.
 
 
 BUGS & SUPPORT
