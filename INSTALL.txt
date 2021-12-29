@@ -70,4 +70,14 @@ You may test a URI from the command line, once you installed everything
     # Invalid test:
     validate_tld https://snapwebsites.organization/project/libtld
 
+
+BUGS & SUPPORT
+==============
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/libtld/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._
+
 vim: tw=4 sw=4 et syntax=markdown
