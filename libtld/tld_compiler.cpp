@@ -725,6 +725,7 @@ bool tld_definition::add_segment(
         return false;
     }
 
+    std::string normalized_segment;
     for(auto const & c : segment)
     {
         switch(c)
@@ -740,26 +741,68 @@ bool tld_definition::add_segment(
         case '7':
         case '8':
         case '9':
+            normalized_segment += c;
             break;
 
         default:
-            if((c < 'a' || c > 'z')
-            && (c < 'A' || c > 'Z')
-            && static_cast<unsigned char>(c) < 0x80)
+            if((c >= 'a' && c <= 'z')
+            || (c >= 'A' && c <= 'Z'))
             {
-                errmsg = "this TLD segment: \""
-                       + segment
-                       + "\" includes unsupported character: '"
-                       + c
-                       + "'.";
+                normalized_segment += c;
+            }
+            else if(static_cast<unsigned char>(c) < 0x80)
+            {
+                if(static_cast<unsigned char>(c) < 0x20)
+                {
+                    errmsg = "this TLD segment: \""
+                           + segment
+                           + "\" includes control character: '^"
+                           + static_cast<char>(c + '@')
+                           + "'.";
+                }
+                else if(c == 0x7F)
+                {
+                    errmsg = "this TLD segment: \""
+                           + segment
+                           + "\" includes the delete character (0x7F).";
+                }
+                else if(static_cast<unsigned char>(c) >= 0x80 && static_cast<unsigned char>(c) < 0xA0)
+                {
+                    errmsg = "this TLD segment: \""
+                           + segment
+                           + "\" includes graphic control character: '@"
+                           + static_cast<char>(c - '@')
+                           + "'.";
+                }
+                else
+                {
+                    errmsg = "this TLD segment: \""
+                           + segment
+                           + "\" includes unsupported character: '"
+                           + c
+                           + "'.";
+                }
                 return false;
+            }
+            else
+            {
+                // transform anything else in a %XX notation which is what
+                // is expected in a TLD reaching a server
+                //
+                std::stringstream ss;
+                ss << '%'
+                   << std::hex
+                   << std::setw(2)
+                   << std::setfill('0')
+                   << static_cast<int>(static_cast<unsigned char>(c));
+                normalized_segment += ss.str();
             }
             break;
 
         }
     }
 
-    f_tld.push_back(f_strings.add_string(segment));
+    f_tld.push_back(f_strings.add_string(normalized_segment));
 
     return true;
 }
@@ -2746,7 +2789,7 @@ void tld_compiler::save_to_c_file(std::string const & buffer)
 }
 
 
-void tld_compiler::output_to_json(std::ostream & out) const
+void tld_compiler::output_to_json(std::ostream & out, bool verbose) const
 {
     out << "{\n";
     out << "\"version\":\"" << TLD_FILE_VERSION_MAJOR
@@ -2776,9 +2819,14 @@ void tld_compiler::output_to_json(std::ostream & out) const
 
         out << (idx == 0 ? "" : ",\n");
 
-        //out << "/* " << it->second->get_name() << " */ ";
+        out << "{";
 
-        out << "{\"tld\":\"" << f_strings.get_string(it->second->get_segments()[0]) << "\"";
+        if(verbose)
+        {
+            out << "\"index\":" << std::setw(5) << idx << ",";
+        }
+
+        out << "\"tld\":\"" << f_strings.get_string(it->second->get_segments()[0]) << "\"";
 
         out << ",\"status\":\"" << tld_status_to_string(it->second->get_status()) << "\"";
 
@@ -2798,6 +2846,11 @@ void tld_compiler::output_to_json(std::ostream & out) const
             out << ",\"" << f_strings.get_string(t.first)
                 << "\":\"" << f_strings.get_string(t.second)
                 << "\"";
+        }
+
+        if(verbose)
+        {
+            out << ",\"full-tld\":\"" << it->second->get_name() << "\"";
         }
 
         out << "}";

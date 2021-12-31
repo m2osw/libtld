@@ -239,7 +239,7 @@ public:
     int                     get_line() const;
     std::string const &     get_filename() const;
     tld_string_manager &    get_string_manager();
-    void                    output_to_json(std::ostream & out) const;
+    void                    output_to_json(std::ostream & out, bool verbose) const;
 
 private:
     typedef std::vector<std::string>                paths_t;

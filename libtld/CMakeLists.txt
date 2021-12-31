@@ -42,7 +42,15 @@ set(TLD_DATA_C ${PROJECT_BINARY_DIR}/tld_data.c)
 file(GLOB_RECURSE TLD_FILES ${CMAKE_SOURCE_DIR}/conf/tlds/*.ini)
 add_custom_command(
     OUTPUT ${TLD_DATA_C}
-    COMMAND tld_parser --source conf/tlds ${PROJECT_SOURCE_DIR} --verify --c-file ${TLD_DATA_C} ${PROJECT_BINARY_DIR}/tlds.tld
+    COMMAND "tld_parser"
+                "--source"
+                    "${CMAKE_SOURCE_DIR}/conf/tlds"
+                "--verify"
+                "--output-json"
+                    "--include-offsets"
+                "--c-file"
+                    "${TLD_DATA_C}"
+                "${PROJECT_BINARY_DIR}/tlds.tld"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     MAIN_DEPENDENCY tld_parser
     DEPENDS ${TLD_FILES}

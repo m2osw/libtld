@@ -49,6 +49,7 @@ public:
     void            set_c_file(std::string const & c);
     void            set_verify(bool verify);
     void            set_output_json(bool verify);
+    void            set_include_offsets(bool include_offsets);
 
     void            run();
 
@@ -61,6 +62,7 @@ private:
     std::string     f_c_file = std::string();
     bool            f_verify = false;
     bool            f_output_json = false;
+    bool            f_include_offsets = false;
 };
 
 
@@ -104,6 +106,12 @@ void compiler::set_verify(bool verify)
 void compiler::set_output_json(bool output_json)
 {
     f_output_json = output_json;
+}
+
+
+void compiler::set_include_offsets(bool include_offsets)
+{
+    f_include_offsets = include_offsets;
 }
 
 
@@ -177,7 +185,7 @@ void compiler::run()
         out.open(filename);
         if(out.is_open())
         {
-            c.output_to_json(out);
+            c.output_to_json(out, f_include_offsets);
         }
         else
         {
@@ -260,7 +268,7 @@ void compiler::verify_output(tld_compiler & c)
     }
 
     std::stringstream compiler_json;
-    c.output_to_json(compiler_json);
+    c.output_to_json(compiler_json, false);
 
     if(compiler_json.str() != json)
     {
@@ -291,6 +299,7 @@ void usage(char * argv0)
     std::cout << "Where --opts is one or more of the following:\n";
     std::cout << "    --help | -h             prints out this help screen and exit\n";
     std::cout << "    --c-file                path and filename to the \"tld_data.c\" file\n";
+    std::cout << "    --include-offsets       print offset in comment in .json file\n";
     std::cout << "    --output-json           also save to a .json file\n";
     std::cout << "    --source | -s <folder>  define the source (input) folder\n";
     std::cout << "    --verify                verify loading results and compare against sources\n";
@@ -356,6 +365,10 @@ int main(int argc, char * argv[])
             else if(strcmp(argv[i], "--output-json") == 0)
             {
                 tldc.set_output_json(true);
+            }
+            else if(strcmp(argv[i], "--include-offsets") == 0)
+            {
+                tldc.set_include_offsets(true);
             }
             else
             {
