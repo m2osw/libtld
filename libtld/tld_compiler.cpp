@@ -40,6 +40,8 @@
 #include    <algorithm>
 #include    <fstream>
 #include    <iostream>
+#include    <sstream>
+#include    <iomanip>
 
 
 // C lib
@@ -1177,6 +1179,18 @@ std::string const & tld_compiler::get_output() const
 }
 
 
+void tld_compiler::set_c_file(std::string const & filename)
+{
+    f_c_file = filename;
+}
+
+
+std::string const & tld_compiler::get_c_file() const
+{
+    return f_c_file;
+}
+
+
 bool tld_compiler::compile()
 {
     find_files(f_input_folder);
@@ -1207,7 +1221,22 @@ bool tld_compiler::compile()
 
     compress_tags();
 
-    output_tlds();
+    find_max_level();
+
+    std::stringstream out;
+    output_tlds(out);
+    if(get_errno() != 0)
+    {
+        return false;
+    }
+
+    save_to_file(out.str());    // save to tlds.tld (RIFF/TLDS format)
+    if(get_errno() != 0)
+    {
+        return false;
+    }
+
+    save_to_c_file(out.str());
     if(get_errno() != 0)
     {
         return false;
@@ -2344,37 +2373,37 @@ uint16_t tld_compiler::find_definition(std::string name) const
 }
 
 
-void tld_compiler::output_tlds()
+/** \brief Determine the longest TLD in terms of levels.
+ * 
+ * This function searches all the definitions checking for the longest
+ * number of segments (which is the number of periods in the TLD including
+ * the starting period, so in ".com", we have a level of 1).
+ */
+void tld_compiler::find_max_level()
 {
-    // determine the longest TLD in terms of levels
-    // (i.e. number of periods)
-    //
     f_tld_max_level = 0;
-    for(auto const & d : f_definitions)
-    {
-        std::size_t const level(d.second->get_segments().size());
-        if(f_tld_max_level < level)
-        {
-            f_tld_max_level = level;
-        }
-    }
 
-    std::ofstream out;
-    out.open(f_output);
-    if(!out)
+    auto it(std::max_element(
+              f_definitions.begin()
+            , f_definitions.end()
+            , [](auto const & a, auto const & b)
+              {
+                  return a.second->get_segments().size()
+                                        < b.second->get_segments().size();
+              }));
+    if(it == f_definitions.end())
     {
-        int const e(errno);
-        std::cerr
-            << "error: could not open output file \""
-            << f_output
-            << "\", errno: "
-            << e
-            << ", "
-            << strerror(e)
-            << ".\n";
+        f_errno = EINVAL;
+        f_errmsg = "error: could not find a definition with a larger level.";
         return;
     }
 
+    f_tld_max_level = it->second->get_segments().size();
+}
+
+
+void tld_compiler::output_tlds(std::ostream & out)
+{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
     tld_header header =
@@ -2565,6 +2594,155 @@ void tld_compiler::output_tlds()
     //
     out.write(reinterpret_cast<char const *>(&strings_hunk), sizeof(strings_hunk));
     out.write(f_strings.compressed_strings().c_str(), strings_hunk.f_size);
+}
+
+
+void tld_compiler::save_to_file(std::string const & buffer)
+{
+    std::ofstream out;
+    out.open(f_output);
+    if(!out)
+    {
+        f_errno = errno;
+        f_errmsg = "error: could not open output file \""
+                 + f_output
+                 + "\", errno: "
+                 + std::to_string(f_errno)
+                 + ", "
+                 + strerror(f_errno)
+                 + ".";
+        return;
+    }
+
+    out.write(buffer.c_str(), buffer.length());
+}
+
+
+void tld_compiler::output_header(std::ostream & out)
+{
+    time_t const now(time(nullptr));
+    struct tm t;
+    localtime_r(&now, &t);
+    char year[16];
+    strftime(year, sizeof(year), "%Y", &t);
+
+    std::string basename;
+    std::string::size_type const pos(f_c_file.rfind('/'));
+    if(pos == std::string::npos)
+    {
+        basename = f_c_file;
+    }
+    else
+    {
+        basename = f_c_file.substr(pos + 1);
+    }
+
+    out << "/* *** AUTO-GENERATED *** DO NOT EDIT ***\n"
+           " *\n"
+           " * This list of TLDs was auto-generated using the tldc compiler.\n"
+           " * Fix the tld_compiler.cpp or the .ini files used as input instead\n"
+           " * of this file.\n"
+           " *\n"
+           " * Copyright (c) 2011-" << year << "  Made to Order Software Corp.  All Rights Reserved.\n"
+           " *\n"
+           " * Permission is hereby granted, free of charge, to any person obtaining a\n"
+           " * copy of this software and associated documentation files (the\n"
+           " * \"Software\"), to deal in the Software without restriction, including\n"
+           " * without limitation the rights to use, copy, modify, merge, publish,\n"
+           " * distribute, sublicense, and/or sell copies of the Software, and to\n"
+           " * permit persons to whom the Software is furnished to do so, subject to\n"
+           " * the following conditions:\n"
+           " *\n"
+           " * The above copyright notice and this permission notice shall be included\n"
+           " * in all copies or substantial portions of the Software.\n"
+           " *\n"
+           " * THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\n"
+           " * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n"
+           " * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n"
+           " * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY\n"
+           " * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\n"
+           " * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\n"
+           " * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n"
+           " */\n"
+           "\n"
+           "/** \\file\n"
+           " * \\brief GENERATED FILE -- the " << basename << " file is generated -- DO NOT EDIT\n"
+           " *\n"
+           " * This file is generated using the tldc tool and the conf/tlds/... files.\n"
+           " * It is strongly advised that you do not edit this file directly except to\n"
+           " * test before editing the source of the tldc tool and tld_compiler.cpp file.\n"
+           " *\n"
+           " * The file includes information about all the TLDs as defined in the\n"
+           " * .ini files. It is used by the tld() function to determine whether\n"
+           " * a string with a domain name matches a valid TLD. It includes all the\n"
+           " * currently assigned TLDs (all countries plus international or common TLDs.)\n"
+           " *\n"
+           " * In this new implementation, the C version to compile is actually the\n"
+           " * RIFF/TLDS binary. We load it with the tld_file_load() function as if it\n"
+           " * were on disk. This way we have exactly the same code to load the\n"
+           " * compiled-in and the TLDs from files.\n"
+           " */\n"
+           "#include <stdint.h>\n";
+}
+
+
+void tld_compiler::save_to_c_file(std::string const & buffer)
+{
+    // user requested that file?
+    //
+    if(f_c_file.empty())
+    {
+        return;
+    }
+
+    std::ofstream out;
+    out.open(f_c_file);
+    if(!out)
+    {
+        f_errno = errno;
+        f_errmsg = "error: could not open C-file output file \""
+                 + f_output
+                 + "\", errno: "
+                 + std::to_string(f_errno)
+                 + ", "
+                 + strerror(f_errno)
+                 + ".";
+        return;
+    }
+
+    output_header(out);
+
+    out << "uint8_t const tld_static_tlds[] = {\n"
+        << std::hex
+        << std::setfill('0');
+
+    for(std::uint32_t idx(0); idx + 16 < buffer.length(); idx += 16)
+    {
+        out << "   ";
+        for(std::uint32_t o(0); o < 16; ++o)
+        {
+            out << " 0x"
+                << std::setw(2)
+                << static_cast<int>(static_cast<uint8_t>(buffer[idx + o]))
+                << ",";
+        }
+        out << "\n";
+    }
+    std::uint32_t const leftover(buffer.length() % 16);
+    std::uint32_t const offset(buffer.length() - leftover);
+    if(leftover > 0)
+    {
+        out << "   ";
+        for(std::uint32_t o(0); o < leftover; ++o)
+        {
+            out << " 0x"
+                << std::setw(2)
+                << static_cast<int>(static_cast<uint8_t>(buffer[offset + o]))
+                << ",";
+        }
+        out << "\n";
+    }
+    out << "};\n";
 }
 
 

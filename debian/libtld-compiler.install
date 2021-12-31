@@ -1,0 +1,4 @@
+debian/tmp/usr/bin/tldc                     usr/bin/
+debian/tmp/usr/share/tlds                   usr/share/
+debian/tmp/usr/share/man/man1/tldc.1.gz     usr/share/man/man1/
+debian/tmp/usr/share/man/man5/tld.ini.5.gz  usr/share/man/man5/

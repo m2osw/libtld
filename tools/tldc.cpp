@@ -1,4 +1,4 @@
-/* TLD library -- TLD, domain name, and sub-domain extraction
+/* TLD tools -- TLD, domain name, and sub-domain extraction
  * Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -46,6 +46,7 @@ public:
     int             exit_code() const;
     void            set_input_path(std::string const & path);
     void            set_output(std::string const & output);
+    void            set_c_file(std::string const & c);
     void            set_verify(bool verify);
     void            set_output_json(bool verify);
 
@@ -57,6 +58,7 @@ private:
     int             f_errcnt = 0;
     std::string     f_input_path = std::string();
     std::string     f_output = std::string();
+    std::string     f_c_file = std::string();
     bool            f_verify = false;
     bool            f_output_json = false;
 };
@@ -84,6 +86,12 @@ void compiler::set_input_path(std::string const & path)
 void compiler::set_output(std::string const & output)
 {
     f_output = output;
+}
+
+
+void compiler::set_c_file(std::string const & c_file)
+{
+    f_c_file = c_file;
 }
 
 
@@ -124,6 +132,7 @@ void compiler::run()
     tld_compiler c;
     c.set_input_folder(f_input_path);
     c.set_output(f_output);
+    c.set_c_file(f_c_file);
     if(!c.compile())
     {
         ++f_errcnt;
@@ -269,12 +278,27 @@ void compiler::verify_output(tld_compiler & c)
 
 
 
-void usage(char * progname)
+void usage(char * argv0)
 {
+    std::string progname(argv0);
+    std::string::size_type pos(progname.rfind('/'));
+    if(pos != std::string::npos)
+    {
+        progname = progname.substr(pos + 1);
+    }
+    std::cout << progname << " v" << LIBTLD_VERSION << "\n";
     std::cout << "Usage: " << progname << " [--opts] [<output>]\n";
     std::cout << "Where --opts is one or more of the following:\n";
-    std::cout << "    --help | -h             prints out this help screen\n";
+    std::cout << "    --help | -h             prints out this help screen and exit\n";
+    std::cout << "    --c-file                path and filename to the \"tld_data.c\" file\n";
+    std::cout << "    --output-json           also save to a .json file\n";
     std::cout << "    --source | -s <folder>  define the source (input) folder\n";
+    std::cout << "    --verify                verify loading results and compare against sources\n";
+    std::cout << "    --version | -V          print out the version and exit\n";
+    std::cout << "\n";
+    std::cout << "The default source is \"/usr/share/libtld/tlds\".\n";
+    std::cout << "The default output is \"/var/lib/libtld/tlds.tld\".\n";
+    std::cout << progname << " will not output a C-file or JSON by default.\n";
 }
 
 
@@ -290,6 +314,12 @@ int main(int argc, char * argv[])
             || strcmp(argv[i], "--help") == 0)
             {
                 usage(argv[0]);
+                return 1;
+            }
+            else if(strcmp(argv[i], "-V") == 0
+                 || strcmp(argv[i], "--version") == 0)
+            {
+                std::cout << LIBTLD_VERSION << std::endl;
                 return 1;
             }
             else if(strcmp(argv[i], "-s") == 0
@@ -309,6 +339,19 @@ int main(int argc, char * argv[])
             else if(strcmp(argv[i], "--verify") == 0)
             {
                 tldc.set_verify(true);
+            }
+            else if(strcmp(argv[i], "--c-file") == 0)
+            {
+                ++i;
+                if(i >= argc)
+                {
+                    tldc.error()
+                        << "error: argument missing for --output-c-file.\n";
+                }
+                else
+                {
+                    tldc.set_c_file(argv[i]);
+                }
             }
             else if(strcmp(argv[i], "--output-json") == 0)
             {

@@ -6,9 +6,7 @@ Build-Depends: cmake,
     doxygen,
     graphviz,
     libboost-dev | libboost1.49-dev,
-    libxml2-utils,
-    qtbase5-dev,
-    snapcmakemodules (>= 1.0.35.3~xenial)
+    snapcmakemodules (>= 1.0.35.3~bionic)
 Standards-Version: 3.9.4
 Section: libs
 Homepage: https://snapwebsites.org/project/libtld

@@ -1,8 +1,4 @@
-#
-# File:         tests/CMakeLists.txt
-# Object:       Definitions to create the build environment with cmake
-#
-# Copyright:    Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
+# Copyright:    Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libtld
 # contact@m2osw.com
@@ -30,14 +26,6 @@
 ## TLD tests
 ##
 
-# The reference to the src folder is required by the internal test
-#include_directories(
-#    ${tld_library_BINARY_DIR}/include
-#    ${tld_library_BINARY_DIR}/src
-#    ${tld_library_SOURCE_DIR}/include
-#    ${tld_library_SOURCE_DIR}/src
-#)
-
 # Tool to generate the &#...; entities for UTF-8 domain names
 project(hex)
 add_executable(${PROJECT_NAME}
@@ -47,9 +35,14 @@ add_executable(${PROJECT_NAME}
 # Test the library directly
 project(tld_internal_test)
 add_executable(${PROJECT_NAME}
-    tld_internal_test.c
+    tld_internal_test.cpp
 )
-#add_dependencies( ${PROJECT_NAME} tld_data ) # Add this so tld_parser will guarantee to build *first*
+# WARNING: we really need to depend on the `tld_data` target, but that is
+#          not possible in a parallel cmake; instead we have to depend on
+#          a previous item to create a chain of dependencies
+add_dependencies(${PROJECT_NAME}
+    tld
+)
 add_test(
     NAME ${PROJECT_NAME}
     COMMAND ${PROJECT_NAME}

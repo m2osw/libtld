@@ -55,6 +55,9 @@
 
 
 #ifdef __cplusplus
+
+#include    <iostream>
+
 extern "C" {
 #endif
 
@@ -78,16 +81,16 @@ extern "C" {
 
 struct tld_magic
 {
-    uint32_t        f_riff;     // 'RIFF' (Reversed IFF)
-    uint32_t        f_size;     // total size of this file - 8
-    uint32_t        f_type;     // 'TLDS'
+    uint32_t                    f_riff;     // 'RIFF' (Reversed IFF)
+    uint32_t                    f_size;     // total size of this file - 8
+    uint32_t                    f_type;     // 'TLDS'
 };
 
 
 struct tld_hunk
 {
-    uint32_t        f_name;
-    uint32_t        f_size;
+    uint32_t                    f_name;
+    uint32_t                    f_size;
 };
 
 
@@ -96,65 +99,65 @@ struct tld_header
     // WARNING: do not change the version position
     //          anything else may change based on that information
     //
-    uint8_t                 f_version_major;    // 1.0
-    uint8_t                 f_version_minor;
-    uint8_t                 f_pad0;
-    uint8_t                 f_tld_max_level;
+    uint8_t                     f_version_major;    // 1.0
+    uint8_t                     f_version_minor;
+    uint8_t                     f_pad0;
+    uint8_t                     f_tld_max_level;
 
-    uint16_t                f_tld_start_offset;
-    uint16_t                f_tld_end_offset;
+    uint16_t                    f_tld_start_offset;
+    uint16_t                    f_tld_end_offset;
 
-    int64_t                 f_created_on;
+    int64_t                     f_created_on;
 };
 
 
 struct tld_description
 {
-    uint8_t                 f_status;
-    uint8_t                 f_exception_level;
-    uint16_t                f_exception_apply_to;   // index of tld_description this exception applies to
+    uint8_t                     f_status;
+    uint8_t                     f_exception_level;
+    uint16_t                    f_exception_apply_to;   // index of tld_description this exception applies to
 
-    uint16_t                f_start_offset;         // next level or -1 (65535)
-    uint16_t                f_end_offset;
+    uint16_t                    f_start_offset;         // next level or -1 (65535)
+    uint16_t                    f_end_offset;
 
-    uint16_t                f_tld;                  // string ID
+    uint16_t                    f_tld;                  // string ID
 
-    uint16_t                f_tags;                 // offset in tld_tag table
-    uint16_t                f_tags_count;
+    uint16_t                    f_tags;                 // offset in tld_tag table
+    uint16_t                    f_tags_count;
 };
 
 
 struct tld_tag
 {
-    uint32_t                f_tag_name;     // string ID
-    uint32_t                f_tag_value;    // string ID
+    uint32_t                    f_tag_name;     // string ID
+    uint32_t                    f_tag_value;    // string ID
 };
 
 
 struct tld_string_offset
 {
-    uint32_t                f_string_offset;    // offset in STRS
+    uint32_t                    f_string_offset;    // offset in STRS
 };
 
 
 struct tld_string_length
 {
-    uint16_t                f_string_length;    // corresponding length
+    uint16_t                    f_string_length;    // corresponding length
 };
 
 
 struct tld_file
 {
-    tld_header *            f_header;
-    uint32_t                f_descriptions_count;
-    tld_description *       f_descriptions;
-    uint32_t                f_tags_size;        // WARNING: this is the number of uint32_t, not tld_tag
-    uint32_t *              f_tags;             // these are tld_tags which may be merged at any level (a tag id may be odd)
-    uint32_t                f_strings_count;
-    tld_string_offset *     f_string_offsets;
-    tld_string_length *     f_string_lengths;
-    char *                  f_strings;
-    char *                  f_strings_end;
+    struct tld_header *         f_header;
+    uint32_t                    f_descriptions_count;
+    struct tld_description *    f_descriptions;
+    uint32_t                    f_tags_size;        // WARNING: this is the number of uint32_t, not tld_tag
+    uint32_t *                  f_tags;             // these are tld_tags which may be merged at any level (a tag id may be odd)
+    uint32_t                    f_strings_count;
+    struct tld_string_offset *  f_string_offsets;
+    struct tld_string_length *  f_string_lengths;
+    char *                      f_strings;
+    char *                      f_strings_end;
 };
 
 
@@ -176,16 +179,19 @@ enum tld_file_error
 };
 
 
-tld_file_error      tld_file_load(const char * filename, tld_file ** file);
-char const *        tld_file_errstr(tld_file_error err);
-tld_description *   tld_file_description(tld_file const * file, uint32_t id);
-tld_tag *           tld_file_tag(tld_file const * file, uint32_t id);
-char *              tld_file_string(tld_file const * file, uint32_t id, uint32_t * length);
-char *              tld_file_to_json(tld_file const * file);
-void                tld_file_free(tld_file ** file);
+enum tld_file_error         tld_file_load(const char * filename, struct tld_file ** file);
+char const *                tld_file_errstr(enum tld_file_error err);
+struct tld_description *    tld_file_description(struct tld_file const * file, uint32_t id);
+struct tld_tag *            tld_file_tag(struct tld_file const * file, uint32_t id);
+char const *                tld_file_string(struct tld_file const * file, uint32_t id, uint32_t * length);
+char *                      tld_file_to_json(struct tld_file const * file);
+void                        tld_file_free(struct tld_file ** file);
 
 
 #ifdef __cplusplus
+
+enum tld_file_error         tld_file_load_stream(tld_file ** file, std::istream & in);
+
 }
 #endif
 

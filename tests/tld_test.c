@@ -29,20 +29,24 @@
  * cases which could be hard to expect in a full coverage test.
  */
 
-#include "libtld/tld.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
+// libtld lib
+//
+#include    <libtld/tld.h>
+#include    <libtld/tld_data.h>
+#include    <libtld/tld_file.h>
 
-/* we get access to the table with all the TLDs so we can go through them all
- * the library does not give direct access by default... (although maybe we
- * could give users access to the data)
- */
-#include <libtld/tld_data.h>
-extern const struct tld_description tld_descriptions[];
-extern unsigned short tld_start_offset;
-extern unsigned short tld_end_offset;
+
+// C lib
+//
+#include    <string.h>
+#include    <stdlib.h>
+#include    <stdio.h>
+#include    <limits.h>
+
+
+
+
+
 
 int err_count = 0;
 int verbose = 0;
@@ -54,6 +58,27 @@ int verbose = 0;
  *
  * extern enum tld_result tld(const char *uri, struct tld_info *info);
  */
+
+
+char *              g_filename = "../../BUILD/Debug/contrib/libtld/libtld/tlds.tld";
+struct tld_file *   g_tld_file = NULL;
+
+
+/* we get access to the table with all the TLDs so we can go through them all
+ * the library does not give direct access by default... (although maybe we
+ * could give users access to the data)
+ */
+void load_tlds()
+{
+    enum tld_file_error err = tld_file_load(g_filename, &g_tld_file);
+    if(err != TLD_FILE_ERROR_NONE)
+    {
+        fprintf(stderr, "fatal error: could not read TLD file \"%s\".\n",
+                            g_filename);
+        exit(1);
+    }
+}
+
 
 
 /** \brief Build an extension from any offset.
@@ -68,33 +93,42 @@ int verbose = 0;
  */
 int cat_ext(int offset, char *uri)
 {
-    int k, l;
-    int has_star = strcmp(tld_descriptions[offset].f_tld, "*") == 0;
+    int                         o, has_star;
+    uint32_t                    k, l;
+    struct tld_description *    tld;
+    const char *                name;
+
+    tld = tld_file_description(g_tld_file, offset);
+    name = tld_file_string(g_tld_file, tld->f_tld, &l);
+
+    has_star = l == 1 && name[0] == '*';
 
     if(!has_star)
     {
         strcat(uri, ".");
-        strcat(uri, tld_descriptions[offset].f_tld);
+        strncat(uri, name, l);
     }
-    l = offset;
-    for(k = offset + 1; k < tld_end_offset; ++k)
+    o = offset;
+    for(k = offset + 1; k < g_tld_file->f_descriptions_count; ++k)
     {
-        if(l >= tld_descriptions[k].f_start_offset
-        && l < tld_descriptions[k].f_end_offset)
+        tld = tld_file_description(g_tld_file, k);
+        if(o >= tld->f_start_offset
+        && o < tld->f_end_offset)
         {
             /* found a parent */
-            if(strcmp(tld_descriptions[k].f_tld, "*") != 0)
+            name = tld_file_string(g_tld_file, tld->f_tld, &l);
+            if(l != 1 || name[0] != '*')
             {
                 strcat(uri, ".");
-                strcat(uri, tld_descriptions[k].f_tld);
+                strncat(uri, name, l);
             }
             else
             {
                 fprintf(stderr, "fatal error: found \"*\" at the wrong place; it's only supported as the very first segment.\n");
                 exit(1);
             }
-            l = k;
-            k = tld_descriptions[k].f_end_offset;
+            o = k;
+            k = tld->f_end_offset;
         }
     }
 
@@ -112,7 +146,8 @@ struct test_uris
 };
 
 
-const struct test_uris g_uris[] = {
+const struct test_uris g_uris[] =
+{
     {
         "advisor-z2-ngprod-1997768525.us-west-2.elb.amazonaws.com",
         TLD_RESULT_SUCCESS,
@@ -244,14 +279,17 @@ void test_all()
         "host.%fa.u-acute."
         "host.%FA.U-acute."
     };
-    struct tld_info info;
-    char            uri[256], extension_uri[256];
-    int             i, j, p, max_subdomains, has_star;
-    enum tld_result r;
+    struct tld_info             info;
+    char                        uri[256], extension_uri[256];
+    const char *                name;
+    uint32_t                    i, j, l, p, max_subdomains;
+    int                         has_star, sub_has_star;
+    enum tld_result             r;
+    struct tld_description      *tld_desc, *sub_tld;
 
     max_subdomains = sizeof(sub_domains) / sizeof(sub_domains[0]);
 
-    for(i = 0; i < tld_end_offset; ++i)
+    for(i = 0; i < g_tld_file->f_descriptions_count; ++i)
     {
         for(j = 0; j < max_subdomains; ++j)
         {
@@ -283,9 +321,10 @@ void test_all()
                         info.f_tld, (int)info.f_offset);
             */
             p = i;
-            if(tld_descriptions[i].f_status == TLD_STATUS_EXCEPTION)
+            tld_desc = tld_file_description(g_tld_file, i);
+            if(tld_desc->f_status == TLD_STATUS_EXCEPTION)
             {
-                if(tld_descriptions[i].f_exception_apply_to == USHRT_MAX)
+                if(tld_desc->f_exception_apply_to == USHRT_MAX)
                 {
                     fprintf(stderr, "error: domain name for \"%s\" (%d) is said to be an exception but it has no apply-to parameter. (result: %d)\n",
                             uri, i, r);
@@ -293,10 +332,10 @@ void test_all()
                 }
                 else
                 {
-                    p = tld_descriptions[i].f_exception_apply_to;
+                    p = tld_desc->f_exception_apply_to;
                 }
             }
-            if(tld_descriptions[i].f_status == TLD_STATUS_VALID)
+            if(tld_desc->f_status == TLD_STATUS_VALID)
             {
                 if(r != TLD_RESULT_SUCCESS)
                 {
@@ -341,7 +380,7 @@ void test_all()
                     */
                 }
             }
-            else if(tld_descriptions[i].f_status == TLD_STATUS_EXCEPTION)
+            else if(tld_desc->f_status == TLD_STATUS_EXCEPTION)
             {
                 if(r != TLD_RESULT_SUCCESS)
                 {
@@ -368,9 +407,15 @@ void test_all()
             }
             else
             {
-                if(tld_descriptions[i].f_status == TLD_STATUS_UNUSED
-                && tld_descriptions[i].f_start_offset != USHRT_MAX
-                && strcmp(tld_descriptions[tld_descriptions[i].f_start_offset].f_tld, "*") == 0)
+                sub_has_star = 0;
+                if(tld_desc->f_status == TLD_STATUS_UNUSED
+                && tld_desc->f_start_offset != USHRT_MAX)
+                {
+                    sub_tld = tld_file_description(g_tld_file, tld_desc->f_start_offset);
+                    name = tld_file_string(g_tld_file, sub_tld->f_tld, &l);
+                    sub_has_star = l == 1 && name[0] == '*';
+                }
+                if(sub_has_star)
                 {
                     /* this is a special case, an entry such as:
                      *
@@ -581,6 +626,7 @@ int main(int argc, char *argv[])
      * and the process stops with an error message and exit(1)
      * if err_count is not zero.
      */
+    load_tlds();
     test_specific();
     test_all();
     test_unknown();

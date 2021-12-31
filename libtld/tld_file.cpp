@@ -29,8 +29,9 @@
 
 // self
 //
-#include    <libtld/tld_file.h>
-#include    <libtld/tld.h>
+#include    "libtld/tld_file.h"
+#include    "libtld/tld.h"
+#include    "libtld/tld_data.h"
 
 
 // C++ lib
@@ -47,28 +48,8 @@
 
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-tld_file_error tld_file_load(char const * filename, tld_file ** file)
+tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
 {
-    if(file == nullptr)
-    {
-        return TLD_FILE_ERROR_INVALID_POINTER;
-    }
-    if(*file != nullptr)
-    {
-        return TLD_FILE_ERROR_POINTER_PRESENT;
-    }
-
-    std::ifstream in;
-    in.open(filename);
-    if(!in.is_open())
-    {
-        return TLD_FILE_ERROR_CANNOT_OPEN_FILE;
-    }
-
     tld_magic magic;
     in.read(reinterpret_cast<char *>(&magic), sizeof(magic));
     if(!in
@@ -179,7 +160,6 @@ tld_file_error tld_file_load(char const * filename, tld_file ** file)
             (*file)->f_descriptions_count = hunk->f_size / sizeof(tld_description);
             if((*file)->f_descriptions_count * sizeof(tld_description) != hunk->f_size)
             {
-std::cerr << "tld description count = " << (*file)->f_descriptions_count << "\n";
                 return TLD_FILE_ERROR_INVALID_ARRAY_SIZE;
             }
             (*file)->f_descriptions = reinterpret_cast<tld_description *>(hunk + 1);
@@ -268,6 +248,34 @@ std::cerr << "tld description count = " << (*file)->f_descriptions_count << "\n"
 }
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+enum tld_file_error tld_file_load(char const * filename, tld_file ** file)
+{
+    if(file == nullptr
+    || filename == nullptr)
+    {
+        return TLD_FILE_ERROR_INVALID_POINTER;
+    }
+    if(*file != nullptr)
+    {
+        return TLD_FILE_ERROR_POINTER_PRESENT;
+    }
+
+    std::ifstream in;
+    in.open(filename);
+    if(!in.is_open())
+    {
+        return TLD_FILE_ERROR_CANNOT_OPEN_FILE;
+    }
+
+    return tld_file_load_stream(file, in);
+}
+
+
 char const * tld_file_errstr(tld_file_error err)
 {
     switch(err)
@@ -339,7 +347,7 @@ tld_tag * tld_file_tag(tld_file const * file, uint32_t id)
 }
 
 
-char * tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
+char const * tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
 {
     --id;
     if(length == nullptr

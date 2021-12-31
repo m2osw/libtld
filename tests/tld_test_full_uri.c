@@ -28,23 +28,48 @@
  * tld_check_uri() function works as expected.
  */
 
-#include "libtld/tld.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
+// libtld lib
+//
+#include    <libtld/tld.h>
+#include    <libtld/tld_data.h>
+#include    <libtld/tld_file.h>
+
+
+// C lib
+//
+#include    <string.h>
+#include    <stdlib.h>
+#include    <stdio.h>
+#include    <limits.h>
+
+
+
+
+int err_count = 0;
+int verbose = 0;
+
+
+
+char *              g_filename = "../../BUILD/Debug/contrib/libtld/libtld/tlds.tld";
+struct tld_file *   g_tld_file = NULL;
+
 
 /* we get access to the table with all the TLDs so we can go through them all
  * the library does not give direct access by default... (although maybe we
  * could give users access to the data)
  */
-#include <libtld/tld_data.h>
-extern const struct tld_description tld_descriptions[];
-extern unsigned short tld_start_offset;
-extern unsigned short tld_end_offset;
+void load_tlds()
+{
+    enum tld_file_error err = tld_file_load(g_filename, &g_tld_file);
+    if(err != TLD_FILE_ERROR_NONE)
+    {
+        fprintf(stderr, "fatal error: could not read TLD file \"%s\".\n",
+                            g_filename);
+        exit(1);
+    }
+}
 
-int err_count = 0;
-int verbose = 0;
+
 
 
 
@@ -534,6 +559,7 @@ int main(int argc, char *argv[])
      * and the process stops with an error message and exit(1)
      * if err_count is not zero.
      */
+    load_tlds();
     test_uri();
 
     if(err_count)

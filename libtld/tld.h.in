@@ -122,9 +122,10 @@ extern LIBTLD_EXPORT const char *tld_version();
 
 extern LIBTLD_EXPORT void tld_clear_info(struct tld_info *info);
 extern LIBTLD_EXPORT enum tld_result tld(const char *uri, struct tld_info *info);
+extern LIBTLD_EXPORT enum tld_result tld_load_tlds(const char *filename, int fallback);
 extern LIBTLD_EXPORT enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags);
 extern LIBTLD_EXPORT char *tld_domain_to_lowercase(const char *domain);
-extern LIBTLD_EXPORT char *tld_status_to_string(enum tld_status status);
+extern LIBTLD_EXPORT const char *tld_status_to_string(enum tld_status status);
 
 
 
@@ -165,13 +166,17 @@ extern LIBTLD_EXPORT int tld_email_next(struct tld_email_list *list, struct tld_
 
 #ifdef __cplusplus
 /* For C++ users */
-#include <string>
-#include <vector>
-#include <stdexcept>
+#include    <string>
+#include    <vector>
+#include    <stdexcept>
+
+
 struct invalid_domain : public std::runtime_error
 {
     invalid_domain(const char *what_str = "this tld object is not currently valid") : runtime_error(what_str) {}
 };
+
+
 class LIBTLD_EXPORT tld_object
 {
 public:
@@ -194,6 +199,7 @@ private:
     tld_info    f_info   = tld_info();
     tld_result  f_result = TLD_RESULT_INVALID;
 };
+
 
 struct LIBTLD_EXPORT tld_email_list
 {

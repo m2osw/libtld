@@ -29,22 +29,41 @@
  * TLDs.
  */
 
-#include "libtld/tld.h"
-#include "tld_data.h"
+// self
+//
+#include    "libtld/tld.h"
+#include    "libtld/tld_data.h"
+#include    "libtld/tld_file.h"
+
+
+// C++ lib
+//
+#include    <sstream>
+
+
+// C lib
+//
 #if defined(MO_DARWIN)
-#   include <malloc/malloc.h>
+#include    <malloc/malloc.h>
 #endif
 #if !defined(MO_DARWIN) && !defined(MO_FREEBSD)
-#include <malloc.h>
+#include    <malloc.h>
 #endif
-#include <stdlib.h>
-#include <limits.h>
-#include <string.h>
-#include <ctype.h>
+#include    <stdlib.h>
+#include    <limits.h>
+#include    <string.h>
+#include    <ctype.h>
 
 #ifdef WIN32
 #define strncasecmp _strnicmp
 #endif
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /** \mainpage
  *
@@ -70,6 +89,7 @@
  *                                  calling other tld function
  * \li tld_check_uri() -- verify a full URI, with scheme, path, etc.
  * \li tld_clear_info() -- reset a tld_info structure for use with tld()
+ * \li tld_status_string() -- convert a status to a string
  * \li tld_email_alloc() -- allocate a tld_email_list object
  * \li tld_email_free() -- free a tld_email_list object
  * \li tld_email_parse() -- parse a list of email addresses
@@ -297,6 +317,36 @@
  */
 
 
+/** \brief The TLD file currently loaded or NULL.
+ *
+ * This pointer is the TLD file that was specifically or automatically loaded.
+ * The tld() function calls the tld_load_tlds() if this pointer is still NULL.
+ * This loads the TLDs in memory.
+ *
+ * You can change the TLDs at any one time by calling the tld_load_tlds()
+ * again.
+ *
+ * \h3 Thread Safety
+ *
+ * The loading of the TLDs is not thread safe. If you want to use the library
+ * in a multi-threaded environment, make sure to call the tld_load_tlds()
+ * before you start your threads. Then you'll be safe as long as you do not
+ * want to reload a file of TLDs while running your threads.
+ */
+struct tld_file * g_tld_file = nullptr;
+
+
+
+
+static enum tld_result tld_load_tlds_if_not_loaded()
+{
+    if(g_tld_file == nullptr)
+    {
+        return tld_load_tlds(nullptr, 1);
+    }
+
+    return TLD_RESULT_SUCCESS;
+}
 
 
 /** \brief Compare two strings, one of which is limited by length.
@@ -309,25 +359,27 @@
  * ASCII (a URI with Unicode characters encode them in UTF-8 and
  * changes all those bytes with %XX.)
  *
- * The length applied to the string in \p b. This allows us to make
- * use of the input string all the way down to the cmp() function.
- * In other words, we avoid a copy of the string.
+ * The l length applies to the string in \p a. The TLD data does not
+ * include null terminated strings. Instead we have one superstring
+ * with lengths pre-calculated.
  *
- * The string in \p a is 'nul' (\0) terminated. This means \p a
- * may be longer or shorter than \p b. In other words, the function
- * is capable of returning the correct result with a single call.
+ * The n length applies to the string in \p b. This allows us to make
+ * use of the input string all the way down to the cmp() function without
+ * making useless copies.
  *
- * If parameter \p a is "*", then it always matches \p b.
+ * If parameter \p a is "*", then it always matches \p b. However,
+ * it is expected that this function never gets called when a == "*".
  *
  * \param[in] a  The pointer in an f_tld field of the tld_descriptions.
+ * \param[in] l  The number of characters that can be checked in \p a.
  * \param[in] b  Pointer directly in referencing the user domain string.
  * \param[in] n  The number of characters that can be checked in \p b.
  *
  * \return -1 if a < b, 0 when a == b, and 1 when a > b
  */
-static int cmp(const char *a, const char *b, int n)
+static int cmp(const char *a, int l, const char *b, int n)
 {
-    /* if `a == "*"` then we have a bug in the table
+    /* if `a == "*"` then we have a bug in our algorithm
     if(a[0] == '*'
     && a[1] == '\0')
     {
@@ -336,7 +388,7 @@ static int cmp(const char *a, const char *b, int n)
     */
 
     /* n represents the maximum number of characters to check in b */
-    while(n > 0 && *a != '\0')
+    while(l > 0 && n > 0)
     {
         if(*a < *b)
         {
@@ -348,9 +400,10 @@ static int cmp(const char *a, const char *b, int n)
         }
         ++a;
         ++b;
+        --l;
         --n;
     }
-    if(*a == '\0')
+    if(l == 0)
     {
         if(n > 0)
         {
@@ -359,7 +412,7 @@ static int cmp(const char *a, const char *b, int n)
         }
         return 0;
     }
-    /* in this case n == 0 so a is larger */
+    /* in this case l > 0 so a is larger */
     return 1;
 }
 
@@ -394,16 +447,38 @@ static int cmp(const char *a, const char *b, int n)
  *
  * \return The offset of the domain found, or -1 when not found.
  */
-int search(int i, int j, const char *domain, int n)
+static int search(int i, int j, const char *domain, int n)
 {
     int auto_match = -1, p, r;
+    uint32_t l;
     const struct tld_description *tld;
+    const char *name;
+    enum tld_result result;
+
+    result = tld_load_tlds_if_not_loaded();
+    if(result != TLD_RESULT_SUCCESS)
+    {
+        return -1;
+    }
+
+#if _DEBUG
+    // make sure we do not get out of range
+    //
+    if((uint32_t) i >= g_tld_file->f_descriptions_count
+    || (uint32_t) j >= g_tld_file->f_descriptions_count)
+    {
+        fprintf(stderr, "error: i (%d) or j (%d) is too large, max is %d.\n",
+                                i, j, g_tld_file->f_descriptions_count);
+        abort();
+    }
+#endif
 
     if(i < j)
     {
         /* the "*" breaks the binary search, we have to handle it specially */
-        tld = tld_descriptions + i;
-        if(tld->f_tld[0] == '*' && tld->f_tld[1] == '\0')
+        tld = tld_file_description(g_tld_file, i);
+        name = tld_file_string(g_tld_file, tld->f_tld, &l);
+        if(l == 1 && name[0] == '*')
         {
             auto_match = i;
             ++i;
@@ -412,8 +487,9 @@ int search(int i, int j, const char *domain, int n)
         while(i < j)
         {
             p = (j - i) / 2 + i;
-            tld = tld_descriptions + p;
-            r = cmp(tld->f_tld, domain, n);
+            tld = tld_file_description(g_tld_file, p);
+            name = tld_file_string(g_tld_file, tld->f_tld, &l);
+            r = cmp(name, l, domain, n);
             if(r < 0)
             {
                 /* eliminate the first half */
@@ -457,6 +533,76 @@ void tld_clear_info(struct tld_info *info)
     info->f_country = (const char *) 0;
     info->f_tld = (const char *) 0;
     info->f_offset = -1;
+}
+
+
+/** \brief Load a TLDs file as the file to be used by the tld() function.
+ *
+ * This function loads the specified \p filename as the current set of
+ * data to be used by the tld() function.
+ *
+ * You generally do not need to call this function, instead, it will be
+ * automatically called with a null pointer which will load the default
+ * file as expected.
+ *
+ * The \p fallback flag can be set to true (the default) to fallback to
+ * the static version of the data compiled internally. This is used if
+ * the specified or default external file cannot be loaded.
+ *
+ * \param[in] filename  The file to load or NULL to load the default.
+ * \param[in] fallback  Whether to fallback to the internal data if the
+ * input file cannot be loaded.
+ *
+ * \return A tld_result representing the success or failure:
+ * TLD_RESULT_SUCCESS for success, TLD_RESULT_INVALID for errors where
+ * the file could not be read, and TLD_RESULT_NOT_FOUND if the file is
+ * not found.
+ */
+enum tld_result tld_load_tlds(const char *filename, int fallback)
+{
+    enum tld_file_error err;
+
+    tld_file_free(&g_tld_file);
+
+    if(filename == NULL)
+    {
+        // first try a user updated version of the file
+        //
+        err = tld_file_load("/var/lib/libtld/tlds.tld", &g_tld_file);
+        if(err == TLD_FILE_ERROR_NONE)
+        {
+            return TLD_RESULT_SUCCESS;
+        }
+        // else -- ignore any other error
+
+        // second try the default installed version of the file
+        //
+        filename = "/usr/share/libtld/tlds.tld";
+    }
+    // else -- only try with the user defined version
+
+    err = tld_file_load(filename, &g_tld_file);
+    if(err == TLD_FILE_ERROR_NONE)
+    {
+        return TLD_RESULT_SUCCESS;
+    }
+
+    if(fallback != 0)
+    {
+        // use the descriptions from tld_data.c as fallback
+        //
+        std::stringstream in;
+        in.write(reinterpret_cast<char const *>(tld_static_tlds), tld_get_static_tlds_buffer_size());
+        err = tld_file_load_stream(&g_tld_file, in);
+        if(err == TLD_FILE_ERROR_NONE)
+        {
+            return TLD_RESULT_SUCCESS;
+        }
+    }
+
+    return err == TLD_FILE_ERROR_CANNOT_OPEN_FILE
+                ? TLD_RESULT_NOT_FOUND
+                : TLD_RESULT_INVALID;
 }
 
 
@@ -567,34 +713,44 @@ void tld_clear_info(struct tld_info *info)
 enum tld_result tld(const char *uri, struct tld_info *info)
 {
     const char *end = uri;
-    const char **level_ptr;
-    int level = 0, start_level, i, r, p, offset;
+    //const char **level_ptr;
+    const struct tld_description *tld;
+    int level = 0, max_level, start_level, i, r, p, offset;
     enum tld_result result;
 
     /* set defaults in the info structure */
     tld_clear_info(info);
 
-    if(uri == (const char *) 0 || uri[0] == '\0')
+    if(uri == NULL || uri[0] == '\0')
     {
         return TLD_RESULT_NULL;
     }
 
-    level_ptr = malloc(sizeof(const char *) * tld_max_level);
+    /* before we can go futher, we want to load the TLDs file */
+    result = tld_load_tlds_if_not_loaded();
+    if(result != TLD_RESULT_SUCCESS)
+    {
+        return result;
+    }
+
+    max_level = g_tld_file->f_header->f_tld_max_level;
+    std::vector<const char *> level_ptr(max_level);
+    //level_ptr = reinterpret_cast<const char **>(malloc(sizeof(const char *) * max_level));
 
     while(*end != '\0')
     {
         if(*end == '.')
         {
-            if(level >= tld_max_level)
+            if(level >= max_level)
             {
                 /* At this point the maximum number of levels in the
                  * TLDs is 5
                  */
-                for(i = 1; i < tld_max_level; ++i)
+                for(i = 1; i < max_level; ++i)
                 {
                     level_ptr[i - 1] = level_ptr[i];
                 }
-                level_ptr[tld_max_level - 1] = end;
+                level_ptr[max_level - 1] = end;
             }
             else
             {
@@ -604,7 +760,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
             if(level >= 2 && level_ptr[level - 2] + 1 == level_ptr[level - 1])
             {
                 /* two periods one after another */
-                free(level_ptr);
+                //free(level_ptr);
                 return TLD_RESULT_BAD_URI;
             }
         }
@@ -614,27 +770,31 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     if(level == 0)
     {
         /* no TLD */
-        free(level_ptr);
+        //free(level_ptr);
         return TLD_RESULT_NO_TLD;
     }
 
     start_level = level;
     --level;
-    r = search(tld_start_offset, tld_end_offset,
+    r = search(g_tld_file->f_header->f_tld_start_offset,
+                g_tld_file->f_header->f_tld_end_offset,
                 level_ptr[level] + 1, (int) (end - level_ptr[level] - 1));
     if(r == -1)
     {
         /* unknown */
-        free(level_ptr);
+        //free(level_ptr);
         return TLD_RESULT_NOT_FOUND;
     }
 
     /* check for the next level if there is one */
-    p = r;
-    while(level > 0 && tld_descriptions[r].f_start_offset != USHRT_MAX)
+    for(p = r; level > 0; --level)
     {
-        r = search(tld_descriptions[r].f_start_offset,
-                tld_descriptions[r].f_end_offset,
+        tld = tld_file_description(g_tld_file, r);
+        if(tld->f_start_offset == USHRT_MAX)
+        {
+            break;
+        }
+        r = search(tld->f_start_offset, tld->f_end_offset,
                 level_ptr[level - 1] + 1,
                 (int) (level_ptr[level] - level_ptr[level - 1] - 1));
         if(r == -1)
@@ -642,16 +802,15 @@ enum tld_result tld(const char *uri, struct tld_info *info)
             /* we are done, return the previous level */
             break;
         }
-        p = r;
-        --level;
     }
     offset = (int) (level_ptr[level] - uri);
 
     /* if there are exceptions we may need to search those now if level is 0 */
     if(level == 0)
     {
-        r = search(tld_descriptions[p].f_start_offset,
-                tld_descriptions[p].f_end_offset,
+        tld = tld_file_description(g_tld_file, p);
+        r = search(tld->f_start_offset,
+                tld->f_end_offset,
                 uri,
                 (int) (level_ptr[0] - uri));
         if(r != -1)
@@ -661,7 +820,8 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         }
     }
 
-    info->f_status = tld_descriptions[p].f_status;
+    tld = tld_file_description(g_tld_file, p);
+    info->f_status = static_cast<tld_status>(tld->f_status);
     switch(info->f_status)
     {
     case TLD_STATUS_VALID:
@@ -673,8 +833,9 @@ enum tld_result tld(const char *uri, struct tld_info *info)
          * i.e. "nacion.ar" is valid and the TLD is just ".ar"
          * even though top level ".ar" is forbidden by default
          */
-        p = tld_descriptions[p].f_exception_apply_to;
-        level = start_level - tld_descriptions[p].f_exception_level;
+        p = tld->f_exception_apply_to;
+        tld = tld_file_description(g_tld_file, p);
+        level = start_level - tld->f_exception_level;
         offset = (int) (level_ptr[level] - uri);
         info->f_status = TLD_STATUS_VALID;
         result = TLD_RESULT_SUCCESS;
@@ -686,12 +847,12 @@ enum tld_result tld(const char *uri, struct tld_info *info)
 
     }
 
-    info->f_category = tld_descriptions[p].f_category;
-    info->f_country = tld_descriptions[p].f_country;
+    //info->f_category = tld_descriptions[p].f_category;
+    //info->f_country = tld_descriptions[p].f_country;
     info->f_tld = level_ptr[level];
     info->f_offset = offset;
 
-    free(level_ptr);
+    //free(level_ptr);
 
     return result;
 }
@@ -1053,52 +1214,6 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
 }
 
 
-/** \brief Transform the status to a string.
- *
- * The status returned in a tld_info can be converted to a string using
- * this function. This is useful to print out an error message.
- *
- * \param[in] status  The status to convert to a string.
- *
- * \return A string representing the input tld_status.
- */
-char * tld_status_to_string(enum tld_status status)
-{
-    switch(status)
-    {
-    case TLD_STATUS_VALID:
-        return "valid";
-
-    case TLD_STATUS_PROPOSED:
-        return "proposed";
-
-    case TLD_STATUS_DEPRECATED:
-        return "deprecated";
-
-    case TLD_STATUS_UNUSED:
-        return "unused";
-
-    case TLD_STATUS_RESERVED:
-        return "reserved";
-
-    case TLD_STATUS_INFRASTRUCTURE:
-        return "infrastructure";
-
-    case TLD_STATUS_EXAMPLE:
-        return "example";
-
-    case TLD_STATUS_UNDEFINED:
-        return "undefined";
-
-    case TLD_STATUS_EXCEPTION:
-        return "exception";
-
-    }
-
-    return "unknown";
-}
-
-
 /** \brief Return the version of the library.
  *
  * This functino returns the version of this library. The version
@@ -1113,6 +1228,30 @@ const char *tld_version()
 {
     return LIBTLD_VERSION;
 }
+
+
+/** \brief Get the size of the TLDs static buffer.
+ *
+ * This function is used to retrieve the size of the TLD buffer saved
+ * statically inside the library. This buffer gets used whenever the
+ * external tlds.tld file cannot be used for whatever reason. The size
+ * is used to create an std::stringstream file with the static data
+ * which is read as if the data came from a disk file.
+ *
+ * \return The size of the TLDS buffer.
+ */
+uint32_t tld_get_static_tlds_buffer_size()
+{
+    // The RIFF format saves the file size except the first 8 bytes in the
+    // second uint32_t
+    //
+    // WARNING: the following fails if you are running on a big endian
+    //          computer (the size will be swapped and the + 8 make it
+    //          even harder to understand what happened...)
+    //
+    return reinterpret_cast<uint32_t const *>(tld_static_tlds)[1] + 8;
+}
+
 
 
 /** \def LIBTLD_EXPORT
@@ -1645,5 +1784,8 @@ const char *tld_version()
  * in the tld_data.c file.
  */
 
-/* vim: ts=4 sw=4 et
- */
+#ifdef __cplusplus
+}
+#endif
+
+// vim: ts=4 sw=4 et

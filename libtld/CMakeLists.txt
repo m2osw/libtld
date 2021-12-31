@@ -22,49 +22,47 @@
 # THE SOFTWARE.
 #
 
-####
-#### TLD parser
-####
-##project(tld_parser)
-##include_directories(
-##    ${CMAKE_BINARY_DIR}
-##    ${tld_library_SOURCE_DIR}
-##    ${QT_INCLUDES}
-##)
-##add_executable(${PROJECT_NAME}
-##    tld_parser.cpp
-##)
-##target_link_libraries(${PROJECT_NAME}
-##    ${QT_LIBRARIES}
-##)
 ##
-####
-#### TLD data
-####
-##project(tld_data)
-##set(TLD_DATA_C ${PROJECT_SOURCE_DIR}/tld_data.c)
-##add_custom_command(
-##    OUTPUT ${TLD_DATA_C}
-##    COMMAND tld_parser ${PROJECT_SOURCE_DIR}
-##    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-##    MAIN_DEPENDENCY tld_data.xml
-##    DEPENDS tld_parser
-##)
-##add_custom_target(${PROJECT_NAME} ALL DEPENDS ${TLD_DATA_C})
-##define_property(SOURCE
-##    PROPERTY GENERATED
-##    BRIEF_DOCS "The tld_data.c file is a table of all the TLDs defined in tld_data.xml"
-##    FULL_DOCS "Once packaged, the tld_data.c file doesn't need to be regenerated (assuming the date and time of the source package is properly taken in account.)"
-##)
+## TLD parser
+##
+project(tld_parser)
+add_executable(${PROJECT_NAME}
+    ../tools/tldc.cpp
+
+    tld_compiler.cpp
+    tld_file.cpp
+    tld_strings.c
+)
+
+##
+## TLD data
+##
+project(tld_data)
+set(TLD_DATA_C ${PROJECT_BINARY_DIR}/tld_data.c)
+file(GLOB_RECURSE TLD_FILES ${CMAKE_SOURCE_DIR}/conf/tlds/*.ini)
+add_custom_command(
+    OUTPUT ${TLD_DATA_C}
+    COMMAND tld_parser --source conf/tlds ${PROJECT_SOURCE_DIR} --verify --c-file ${TLD_DATA_C} ${PROJECT_BINARY_DIR}/tlds.tld
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    MAIN_DEPENDENCY tld_parser
+    DEPENDS ${TLD_FILES}
+)
+add_custom_target(${PROJECT_NAME} ALL DEPENDS ${TLD_DATA_C})
+define_property(SOURCE
+    PROPERTY GENERATED
+    BRIEF_DOCS "The tld_data.c file is a table of all the TLDs defined in conf/tlds/... .ini files."
+    FULL_DOCS "In the new version, the tld_data.c is always generated on the fly since it can be done with just C/C++ and no Qt."
+)
 
 set(LIBTLD_SOURCES
-    tld.c
+    tld.cpp
     tld_compiler.cpp
-    tld_data.c
+    ${TLD_DATA_C}
     tld_domain_to_lowercase.c
     tld_emails.cpp
     tld_file.cpp
     tld_object.cpp
+    tld_strings.c
 )
 
 ##
@@ -99,6 +97,9 @@ install(
 project(tld_static)
 add_library(${PROJECT_NAME} STATIC
     ${LIBTLD_SOURCES}
+)
+add_dependencies(${PROJECT_NAME}
+    tld
 )
 # We need the -fPIC to use this library as extension of PHP, etc.
 set_target_properties(tld_static PROPERTIES COMPILE_FLAGS -fPIC)

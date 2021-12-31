@@ -503,7 +503,7 @@ char *tld_domain_to_lowercase(const char *domain)
 
     // we cannot change the input buffer, plus our result may be longer
     // than the input...
-    result = malloc(len + 1);
+    result = (char *) malloc(len + 1);
     if(result == (char *) 0)
     {
         return (char *) 0; // LCOV_EXCL_LINE

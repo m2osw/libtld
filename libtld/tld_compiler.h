@@ -231,6 +231,8 @@ public:
     std::string const &     get_input_folder() const;
     void                    set_output(std::string const & filename);
     std::string const &     get_output() const;
+    void                    set_c_file(std::string const & filename);
+    std::string const &     get_c_file() const;
     bool                    compile();
     int                     get_errno() const;
     std::string const &     get_errmsg() const;
@@ -297,12 +299,17 @@ private:
     void                    parse_tld();
     void                    print_tokens();
     void                    define_default_category();
+    void                    find_max_level();
     void                    compress_tags();
     uint16_t                find_definition(std::string name) const;
-    void                    output_tlds();
+    void                    output_tlds(std::ostream & out);
+    void                    save_to_file(std::string const & buffer);
+    void                    output_header(std::ostream & out);
+    void                    save_to_c_file(std::string const & buffer);
 
     std::string             f_input_folder = "/usr/share/libtld/tlds";
     std::string             f_output = "/var/lib/libtld/tlds.tld";
+    std::string             f_c_file = std::string();
     int                     f_errno = 0;
     std::string             f_errmsg = std::string();
     paths_t                 f_input_files = paths_t();

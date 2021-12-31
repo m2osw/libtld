@@ -1,37 +1,26 @@
+# Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 #
-# File:
-#      doc/CMakeLists.txt
+# https://snapwebsites.org/project/libtld
+# contact@m2osw.com
 #
-# Description:
-#      Create the documentation of the libtld library.
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
 #
-# Documentation:
-#      See the CMake documentation.
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
 #
-# License:
-#      Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
-#
-#      https://snapwebsites.org/project/libtld
-#      contact@m2osw.com
-#
-#      Permission is hereby granted, free of charge, to any person obtaining a
-#      copy of this software and associated documentation files (the
-#      "Software"), to deal in the Software without restriction, including
-#      without limitation the rights to use, copy, modify, merge, publish,
-#      distribute, sublicense, and/or sell copies of the Software, and to
-#      permit persons to whom the Software is furnished to do so, subject to
-#      the following conditions:
-#
-#      The above copyright notice and this permission notice shall be included
-#      in all copies or substantial portions of the Software.
-#
-#      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-#      OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-#      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-#      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-#      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-#      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-#      SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
 
@@ -40,7 +29,7 @@
 ##
 project(documentation)
 
-AddDoxygenTarget( libtld
+AddDoxygenTarget(libtld
     ${LIBTLD_VERSION_MAJOR}
     ${LIBTLD_VERSION_MINOR}
     ${LIBTLD_VERSION_PATCH}
@@ -59,5 +48,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
+
+add_subdirectory(man)
 
 # vim: ts=4 sw=4 et

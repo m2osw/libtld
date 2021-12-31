@@ -1,0 +1,80 @@
+.TH TLDC 1 "December 2021" "libtld 2.x" "User Commands"
+.SH NAME
+tldc \- Compile TLDs to a binary .tld file
+.SH SYNOPSIS
+.B tldc
+[\fIOPTION\fR]... [\fB--source\fR|\fB-s\fR \fISOURCE\fR] [\fIOUTPUT-FILE\fR]
+.SH DESCRIPTION
+Compile a set of TLD descriptions found in .ini files in the SOURCE
+directory tree to OUTPUT\-FILE which is a binary file format ready
+to be used by the tld(3) function. The strings are \fIcompressed\fR
+in one super string, and the TLD descriptions are sorted for very
+quick binary searches.
+.SS "Options:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print this help, then exit
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+print version number, then exit
+.TP
+\fB\-\-c-file\fR
+define the filename of a C file where to output the binary data which can
+then be statically compiled in the libtld library; this is used as the
+fallback data by the
+.BR tld (3)
+command
+.TP
+\fB\-\-output-json\fR
+output the data in a JSON file, the filename is the output filename with
+the .tld replaced with .json
+.TP
+\fB\-s\fR, \fB\-\-source\fR \fISOURCE\fR
+define the top directory of the directory tree of .ini files to compile
+.TP
+\fB\-\-verify\fR
+run the verification step which makes sure that the saved file can be
+reloaded and compared against the existing input data; this step uses the
+JSON output data to ensure equality
+.PP
+The \fB\-\-source\fR command line option changes the source directory tree.
+By default this is \fB`/usr/share/libtld/tlds'\fR. That directory includes a
+softlink named \fB`extensions'\fR pointing to \fB`/var/lib/libtld/tlds'\fR.
+The latter directory is where you are expected to add your own .ini files
+if you want to extend the list.
+.PP
+The \fB\-\-output\-json\fR command line option tells the compile to also
+generate a .json file. (\fBTODO:\fR create a version of the
+.BR tld (3)
+command in JavaScript.)
+.PP
+The \fB\-\-verify\fR command line option is used at compile time to make
+sure that the writing of the .tld file and the later loading of that data
+works as expected. You do not need to use that option if you are just
+updating your list of TLDs. The input files are verified either way and if
+there is an error in one of the .ini file, you will get an error message
+with a filename and line number with or without that option.
+.PP
+The \fB\-\-c\-file\fR command line option is also used at compile time.
+Actually, the project creates a temporary tool which sole purpose (nearly)
+is to generate the \fBtld_data.c\fR file so the library can include a
+statically defined fallback internally. This is a representation of the
+binary file in a C array.
+.SH AUTHOR
+Written by Alexis Wilke <alexis@m2osw.com>.
+.SH "REPORTING BUGS"
+Report bugs to <https://github.com/m2osw/libtld/issues>.
+.br
+libtld home page: <https://snapwebsites.org/project/libtld>.
+.SH COPYRIGHT
+Copyright \(co 2011-2022 Made to Order Software Corporation
+.br
+License: MIT
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.BR validate-tld (1),
+.BR tld (3),
+.BR tld.ini (5).

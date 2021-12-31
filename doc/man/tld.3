@@ -1,0 +1,38 @@
+.TH TLD 3 "December 2021" "libtld 2.x" "TLD Library"
+.SH NAME
+tld, tld_clear_info, tld_load_tlds, tld_check_uri, tld_domain_to_lowercase,
+tld_status_to_string \- find a TLD's description
+.SH SYNOPSIS
+.nf
+.B #include <tld.h>
+.PP
+.BI "enum tld_result tld(const char *uri, struct tld_info *info)"
+.fi
+.SH DESCRIPTION
+The
+.BR tld()
+function searches for the domain name defined in
+.I uri
+and records the last few sub-domains (at time of writing, we use five).
+If the domain name is a valid Top-Level Domain name, then the function
+returns the success result (\fBTLD_RESULT_SUCCESS\fR) and saves the
+details about the domain name in the
+.IR info
+structure.
+.SH AUTHOR
+Written by Alexis Wilke <alexis@m2osw.com>.
+.SH "REPORTING BUGS"
+Report bugs to <https://github.com/m2osw/libtld/issues>.
+.br
+libtld home page: <https://snapwebsites.org/project/libtld>.
+.SH COPYRIGHT
+Copyright \(co 2011-2022 Made to Order Software Corporation
+.br
+License: MIT
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.BR validate-tld (1),
+.BR tldc (1).

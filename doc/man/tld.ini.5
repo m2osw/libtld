@@ -1,0 +1,259 @@
+.TH TLD.INI 5 "December 2021" "libtld 2.x" "File Formats Manual"
+.SH NAME
+<name>.ini \- TLD description file
+.SH DESCRIPTION
+A TLD .ini file contains the description of a TLD. The file mostly
+follows the .ini file format with one exception to define tags.
+The following describes this format.
+.SS "Blank Lines"
+.PP
+Blank lines are ignored. Lines that start with a hash-sign (#) are comments
+and are also considered blank lines. Comments can have blank characters
+(spaces, tabs) before the hash-sign (#) character.
+.PP
+    # This is a comment, and it gets ignored by the compiler
+.SS "TLD Definitions"
+.PP
+A TLD definition is written between square brackets. It is also called a
+section in the .ini format parlance. In our case, the definition must be
+a domain name TLD definition.
+.PP
+    # The following defines the .com TLD
+    [.com]
+.PP
+The starting period is optional.
+.SS "Variables"
+.PP
+Lines that have a name, an equal sign, and a value define a variable.
+We find two types of variables in a .ini file. The ones defined before
+the first TLD definition and the ones after a TLD definition.
+.TP
+.B NOTE:
+We do not currently support an empty TLD to reset the state back to the
+global state. Instead, you can use separate files if you want to define
+separate sets of global variables.
+.PP
+Variables defined before the first TLD definition are considered global and
+they apply to all the TLDs defined in this one file. For example, a country
+is always defined at the top, then the various TLDs for that contry follow:
+.PP
+    # Global variables:
+    tag/country="France"
+
+    [.fr]
+    [.gouv.fr]
+.PP
+In this example, the \fB`.fr'\fR and the \fB.gouv.fr\fR are both
+automatically assigned the \fB`country'\fR tag set to \fB"France"\fR.
+.PP
+Global variables can be changed by assigning a variable of the same name
+within the TLD definition. So you can have a default that applies to most
+of the TLDs but a few may update said value.
+.PP
+    tag/region="county"
+
+    [.sacrameto.us]
+    [.berlin]
+    tag/region="city"
+.PP
+Variables defined after a TLD defintion only apply to that one TLD.
+.PP
+The value can be written between quotes or not. Without quotes, some
+characters are not allowed. With quotes, you must start and end the
+value with the same type of quotes (double " or single '). Without
+quotes, the value is trimmed of blanks at the start and end of the
+value. Also blanks within the value will be reduced to a single space.
+.SH "SYSTEM VARIABLES"
+The compiler recognizes all the basic variables you can specify.
+See the \fBTAGS\fR section for information about attaching user
+defined variables to a TLD.
+.PP
+The following are the accepted basic variables:
+.TP
+.B status=...
+the status of this TLD
+
+.PP
+The \fBstatus=...\fR variable can only be set to one of the following
+values:
+.TP
+.B status=deprecated
+This TLD is known to have been in use. It is not unlikely that you can
+find a page with a link using this TLD. However, websites with such TLDs
+will not work.
+.TP
+.B status=example
+This TLD is only to be used as an example. This is useful if you are
+parsing a document and find a URL with a TLD marked as an example. Then
+you know that you should not transform that URL in an actual anchor.
+.TP
+.B status=exception
+This TLD supports an exception. This is mainly used for second level names
+which are used by a country but not otherwise allowed:
+
+    [.ck]
+    status=unused
+    [.wwww.ck]
+    status=exception
+
+.TP
+.B status=infrastructure
+A few names, such as arpa and localhost, are only used for the Internet
+infrastructure. These names are never considered valid even for URLs.
+This is useful to detect such names and know they are expected names,
+but still mark such URLs as invalid.
+
+    [.arpa]
+    status=infrastructure
+
+The library already define these TLDs so you should not have to ever
+create infrastructure TLDs yourself. If you think we missed some such
+TLDs, please consider letting us know (see the
+.BR "REPORTING BUGS"
+section below for how to do so).
+.TP
+.B status=proposed
+There has been a set of proposed TLDs such as \fB`.mail'\fR. Today, this
+is much less useful since there are hundreds of proposed TLDs, most of
+which never make it to existance. This is still useful if you hear about
+a TLD that should make it soon and already want to accept some of these
+TLDs in your URLs without completely refusing such TLDs (which would be
+the norm of completely undefined TLDs).
+
+    [.mail]
+    status=proposed
+
+.TP
+.B status=reserved
+A few TLDs are marked as reserved. These are generally country TLDs that
+want to prevent a private party from registering a second level TLD which
+they consider could be useful later. Also some country do use second level
+TLDs when they reserve their top level domain name. For example, .uk had
+\fB`library.uk'\fR but it was not allowing private parties to purchase
+their own second level domain name.
+
+    [.cy]
+    status=reserved
+
+.TP
+.B status=unused
+Some TLDs are defined but \fInot usable\fR. For example, many countries
+first level TLDs are marked as unused because they only accept third
+level TLDs.
+
+    [.za]
+    status=unused
+
+.SH TAGS
+Tags are defined by adding \fB"tag/..."\fR at the beginning of the variable
+name. The name of a tag is not otherwise enforced. It can be any name you
+need to use in your software.
+.PP
+The library currently uses the following tags:
+.TP
+.B tag/category=...
+Define the category of this TLD. The old library had a set of categories defined
+in an enum. The new model uses a word which makes it a lot more flexible
+and easily extensible. The category tag is expected tot be defined, albeit
+still optional.
+.TP
+.B tag/country=...
+Define the name of the country this TLD is attached to. In most cases, this
+is defined as a global tag so all the TLD definitions in the file get that
+tag defined.
+.TP
+.B tag/description=...
+A description of the TLD. This can be a long description, include some
+history, etc. about that specific TLD.
+.TP
+.B tag/language=...
+If the TLD is written using a language other than English, this defines
+that language.
+.TP
+.B tag/nic=...
+The URL to the NIC (the body that manages this TLD).
+.TP
+.B tag/note=...
+Some notes about the TLD. In general this is to explain some things about
+\fIstrange\fR TLDs.
+.TP
+.B tag/region=...
+A word presenting the region or location of the TLD such as \fB"city"\fR
+or \fB"prefecture"\fR. If the `country' tag is defined and no region tag
+was defined, you can view its value as \fB"country"\fR.
+.SH CATEGORIES
+The library makes use of the following categories:
+.TP
+.B tag/category="brand"
+At some point, the doors were opened for companies around the world to
+make use of their name as a TLD. For example, you can now find some
+\fB`.google'\fR web pages.
+
+    [.google]
+    tag/category="brand"
+.TP
+.B tag/category="group"
+Some TLDs represent a group of people or some other group. These are
+most often categories as a group. For example:
+
+    [.gay]
+    tag/category="group"
+.TP
+.B tag/category="entrepreneurial"
+Some people bought second level domain names and transformed them in
+a TLD. This mainly means that there won't be a website under that specific
+second level domain name and third level domain name can be assigned an
+SSL certicicate.
+
+    [.blogspot.be]
+    tag/category="entrepreneurial"
+
+In some cases, we find entrepreneurial entries under the third and forth
+level domain names. Those are most often very technical and not for sales.
+For example, servers of a large companies like Amazon or Google clouds.
+.TP
+.B tag/category="international"
+This category distinguishes TLDs that are international from TLDs that are
+country specific. For example, the \fB[.com]\fR TLD is considered to be
+an international TLD for any type of commercial venture.
+.TP
+.B tag/category="language"
+A few TLD were specifically added to represent a language rather than a
+country where multiple languages may be spoken.
+
+Note that this is different from the \fB`tag/language=...'\fR which defines
+the language used in the TLD itself and not that this specific TLD represents
+a language.
+
+    # Catalan language
+    [.cat]
+    tag/category="language"
+.SH LOCATION
+The .ini files defined in the libtld project are installed under the
+directory:
+
+    /usr/share/libtld/tlds
+
+We include a softlink in that library directory named `extensions' which
+points to the user directory:
+
+    /var/lib/libtld/tlds
+
+and that second directory is where you are expected to add your own .ini
+files.
+.SH AUTHOR
+Written by Alexis Wilke <alexis@m2osw.com>.
+.SH "REPORTING BUGS"
+Report bugs to <https://github.com/m2osw/libtld/issues>.
+.br
+libtld home page: <https://snapwebsites.org/project/libtld>.
+.SH COPYRIGHT
+Copyright \(co 2011-2022 Made to Order Software Corporation
+.br
+License: MIT
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.BR tldc (1).
