@@ -1,4 +1,4 @@
-# Copyright:    Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libtld
 # contact@m2osw.com
@@ -26,7 +26,7 @@
 ## TLD tests
 ##
 
-# Tool to generate the &#...; entities for UTF-8 domain names
+# Tool to generate the \u... characters for UTF-8 domain names
 project(hex)
 add_executable(${PROJECT_NAME}
     hex.c
@@ -44,9 +44,14 @@ add_dependencies(${PROJECT_NAME}
     tld_data
 )
 add_test(
-    NAME ${PROJECT_NAME}
-    COMMAND ${PROJECT_NAME}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # Test the library as an end user
@@ -57,7 +62,16 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+add_test(
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Test the tld_valid_uri() function
 project(tld_test_full_uri)
@@ -67,7 +81,16 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+add_test(
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Test the C++ tld_object
 project(tld_test_object)
@@ -77,7 +100,16 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+add_test(
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Test TLD names as defined by Mozilla
 project(tld_test_tld_names)
@@ -87,7 +119,16 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+add_test(
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Test emails validity
 project(tld_test_emails)
@@ -97,7 +138,16 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+add_test(
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Test tld_domain_to_lowercase() validity
 project(tld_test_domain_lowercase)
@@ -107,7 +157,16 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+add_test(
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Test versions validity
 project(tld_test_versions)
@@ -117,22 +176,38 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     tld
 )
-add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} ${CMAKE_SOURCE_DIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
-
-# Test lint
-project( tld_test_xml )
-add_custom_target( ${PROJECT_NAME}
-    DEPENDS
-        tld_internal_test
-        tld_test
-        tld_test_full_uri
-        tld_test_object
-        tld_test_tld_names
-)
 add_test(
-    NAME              ${PROJECT_NAME}
-    COMMAND           ${CMAKE_CURRENT_SOURCE_DIR}/tld_test_xml.sh
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    NAME
+        ${PROJECT_NAME}
+
+    COMMAND
+        ${PROJECT_NAME} ${CMAKE_SOURCE_DIR}
+
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+##
+## Install "run_all_tests.sh" as "unittest" for coverage compatibility
+##
+project(unittest)
+set(TLD_UNITTEST ${PROJECT_BINARY_DIR}/unittest)
+add_custom_command(
+    OUTPUT
+        ${TLD_UNITTEST}
+
+    COMMAND
+        cp --verbose run_all_tests.sh ${TLD_UNITTEST}
+
+    MAIN_DEPENDENCY
+        run_all_tests.sh
+
+    WORKING_DIRECTORY
+        ${PROJECT_SOURCE_DIR}
+)
+add_custom_target(${PROJECT_NAME} ALL
+    DEPENDS
+        ${TLD_UNITTEST}
 )
 
 ###
@@ -140,32 +215,17 @@ add_test(
 ###
 #project(run_libtld_tests)
 #add_custom_target(run_libtld_tests
-#    COMMAND echo "*** tld_internal_test"
-#    COMMAND tld_internal_test
-#    COMMAND echo "*** tld_test"
-#    COMMAND tld_test
-#    COMMAND echo "*** tld_test_full_uri"
-#    COMMAND tld_test_full_uri
-#    COMMAND echo "*** tld_test_object"
-#    COMMAND tld_test_object
-#    COMMAND echo "*** tld_test_tld_names"
-#    COMMAND tld_test_tld_names
-#    COMMAND echo "*** tld_test_emails"
-#    COMMAND tld_test_emails
-#    COMMAND echo "*** tld_test_versions"
-#    COMMAND tld_test_versions ${CMAKE_SOURCE_DIR}
-#    COMMAND echo "*** tld_test_domain_lowercase"
-#    COMMAND tld_test_domain_lowercase
-#    COMMAND echo "*** tld_test_xml.sh"
-#    COMMAND ./tld_test_xml.sh
-#    COMMAND echo "*** TLD tests all ran"
+#    COMMAND tests/run_all_tests.sh
 #    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 #    DEPENDS
 #        tld_internal_test
 #        tld_test
+#        tld_test_domain_lowercase
+#        tld_test_emails
 #        tld_test_full_uri
 #        tld_test_object
 #        tld_test_tld_names
+#        tld_test_versions
 #)
 
 # vim: ts=4 sw=4 et

@@ -210,6 +210,7 @@ void compiler::run()
 void compiler::verify_output(tld_compiler & c)
 {
     tld_file * file(nullptr);
+    auto_free_tld_file auto_free(&file);
     tld_file_error err(tld_file_load(f_output.c_str(), &file));
     if(err != TLD_FILE_ERROR_NONE)
     {
@@ -234,6 +235,7 @@ void compiler::verify_output(tld_compiler & c)
         std::cerr << "error: conversion of file to JSON failed.\n";
         return;
     }
+    auto_free_string auto_delete(json);
 
     // save the verification JSON to a file if we also saved the
     // JSON of the compiler to a file

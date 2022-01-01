@@ -32,14 +32,20 @@
 
 
 
-#include "libtld/tld.h"
+#include    "libtld/tld.h"
 
-#include <map>
-#include <string>
-#include <vector>
-#include <stdlib.h>
-#include <stdio.h>
-#include <boost/algorithm/string.hpp>
+// C++ lib
+//
+#include    <map>
+#include    <string>
+#include    <vector>
+
+
+// C lib
+//
+#include    <stdlib.h>
+#include    <stdio.h>
+#include    <string.h>
 
 
 
@@ -215,8 +221,17 @@ void test_load()
         }
         else
         {
-            std::string s(buf);
-            boost::algorithm::trim(s);
+            char * start(buf);
+            while(isspace(*start))
+            {
+                ++start;
+            }
+            char * end(start + strlen(start));
+            while(end > start && isspace(end[-1]))
+            {
+                --end;
+            }
+            std::string s(start, end);
             if(s.length() == 1)
             {
                 // all TLDs are at least 2 characters

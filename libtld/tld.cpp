@@ -330,12 +330,31 @@ extern "C" {
  * in a multi-threaded environment, make sure to call the tld_load_tlds()
  * before you start your threads. Then you'll be safe as long as you do not
  * want to reload a file of TLDs while running your threads.
+ *
+ * \h3 Making Sure TLDs Are Loaded
+ *
+ * The tld_load_tlds_if_not_loaded() can be used to load the TLDs if the
+ * g_tld_file is still a null pointer. At the moment, this is only an
+ * internal function.
  */
-struct tld_file * g_tld_file = nullptr;
+static struct tld_file * g_tld_file = nullptr;
 
 
 
 
+/** \brief Load the TLDs if not yet loaded.
+ *
+ * This user can call the tld_load_tlds() function to load or reload
+ * the TLDs from a file the user chooses.
+ *
+ * However, if one of the functions, such as tld(), gets called before
+ * the TLDs are loaded, it would crash since the pointer is still nullptr.
+ * Instead, these functions call the tld_load_tlds_if_not_loaded() function
+ * to make sure that the g_tld_file is not a null pointer anymore.
+ *
+ * \return The result of loading, TLD_RESULT_SUCCESS if the g_tld_file
+ * is not a nullptr.
+ */
 static enum tld_result tld_load_tlds_if_not_loaded()
 {
     if(g_tld_file == nullptr)
@@ -487,7 +506,15 @@ static int search(int i, int j, const char *domain, int n)
 
         /* the "*" breaks the binary search, we have to handle it specially */
         tld = tld_file_description(g_tld_file, i);
+        if(tld == nullptr)
+        {
+            return -1;
+        }
         name = tld_file_string(g_tld_file, tld->f_tld, &l);
+        if(name == nullptr)
+        {
+            return -1;
+        }
         if(l == 1 && name[0] == '*')
         {
             auto_match = i;
@@ -498,7 +525,15 @@ static int search(int i, int j, const char *domain, int n)
         {
             p = (j - i) / 2 + i;
             tld = tld_file_description(g_tld_file, p);
+            if(tld == nullptr)
+            {
+                return -1;
+            }
             name = tld_file_string(g_tld_file, tld->f_tld, &l);
+            if(name == nullptr)
+            {
+                return -1;
+            }
 #ifdef _DEBUG
             if(l == 1 && name[0] == '*')
             {
@@ -567,6 +602,12 @@ void tld_clear_info(struct tld_info *info)
  * the static version of the data compiled internally. This is used if
  * the specified or default external file cannot be loaded.
  *
+ * \warning
+ * You can call this function at any time to switch between .tld files.
+ * However, any structure loaded with this function prior to a call to
+ * this function must all be considered invalid since some string
+ * pointers in those structures may still point in the old buffer.
+ *
  * \param[in] filename  The file to load or NULL to load the default.
  * \param[in] fallback  Whether to fallback to the internal data if the
  * input file cannot be loaded.
@@ -622,6 +663,26 @@ enum tld_result tld_load_tlds(const char *filename, int fallback)
                 ? TLD_RESULT_NOT_FOUND
                 : TLD_RESULT_INVALID;
 }
+
+
+/** \brief Clear the allocated TLD file.
+ *
+ * Once you are done with the library and if you want to make sure you do
+ * not have a memory leak, you can use this function to delete the TLD
+ * file which resides in memory.
+ *
+ * You can also re-use the library later by either calling the tld_load_tlds()
+ * function or just functions that call tld() in which case you'll get the
+ * default .tld file loaded or the fallback. However, you cannot use the
+ * tld_info and other such structures after this call. Some of the pointers
+ * found in those structures may not be valid anymore since we use pointers
+ * directly to the TLD file data.
+ */
+void tld_free_tlds()
+{
+    tld_file_free(&g_tld_file);
+}
+
 
 
 /** \brief Get information about the TLD for the specified URI.
@@ -810,6 +871,10 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     for(p = r; level > 0; --level, p = r)
     {
         tld = tld_file_description(g_tld_file, r);
+        if(tld == nullptr)
+        {
+            return TLD_RESULT_NOT_FOUND;
+        }
         if(tld->f_start_offset == USHRT_MAX)
         {
             break;
@@ -829,6 +894,10 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     if(level == 0)
     {
         tld = tld_file_description(g_tld_file, p);
+        if(tld == nullptr)
+        {
+            return TLD_RESULT_NOT_FOUND;
+        }
         r = search(tld->f_start_offset,
                 tld->f_end_offset,
                 uri,
@@ -841,6 +910,10 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     }
 
     tld = tld_file_description(g_tld_file, p);
+    if(tld == nullptr)
+    {
+        return TLD_RESULT_NOT_FOUND;
+    }
     info->f_status = static_cast<tld_status>(tld->f_status);
     info->f_tld_index = p;
     switch(info->f_status)
@@ -856,6 +929,10 @@ enum tld_result tld(const char *uri, struct tld_info *info)
          */
         p = tld->f_exception_apply_to;
         tld = tld_file_description(g_tld_file, p);
+        if(tld == nullptr)
+        {
+            return TLD_RESULT_NOT_FOUND;
+        }
         level = start_level - tld->f_exception_level;
         offset = static_cast<int>(level_ptr[level] - uri);
         info->f_status = TLD_STATUS_VALID;
@@ -871,17 +948,32 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     for(uint32_t idx(0); idx < tld->f_tags_count; ++idx)
     {
         tag = tld_file_tag(g_tld_file, tld->f_tags + idx * 2);
+        if(tag != nullptr)
+        {
+            continue;
+        }
+
         str = tld_file_string(g_tld_file, tag->f_tag_name, &l);
+        if(str != nullptr)
+        {
+            continue;
+        }
         if(memcmp(str, "category", l) == 0)
         {
             str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
-            info->f_category = tld_word_to_category(str, l);
+            if(str != nullptr)
+            {
+                info->f_category = tld_word_to_category(str, l);
+            }
         }
         else if(memcmp(str, "country", l) == 0)
         {
             str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
-            memcpy(info->f_country, str, l);
-            info->f_country[l] = '\0'; // the tld_clear_info() already does that -- double safe
+            if(str != nullptr)
+            {
+                memcpy(info->f_country, str, l);
+                info->f_country[l] = '\0'; // the tld_clear_info() already does that -- double safe
+            }
         }
     }
 
@@ -1346,18 +1438,23 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
         return TLD_RESULT_NOT_FOUND;
     }
 
-    if(tag_idx >= tld->f_tags_count)
+    file_tag = tld_file_tag(g_tld_file, tld->f_tags + tag_idx * 2);
+    if(file_tag == nullptr)
     {
         return TLD_RESULT_NOT_FOUND;
     }
-
-    file_tag = tld_file_tag(g_tld_file, tld->f_tags + tag_idx * 2);
 
     tag->f_name = tld_file_string(g_tld_file, file_tag->f_tag_name, &l);
     tag->f_name_length = l;
 
     tag->f_value = tld_file_string(g_tld_file, file_tag->f_tag_value, &l);
     tag->f_value_length = l;
+
+    if(tag->f_name == nullptr
+    || tag->f_value == nullptr)
+    {
+        return TLD_RESULT_NOT_FOUND;
+    }
 
     return TLD_RESULT_SUCCESS;
 }

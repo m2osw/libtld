@@ -49,6 +49,9 @@ target_link_libraries(${PROJECT_NAME}
     tld
 )
 
+##
+## Sub-directories
+##
 add_subdirectory(man)
 
 # vim: ts=4 sw=4 et

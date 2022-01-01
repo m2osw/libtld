@@ -7,27 +7,36 @@
  *
  * Quick and dirty (And NOT safe because of an easy to produce
  * buffer overflow) tool to transform UTF-8 strings written on
- * the command line (Linux at least) to UCS-4 in the output.
- * Just and only purpose: update our data.xml file with Unicode
- * characters (i.e. &#x????;).
+ * the command line (Linux at least) to UTF-32 in the output.
+ * Just and only purpose: update our .ini files when a TLD uses
+ * Unicode characters (i.e. \u????).
  */
 
 /** \file
- * \brief Tool used to output UTF-8 codes for the tld_data.xml file.
+ * \brief Tool used to output UTF-8 codes for the TLDs .ini files.
  *
- * When updating the tld_data.xml, I often get international
+ * When updating the .ini files, I often get international
  * TLDs that make use of Unicode characters. To enter those
- * characters in the XML document, we use the &#x....; encoding
+ * characters in the .ini files, I use the \u.... notation
  * which requires us to convert the data from UTF-8 (as given to
  * us on the command line) to UTF-32.
  *
- * This tool is used for that purpose.
+ * This tool is used for that purpose only. It is not production
+ * ready and should not be installed (it has known buffer overflow
+ * issues).
+ *
+ * Usage:
+ *
+ * \code
+ *     hex <characters to convert>
+ * \endcode
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
+#include    <stdlib.h>
+#include    <stdio.h>
+#include    <string.h>
+#include    <inttypes.h>
+
 
 size_t
 from_utf8(char *in, int32_t *out)
@@ -78,10 +87,10 @@ from_utf8(char *in, int32_t *out)
             }
             while(l > 0)
             {
-	    	if(*in == '\0')
-		{
-			return -1;
-		}
+                if(*in == '\0')
+                {
+                    return -1;
+                }
                 c = *in++;
                 if(c < 0x80 || c > 0xBF)
                 {
@@ -91,56 +100,64 @@ from_utf8(char *in, int32_t *out)
                 w = (w << 6) | (c & 0x3F);
             }
         }
-	// WARNING: No buffer overflow test... use at your own risk!!!
-	*out++ = w;
+        // WARNING: No buffer overflow test... use at your own risk!!!
+        *out++ = w;
     }
 
     *out = '\0';
 
     return out - start;
 }
+
+
 int
 main(int argc, char **argv)
 {
-	int	i;
-	size_t	j, len;
-	int32_t	buf[256];
+    int         i;
+    size_t      j, len;
+    int32_t     buf[256];
 
-	if(argc == 1)
-	{
-		printf("Usage: %s <string>\n", argv[0]);
-		exit(1);
-	}
+    if(argc == 1)
+    {
+        printf("Usage: %s <string> ...\n", argv[0]);
+        exit(1);
+    }
 
-	for(i = 1; i < argc; ++i)
-	{
-		len = from_utf8(argv[i], buf);
-		if(len == (size_t) -1)
-		{
-			printf("%3d. invalid UTF-8\n", i);
-		}
-		else
-		{
-			printf(".");
-			for(j = 0; j < len; ++j)
-			{
-				if((buf[j] >= 'a' && buf[j] <= 'z')
-				|| (buf[j] >= '0' && buf[j] <= '9')
-				|| buf[j] == '-'
-				|| buf[j] == '.')
-				{
-					printf("%c", buf[j]);
-				}
-				else if(buf[j] >= 0x10000)
-				{
-					printf("&#x%06X;", buf[j]);
-				}
-				else
-				{
-					printf("&#x%04X;", buf[j]);
-				}
-			}
-			printf("\n");
-		}
-	}
+    for(i = 1; i < argc; ++i)
+    {
+        len = from_utf8(argv[i], buf);
+        if(len == (size_t) -1)
+        {
+            printf("%3d. invalid UTF-8\n", i);
+        }
+        else
+        {
+            printf(".");
+            for(j = 0; j < len; ++j)
+            {
+                if((buf[j] >= 'a' && buf[j] <= 'z')
+                || (buf[j] >= '0' && buf[j] <= '9')
+                || buf[j] == '-'
+                || buf[j] == '.')
+                {
+                    printf("%c", buf[j]);
+                }
+                else if(buf[j] >= 0x10000)
+                {
+                    printf("\\U%06X;", buf[j]);
+                }
+                else if(buf[j] >= 0x0100)
+                {
+                    printf("\\u%04X;", buf[j]);
+                }
+                else
+                {
+                    printf("\\x%02X;", buf[j]);
+                }
+            }
+            printf("\n");
+        }
+    }
 }
+
+// vim: ts=4 sw=4 et

@@ -10,6 +10,7 @@ tld_tag_count, tld_get_tag, tld_status_to_string, tld_word_to_category
 .BI "enum tld_result tld(const char *uri, struct tld_info *info);"
 .BI "void tld_clear_info(struct tld_info *info);"
 .BI "enum tld_result tld_load_tlds(const char *filename, int fallback);"
+.BI "void tld_free_tlds();"
 .BI "enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags);"
 .BI "char *tld_domain_to_lowercase(const char *domain);"
 .BI "int tld_tag_count(struct tld_info *info);"
@@ -103,7 +104,7 @@ function loads the TLDs from a file or fallback to the default compiled
 in the library. The
 .IR filename
 parameter is expected to point to a valid .tld file, i.e. a file generated
-using the tldc compiler and .ini file. If set to NULL, then the internal
+using the tldc compiler and .ini files. If set to NULL, then the internal
 defaults are going to be used.
 .PP
 First it tries to load \fB`/var/lib/libtld/tlds.tld'\fR. If that file
@@ -112,8 +113,23 @@ can't be loaded, it tries again with \fB`/usr/share/libtld/tlds.tld'\fR.
 If no file can be loaded from disk and if the
 .IR fallback
 parameter is set to 1, then the function loads from the fallback data
-which is the data generated at compile time and saved in the \fUtld_data.c\fR
-file.
+which is the data generated at compile time.
+.PP
+You can call this function again at any time to switch between different
+\fB.tld\fR files. However, any \fBtld_info\fR and similar structure that
+you used before will be invalid after this call. This is because those
+structures use pointers directly inside the memory allocated for the
+TLD file.
+.SS tld_free_tlds()
+The
+.BR tld_free_tlds()
+is used to release the memory allocated to hold the TLDs in memory. This
+renders all the existing \fB`tld_info'\fR and similar structures invalid
+because some of the pointers in those structures point directly in that
+memory.
+.PP
+Note that a call to this function doesn't prevent you from using the
+\fItld()\fR function later. However, it will have to load the TLDs anew.
 .SS tld_check_uri()
 The
 .BR tld_check_uri()

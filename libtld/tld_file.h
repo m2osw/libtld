@@ -192,6 +192,40 @@ void                            tld_file_free(struct tld_file ** file);
 
 enum tld_file_error         tld_file_load_stream(tld_file ** file, std::istream & in);
 
+class auto_free_string
+{
+public:
+    auto_free_string(char * s)
+        : f_string(s)
+    {
+    }
+    auto_free_string(auto_free_string const &) = delete;
+    auto_free_string & operator = (auto_free_string const &) = delete;
+    ~auto_free_string()
+    {
+        free(f_string);
+    }
+private:
+    char * f_string = nullptr;
+};
+
+class auto_free_tld_file
+{
+public:
+    auto_free_tld_file(tld_file ** f)
+        : f_file(f)
+    {
+    }
+    auto_free_tld_file(auto_free_tld_file const &) = delete;
+    auto_free_tld_file & operator = (auto_free_tld_file const &) = delete;
+    ~auto_free_tld_file()
+    {
+        tld_file_free(f_file);
+    }
+private:
+    tld_file ** f_file = nullptr;
+};
+
 }
 #endif
 

@@ -1,14 +1,13 @@
 libtld for Debian
 -----------------
 
-Note that this package is really only temporarily up to date. The file:
+Note that this package is really only temporarily up to date. The .ini
+files will always be a little bit behind.
 
-   src/tld_data.xml
-
-Needs to be updated each time new gTLDs are accepted by INA and other
+It needs to be updated each time a new gTLD is accepted by INA and other
 organizations.
 
-In most cases, we try to keep the library up to date. However, changes to
-gTLD entries are not all published in one clear place.
+In most cases, we try to keep the library up to date. However, since 2021
+changes to the gTLDs are happening fast.
 
- -- Alexis Wilke <alexis@m2osw.com>  Sun, 04 May 2014 17:28:01 -0800
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 01 Jan 2022 11:10:26 -0800

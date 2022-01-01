@@ -1,7 +1,4 @@
-# File:         cmake/CMakeLists.txt
-# Object:       Install necessary cmake modules
-#
-# Copyright:    Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/
 # contact@m2osw.com
@@ -27,6 +24,12 @@
 
 project(libtld_cmake)
 
-install( FILES LibTLDConfig.cmake DESTINATION share/cmake/LibTLD )
+install(
+    FILES
+        LibTLDConfig.cmake
+
+    DESTINATION
+        share/cmake/LibTLD
+)
 
 # vim: ts=4 sw=4 et nocindent
