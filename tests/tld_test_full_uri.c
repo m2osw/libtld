@@ -103,14 +103,14 @@ const struct test_info test_info_entries[] =
       PROTOCOLS,
       0,
       TLD_RESULT_NULL,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "",
       PROTOCOLS,
       0,
       TLD_RESULT_NULL,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     /* invalid entries */
     {
@@ -118,259 +118,259 @@ const struct test_info test_info_entries[] =
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "b!d://www.m2osw.cg/bad-protocol/character",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https:/www.m2osw.sx.cn/missing/slash",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http:q/www.m2osw.lezajsk.pl/q/instead/of/slash",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https::/www.m2osw.museum.mv/two/colons",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http:///www.m2osw.rec.co/3/slashes",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://@www.m2osw.co.zm/bad?user=info",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://@www.m2osw.mil.py@/bad?user=info",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://:password1@www.m2osw.net.tn/bad?user=info",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://alexis:@www.m2osw.int.rw/bad?user=info",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://:@www.m2osw.l.lc/bad?user=info",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://www.m2osw.mil.sh:/bad?port=empty",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://www.m2osw.krasnoyarsk.ru:abc/bad?port=invalid&p=number",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "sftp://www.m2osw.cat.tt:-33/bad?port=unexpected number",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "https://www.m2osw.cat.tt/bad/variable/name?=value",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.edu.pt/bar%xx/percent",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.tjeldsund.no/con\trol/character",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.edu.pt/con%09rol/character", /* %09 = \t */
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.other.nf/space character",
       PROTOCOLS,
       VALID_URI_NO_SPACES,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.co.mp/space+character",
       PROTOCOLS,
       VALID_URI_NO_SPACES,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.bv.nl/space%20character",
       PROTOCOLS,
       VALID_URI_NO_SPACES,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.gov.pk/bad/variable/name?good=value&=at&the=beginning",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.rakpetroleum.om/bad/variable/name?good=value&at=the&=beginning",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.orange.om/missing/question/mark&good=values&here=perfect",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.orange.om/invalid%9ftoo/large",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.orange.om/invalid%9ztoo/large",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.orange.om/invalid%z9too/large",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.backspace.\010.no/forbid/control-characters",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.backspace.no/forbid/control-characters/\010/in/path/too",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.and\xF8y.no/forbid/special-characters",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.and%F8y.no/forbid/special-characters",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.and .no/forbid/spaces",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.and+.no/forbid/spaces",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.and%20.no/forbid/spaces",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.%1F.no/escape/forbidden",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://www.m2osw.no/large/characters\xF0/forbidden",
       PROTOCOLS,
       VALID_URI_ASCII_ONLY,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     {
       "http://a--really--long--domain-name--is-actually--forbidden.this--is--done-by--checking--the--length--which--is--limited--to--two--hundred--and--fifty--six--characters.note--that--the--buffer--must--include--a--null--terminator--which--means--you--really--are--limited--to--255--characters.www.m2osw.no/large/characters\xF0/forbidden",
       PROTOCOLS,
       0,
       TLD_RESULT_BAD_URI,
-      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1 }
+      { TLD_CATEGORY_UNDEFINED, TLD_STATUS_UNDEFINED, "", NULL, -1, 0 }
     },
     /* valid entries */
     {
@@ -378,77 +378,77 @@ const struct test_info test_info_entries[] =
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United Kingdom", ".co.uk/", 17 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United Kingdom", ".co.uk/", 17, 0 }
     },
     {
       "ftp://www.m2osw.ltd%2Euk/encoded/period", /* still encoded */
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United Kingdom", ".ltd%2Euk/", 15 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United Kingdom", ".ltd%2Euk/", 15, 0 }
     },
     {
       "http://www.m2osw.orange.ac.om/valid%9fcharacter",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".ac.om", 23 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".ac.om", 23, 0 }
     },
     {
       "http://www.m2osw.orange.ac.om/valid\x9f/character",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".ac.om", 23 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".ac.om", 23, 0 }
     },
     {
       "ftp://www.m2osw.ltd%2euk/encoded/period", /* still encoded */
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United Kingdom", ".ltd%2euk/", 15 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United Kingdom", ".ltd%2euk/", 15, 0 }
     },
     {
       "http://m2osw.org.nr/encoded/period?#&=55", /* looks like an empty variable name */
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Nauru", ".org.nr/", 12 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Nauru", ".org.nr/", 12, 0 }
     },
     {
       "http://snap.m2osw.blogspot.mx:888/longer/address",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_ENTREPRENEURIAL, TLD_STATUS_VALID, "", ".blogspot.mx:", 17 }
+      { TLD_CATEGORY_ENTREPRENEURIAL, TLD_STATUS_VALID, "", ".blogspot.mx:", 17, 0 }
     },
     {
       "HTTP://alexis:password1@www.m2osw.com:888/correct/uri?with=variable",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_INTERNATIONAL, TLD_STATUS_VALID, "", ".com:", 33 }
+      { TLD_CATEGORY_INTERNATIONAL, TLD_STATUS_VALID, "", ".com:", 33, 0 }
     },
     {
       "ftp://ftp.m2osw.me/freeware/download/snap/snap-1.0.tar.gz",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Montenegro", ".me/", 15 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Montenegro", ".me/", 15, 0 }
     },
     {
       "gopher://news.m2osw.ca.us:71/protocols",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United States", ".ca.us:", 19 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United States", ".ca.us:", 19, 0 }
     },
     {
       "random://news.m2osw.edu.mm/asterisk/protocols",
       "*",
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Republic of the Union of Myanmar", ".edu.mm/", 19 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Republic of the Union of Myanmar", ".edu.mm/", 19, 0 }
     },
 };
 #define    test_info_entries_length (sizeof(test_info_entries) / sizeof(test_info_entries[0]))

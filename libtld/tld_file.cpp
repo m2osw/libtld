@@ -276,7 +276,7 @@ enum tld_file_error tld_file_load(char const * filename, tld_file ** file)
 }
 
 
-char const * tld_file_errstr(tld_file_error err)
+const char *tld_file_errstr(tld_file_error err)
 {
     switch(err)
     {
@@ -327,7 +327,7 @@ char const * tld_file_errstr(tld_file_error err)
 }
 
 
-tld_description * tld_file_description(tld_file const * file, uint32_t id)
+const tld_description *tld_file_description(tld_file const * file, uint32_t id)
 {
     if(id >= file->f_descriptions_count)
     {
@@ -337,7 +337,7 @@ tld_description * tld_file_description(tld_file const * file, uint32_t id)
 }
 
 
-tld_tag * tld_file_tag(tld_file const * file, uint32_t id)
+const tld_tag *tld_file_tag(tld_file const * file, uint32_t id)
 {
     if(id + 1 >= file->f_tags_size)
     {
@@ -347,7 +347,7 @@ tld_tag * tld_file_tag(tld_file const * file, uint32_t id)
 }
 
 
-char const * tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
+const char *tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
 {
     --id;
     if(length == nullptr
@@ -383,7 +383,7 @@ char const * tld_file_string(tld_file const * file, uint32_t id, uint32_t * leng
  *
  * \return A string with the tld_file JSON or nullptr on error.
  */
-char * tld_file_to_json(tld_file const * file)
+char *tld_file_to_json(tld_file const * file)
 {
     if(file == nullptr
     || file->f_header == nullptr
@@ -436,7 +436,7 @@ char * tld_file_to_json(tld_file const * file)
 
         for(uint32_t tidx(0); tidx < d->f_tags_count; ++tidx)
         {
-            tld_tag * tag(tld_file_tag(file, d->f_tags + tidx * 2));
+            const tld_tag * tag(tld_file_tag(file, d->f_tags + tidx * 2));
             {
                 uint32_t length(0);
                 char const * tag_name(tld_file_string(file, tag->f_tag_name, &length));

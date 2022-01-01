@@ -93,10 +93,10 @@ void load_tlds()
  */
 int cat_ext(int offset, char *uri)
 {
-    int                         o, has_star;
-    uint32_t                    k, l;
-    struct tld_description *    tld;
-    const char *                name;
+    int                             o, has_star;
+    uint32_t                        k, l;
+    const struct tld_description *  tld;
+    const char *                    name;
 
     tld = tld_file_description(g_tld_file, offset);
     name = tld_file_string(g_tld_file, tld->f_tld, &l);
@@ -279,13 +279,13 @@ void test_all()
         "host.%fa.u-acute."
         "host.%FA.U-acute."
     };
-    struct tld_info             info;
-    char                        uri[256], extension_uri[256];
-    const char *                name;
-    uint32_t                    i, j, l, p, max_subdomains;
-    int                         has_star, sub_has_star;
-    enum tld_result             r;
-    struct tld_description      *tld_desc, *sub_tld;
+    struct tld_info                 info;
+    char                            uri[256], extension_uri[256];
+    const char *                    name;
+    uint32_t                        i, j, l, p, max_subdomains;
+    int                             has_star, sub_has_star;
+    enum tld_result                 r;
+    const struct tld_description    *tld_desc, *sub_tld;
 
     max_subdomains = sizeof(sub_domains) / sizeof(sub_domains[0]);
 
@@ -522,11 +522,12 @@ void test_invalid()
      * accessible.
      */
     memset(&undefined_info, 0xFE, sizeof(undefined_info));
-    undefined_info.f_category = TLD_CATEGORY_UNDEFINED;
-    undefined_info.f_status   = TLD_STATUS_UNDEFINED;
+    undefined_info.f_category  = TLD_CATEGORY_UNDEFINED;
+    undefined_info.f_status    = TLD_STATUS_UNDEFINED;
     memset(undefined_info.f_country, 0, sizeof(undefined_info.f_country));
-    undefined_info.f_tld      = (const char *) 0;
-    undefined_info.f_offset   = -1;
+    undefined_info.f_tld       = (const char *) 0;
+    undefined_info.f_offset    = -1;
+    undefined_info.f_tld_index = -1;
 
     memset(&clear_info, 0xFE, sizeof(clear_info));
 
@@ -602,6 +603,141 @@ void test_invalid()
 }
 
 
+void test_tags()
+{
+    struct tld_info info;
+    enum tld_result result;
+    const char * tld_name = "info.%e6%be%b3%e9%96%80";
+    int tag_count;
+    struct tld_tag_definition tag_info;
+
+    result = tld(tld_name, &info);
+    if(result != TLD_RESULT_SUCCESS)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return a valid info structure (error: %d).\n",
+                result);
+        ++err_count;
+        return;
+    }
+
+    if(info.f_status != TLD_STATUS_VALID)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return a VALID status as expected.\n");
+        ++err_count;
+        return;
+    }
+
+    if(info.f_category != TLD_CATEGORY_COUNTRY)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return a country category as expected.\n");
+        ++err_count;
+        return;
+    }
+
+    if(strcmp(info.f_country, "Macao") != 0)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return \"Macao\" as the country name.\n");
+        ++err_count;
+        return;
+    }
+
+    if(info.f_tld != tld_name + 4)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return the expected f_tld pointer.\n");
+        ++err_count;
+        return;
+    }
+
+    if(info.f_offset != 4)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return the expected f_offset.\n");
+        ++err_count;
+        return;
+    }
+
+    // info.f_tld_index -- we assume this will change, there is no real point
+    //                     in testing this specifically
+
+    tag_count = tld_tag_count(&info);
+    if(tag_count < 0)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI returned a negative tag_count.\n");
+        ++err_count;
+        return;
+    }
+
+    for(int idx = 0; idx < tag_count; ++idx)
+    {
+        result = tld_get_tag(&info, idx, &tag_info);
+        if(result != TLD_RESULT_SUCCESS)
+        {
+            fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI returned an error retrieving tag %d.\n", idx);
+            ++err_count;
+            return;
+        }
+
+        // the order in which tags are saved in not guaranteed, so we must
+        // test the name and decide what to do next
+        //
+        if(tag_info.f_name_length == 7
+        && memcmp(tag_info.f_name, "country", 7) == 0)
+        {
+            if(tag_info.f_value_length != 5
+            || memcmp(tag_info.f_value, "Macao", 5) != 0)
+            {
+                fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI \"country\" name was expected to be \"Macao\".\n");
+                ++err_count;
+                return;
+            }
+        }
+        else if(tag_info.f_name_length == 17
+             && memcmp(tag_info.f_name, "country_full_name", 17) == 0)
+        {
+            if(tag_info.f_value_length != 76
+            || memcmp(tag_info.f_value, "Macao Special Administrative Region of the People's Republic of China (MSAR)", 76) != 0)
+            {
+                fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI \"country_full_name\" was expected to be \"Macao Special Administrative Region of the People's Republic of China (MSAR)\".\n");
+                ++err_count;
+                return;
+            }
+        }
+        else if(tag_info.f_name_length == 11
+             && memcmp(tag_info.f_name, "description", 11) == 0)
+        {
+            if(tag_info.f_value_length != 12
+            || memcmp(tag_info.f_value, "Macao Island", 12) != 0)
+            {
+                fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI \"description\" was expected to be \"Macao Island\".\n");
+                ++err_count;
+                return;
+            }
+        }
+        else if(tag_info.f_name_length == 4
+             && memcmp(tag_info.f_name, "note", 4) == 0)
+        {
+            if(tag_info.f_value_length != 5
+            || memcmp(tag_info.f_value, "Macao", 5) != 0)
+            {
+                fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI \"note\" was expected to be \"Macao\".\n");
+                ++err_count;
+                return;
+            }
+        }
+        else if(tag_info.f_name_length == 8
+             && memcmp(tag_info.f_name, "language", 8) == 0)
+        {
+            if(tag_info.f_value_length != 20
+            || memcmp(tag_info.f_value, "Chinese, Traditional", 20) != 0)
+            {
+                fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI \"language\" was expected to be \"Chinese, Traditional\".\n");
+                ++err_count;
+                return;
+            }
+        }
+    }
+}
+
+
 
 
 int main(int argc, char *argv[])
@@ -631,6 +767,7 @@ int main(int argc, char *argv[])
     test_all();
     test_unknown();
     test_invalid();
+    test_tags();
 
     if(err_count)
     {

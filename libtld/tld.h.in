@@ -81,19 +81,6 @@ enum tld_status
     TLD_STATUS_EXCEPTION = 100
 };
 
-// use tags instead
-enum tld_region
-{
-    TLD_REGION_UNDEFINED,
-    TLD_REGION_AREA,            // i.e. Asia
-    TLD_REGION_UNION,           // i.e. Europe
-    TLD_REGION_COUNTRY,
-    TLD_REGION_PROVINCE,        // section of a country
-    TLD_REGION_STATE,           // states have their own separate laws
-    TLD_REGION_COUNTY,          // section of a country or state
-    TLD_REGION_CITY,
-};
-
 enum tld_result
 {
     TLD_RESULT_SUCCESS,
@@ -111,6 +98,15 @@ struct tld_info
     char                f_country[48];  /* current longest is "South Georgia and the South Sandwich Islands" */
     const char *        f_tld; /* pointer within your URI string */
     int                 f_offset;
+    int                 f_tld_index;
+};
+
+struct tld_tag_definition
+{
+    const char *        f_name;
+    int                 f_name_length;
+    const char *        f_value;
+    int                 f_value_length;
 };
 
 #define VALID_URI_ASCII_ONLY  0x0001
@@ -120,13 +116,15 @@ struct tld_info
 extern LIBTLD_EXPORT const char *tld_version();
 
 
-extern LIBTLD_EXPORT void tld_clear_info(struct tld_info *info);
-extern LIBTLD_EXPORT enum tld_result tld(const char *uri, struct tld_info *info);
-extern LIBTLD_EXPORT enum tld_result tld_load_tlds(const char *filename, int fallback);
-extern LIBTLD_EXPORT enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags);
-extern LIBTLD_EXPORT char *tld_domain_to_lowercase(const char *domain);
-extern LIBTLD_EXPORT const char *tld_status_to_string(enum tld_status status);
-extern LIBTLD_EXPORT enum tld_category tld_word_to_category(const char *word, int n);
+extern LIBTLD_EXPORT void               tld_clear_info(struct tld_info *info);
+extern LIBTLD_EXPORT enum tld_result    tld(const char *uri, struct tld_info *info);
+extern LIBTLD_EXPORT enum tld_result    tld_load_tlds(const char *filename, int fallback);
+extern LIBTLD_EXPORT enum tld_result    tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags);
+extern LIBTLD_EXPORT char *             tld_domain_to_lowercase(const char *domain);
+extern LIBTLD_EXPORT int                tld_tag_count(struct tld_info *info);
+extern LIBTLD_EXPORT enum tld_result    tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_definition *tag);
+extern LIBTLD_EXPORT const char *       tld_status_to_string(enum tld_status status);
+extern LIBTLD_EXPORT enum tld_category  tld_word_to_category(const char *word, int n);
 
 
 

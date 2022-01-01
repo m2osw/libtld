@@ -550,6 +550,7 @@ void tld_clear_info(struct tld_info *info)
     memset(info->f_country, 0, sizeof(info->f_country));
     info->f_tld = (const char *) 0;
     info->f_offset = -1;
+    info->f_tld_index = -1;
 }
 
 
@@ -730,11 +731,10 @@ enum tld_result tld_load_tlds(const char *filename, int fallback)
 enum tld_result tld(const char *uri, struct tld_info *info)
 {
     const char *end = uri;
-    //const char **level_ptr;
     const struct tld_description *tld;
     int level = 0, max_level, start_level, i, r, p, offset;
     uint32_t l;
-    tld_tag *tag;
+    const tld_tag *tag;
     const char *str;
     enum tld_result result;
 
@@ -842,6 +842,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
 
     tld = tld_file_description(g_tld_file, p);
     info->f_status = static_cast<tld_status>(tld->f_status);
+    info->f_tld_index = p;
     switch(info->f_status)
     {
     case TLD_STATUS_VALID:
@@ -1222,7 +1223,8 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
     }
     for(i = 0, j = 0; i < length; ++i, ++j)
     {
-        if(host[i] == '%') {
+        if(host[i] == '%')
+        {
             domain[j] = (char) (h2d(host[i + 1]) * 16 + h2d(host[i + 2]));
             i += 2; /* skip the 2 digits */
         }
@@ -1283,6 +1285,81 @@ uint32_t tld_get_static_tlds_buffer_size()
     //          even harder to understand what happened...)
     //
     return reinterpret_cast<uint32_t const *>(tld_static_tlds)[1] + 8;
+}
+
+
+int tld_tag_count(struct tld_info *info)
+{
+    const struct tld_description *tld;
+
+    if(info == nullptr
+    || info->f_tld_index < 0)
+    {
+        return -1;
+    }
+
+    tld = tld_file_description(g_tld_file, info->f_tld_index);
+    if(tld == nullptr)
+    {
+        return -1;
+    }
+
+    return tld->f_tags_count;
+}
+
+
+enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_definition *tag)
+{
+    const struct tld_description *tld;
+    const tld_tag *file_tag;
+    enum tld_result result;
+    uint32_t l;
+
+    if(tag == nullptr)
+    {
+        return TLD_RESULT_NULL;
+    }
+    tag->f_name = nullptr;
+    tag->f_name_length = 0;
+    tag->f_value = nullptr;
+    tag->f_value_length = 0;
+
+    if(info == nullptr)
+    {
+        return TLD_RESULT_NULL;
+    }
+
+    if(info->f_tld_index < 0)
+    {
+        return TLD_RESULT_INVALID;
+    }
+
+    result = tld_load_tlds_if_not_loaded();
+    if(result != TLD_RESULT_SUCCESS)
+    {
+        return result;
+    }
+
+    tld = tld_file_description(g_tld_file, info->f_tld_index);
+    if(tld == nullptr)
+    {
+        return TLD_RESULT_NOT_FOUND;
+    }
+
+    if(tag_idx >= tld->f_tags_count)
+    {
+        return TLD_RESULT_NOT_FOUND;
+    }
+
+    file_tag = tld_file_tag(g_tld_file, tld->f_tags + tag_idx * 2);
+
+    tag->f_name = tld_file_string(g_tld_file, file_tag->f_tag_name, &l);
+    tag->f_name_length = l;
+
+    tag->f_value = tld_file_string(g_tld_file, file_tag->f_tag_value, &l);
+    tag->f_value_length = l;
+
+    return TLD_RESULT_SUCCESS;
 }
 
 

@@ -179,13 +179,13 @@ enum tld_file_error
 };
 
 
-enum tld_file_error         tld_file_load(const char * filename, struct tld_file ** file);
-char const *                tld_file_errstr(enum tld_file_error err);
-struct tld_description *    tld_file_description(struct tld_file const * file, uint32_t id);
-struct tld_tag *            tld_file_tag(struct tld_file const * file, uint32_t id);
-char const *                tld_file_string(struct tld_file const * file, uint32_t id, uint32_t * length);
-char *                      tld_file_to_json(struct tld_file const * file);
-void                        tld_file_free(struct tld_file ** file);
+enum tld_file_error             tld_file_load(const char * filename, struct tld_file ** file);
+const char *                    tld_file_errstr(enum tld_file_error err);
+const struct tld_description *  tld_file_description(struct tld_file const * file, uint32_t id);
+const struct tld_tag *          tld_file_tag(struct tld_file const * file, uint32_t id);
+const char *                    tld_file_string(struct tld_file const * file, uint32_t id, uint32_t * length);
+char *                          tld_file_to_json(struct tld_file const * file);
+void                            tld_file_free(struct tld_file ** file);
 
 
 #ifdef __cplusplus

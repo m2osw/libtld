@@ -1,24 +1,363 @@
 .TH TLD 3 "December 2021" "libtld 2.x" "TLD Library"
 .SH NAME
 tld, tld_clear_info, tld_load_tlds, tld_check_uri, tld_domain_to_lowercase,
-tld_status_to_string \- find a TLD's description
+tld_tag_count, tld_get_tag, tld_status_to_string, tld_word_to_category
+\- find a TLD's description
 .SH SYNOPSIS
 .nf
 .B #include <tld.h>
 .PP
-.BI "enum tld_result tld(const char *uri, struct tld_info *info)"
+.BI "enum tld_result tld(const char *uri, struct tld_info *info);"
+.BI "void tld_clear_info(struct tld_info *info);"
+.BI "enum tld_result tld_load_tlds(const char *filename, int fallback);"
+.BI "enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags);"
+.BI "char *tld_domain_to_lowercase(const char *domain);"
+.BI "int tld_tag_count(struct tld_info *info);"
+.BI "enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_definition *tag);"
+.BI "const char *tld_status_to_string(enum tld_status status);"
+.BI "enum tld_category tld_word_to_category(const char *word, int n);"
 .fi
 .SH DESCRIPTION
+This page describes the basic TLD functions found in the libtld library.
+.SS tld()
 The
 .BR tld()
 function searches for the domain name defined in
-.I uri
+.IR uri
 and records the last few sub-domains (at time of writing, we use five).
 If the domain name is a valid Top-Level Domain name, then the function
 returns the success result (\fBTLD_RESULT_SUCCESS\fR) and saves the
 details about the domain name in the
 .IR info
 structure.
+.PP
+If the
+.BR tld()
+function fails to find a known TLD (whether it is valid or not), then it
+returns \fBTLD_RESULT_NOT_FOUND\fR and clears the
+.IR info
+structure before returning. The clearing of the info sturecture is the
+same as calling the
+.BR tld_clear_info()
+function.
+.PP
+The
+.IR tld_info
+structure includes a few fields describing your input URI.
+
+    struct tld_info
+    {
+        enum tld_category   f_category;
+        enum tld_status     f_status;
+        char                f_country[48];
+        const char *        f_tld;
+        int                 f_offset;
+	int                 f_tld_index;
+    };
+
+.TP
+`enum tld_category f_category' \fI(deprecated)\fR
+This field gives the category of the TLD. This is a remnant of version 1 of
+the library. Now the category is a word saved in the list of tags attached
+to a TLD.
+.TP
+`enum tld_status f_status'
+The status field defines the current status of this TLD. Many TLDs are not
+valid for use with SSL certificates unless marked with TLD_STATUS_VALID.
+.TP
+`char f_country[48]' \fI(deprecated)\fR
+The country defines the name of the country this TLD belongs to. If the
+TLD is not specific to a country (like \fB`.com'\fR or \fB`.gay'\fR),
+then this string remains empty. Note that in version 2 this field is
+an array within the \fItld_info\fR because the country names, like all
+the other strings, are part of our super string (i.e. it has a size but
+no null terminator).
+.TP
+`const char *f_tld'
+The \fBf_tld\fR field points inside your input string where the TLD
+starts. As a result, you can see whether your URI is valid or not.
+i.e. a complete domain must have at least one sub-domain before the
+TLD, for example, \fB`.com'\fR on its own is not a valid domain.
+\fB`m2osw.com'\fR, however, is a valid URI, it has a sub-domain name
+before the TLD.
+.TP
+`int f_offset'
+The offset to the TLD in your string. You can simply test this offset
+to know whether your domain name is valid (>0) or just a TLD (==0).
+.TP
+`int f_tld_index'
+The index of the TLD that was found or -1 if
+.SS tld_clear_info()
+The
+.BR tld_clear_info()
+function clears the specified
+.IR info
+structure. This sets the \fBf_country\fR string to all '\0' (empty),
+the \fBf_tld\R pointer to NULL, the \fBf_offset\fR to zero, the
+\fBf_category\fR to \fITLD_CATEGORY_UNDEFINED\fR, and the
+\fBf_status\fR to \fITLD_STATUS_UNDEFINED\fR.
+.SS tld_load_tlds()
+The
+.BR tld_load_tlds()
+function loads the TLDs from a file or fallback to the default compiled
+in the library. The
+.IR filename
+parameter is expected to point to a valid .tld file, i.e. a file generated
+using the tldc compiler and .ini file. If set to NULL, then the internal
+defaults are going to be used.
+.PP
+First it tries to load \fB`/var/lib/libtld/tlds.tld'\fR. If that file
+can't be loaded, it tries again with \fB`/usr/share/libtld/tlds.tld'\fR.
+.PP
+If no file can be loaded from disk and if the
+.IR fallback
+parameter is set to 1, then the function loads from the fallback data
+which is the data generated at compile time and saved in the \fUtld_data.c\fR
+file.
+.SS tld_check_uri()
+The
+.BR tld_check_uri()
+function is used to check the validity of a whole URI, including a protocol.
+.PP
+The
+.IR uri
+parameter is the string to verify for validity.
+.PP
+The
+.IR info
+parameter is used to return details about the TLD found in the \fIuri\fR.
+It cannot be NULL.
+.PP
+The
+.IR protocol
+parameter is expected to be a list of comma separated protocol names.
+For example, ti check whether the URI is an HTTP uri, you can pass
+the string \fB"http,https"\fR.
+.PP
+The
+.IR flags
+parameter can be used to run the test in somewhat different ways.
+.TP
+`VALID_URI_ASCII_ONLY'
+This flag can be used to prevent the URI to include letters other
+than ASCII characters. If the URI includes a UTF-8 or upper
+Latin1 character, then the function returns \fBTLD_RESULT_BAD_URI\fR.
+.TP
+`VALID_URI_NO_SPACES'
+This flag prevents the URI from including spaces. The domain name
+can never include spaces, but the path can. This flag means that
+the path cannot be including spaces at all (or '+' character).
+If a space is found, then the function returns \fBTLD_RESULT_BAD_URI\fR.
+.SS tld_domain_to_lowercase()
+The
+.BR tld_domain_to_lowercase()
+function is used to transform the input domain name with its lowercase
+version. A domain name is case insensitive, but the \fBtld()\fR and
+\fBtld_check_uri()\fR functions are case sensitive. So this function can
+be used ahead of time to duplicate the input URI and return it with the
+domain name part in lowercase. This is useful if you want to compare your
+domain name to some values or call the \fB`tld()'\fR or
+\fB`tld_check_uri()'\fR function when the input may be in uppercase.
+.PP
+Remember to \fB`free(result)'\fR once you are done with that string.
+Keep in mind that the \fBtld_info\fR structure is going to have
+its \fBf_tld\fR field point within your input string. So do not call
+\fB`free()'\fR too soon.
+.SS tld_tag_count()
+The
+.BR tld_tag_count()
+function returns the number of tags assigned to the TLD defined in
+the \fBtld_info\fR structure. You are expected to call \fBtld()\fR
+or \fBtld_check_uri()\fR in order to properly initialize that
+structure before you can retrieve any tags.
+.SS tld_get_tag()
+The
+.BR tld_get_tag()
+function is used to retrieve one tag definition from the given TLD.
+The
+.IR info
+parameter is the same that you passed to the
+\fBtld_tag_count\fR function.
+.PP
+The
+.IR tag_idx
+parameter is a number between 0 and the number returned by the
+\fBtld_tag_count()\fR function minus 1.
+.PP
+The
+.IR tag
+parameter is a pointer to a \fBtld_tag_definition\fR structure
+which receives the name and value of the tag. Both of which
+are constant strings define in the .tld file superstring.
+
+    struct tld_tag_definition
+    {
+        const char *        f_name;
+        int                 f_name_length;
+        const char *        f_value;
+        int                 f_value_length;
+    };
+
+The \fBf_name\fR and \fBf_value\fR strings are not null terminated.
+You must make sure to use the length parameter to properly use the
+string. In C++, you can just do:
+
+    std::string name(def.f_name, def.f_name_length);
+    std::string value(def.f_value, def.f_value_length);
+
+Which gives you a copy of the string which makes it very easy to
+use the data. In C, you can use \fBstrndup()\fR if you'd like to
+have a null terminated string. However, the point of the libtld
+is to avoid such copies. You are given direct access to the data
+inside the library.
+.SS tld_status_to_string()
+The
+.BR tld_status_to_string()
+function converts the input
+.IR status
+parameter into a string which can be written out in an error message.
+.SS tld_word_to_category()
+The
+.BR tld_word_to_category()
+function is used to convert a word in a \fB`TLD_CATEGORY_...'\fR value.
+This is primarily used for backward compatibility since the \fB`tld_info'\fR
+includes an \fB`f_category'\fR field which needs to be filled in. I will
+not add more categories in the enumeration and a future version will
+remove that field from the \fB`tld_info'\fR structure.
+.SH STATUSES
+The library has an enumeration with multiple statuses which is used to
+define the status of a TLD. There is only one valid status:
+\fBTLD_STATUS_VALID\fR. All the other statuses define a TLD which is not
+quite there, was removed/deprecated, and we have an "undefined" value
+which means that we did not find the TLD at all (i.e. the status of a
+TLD defined in our .tld files cannot have that status).
+.TP
+`TLD_STATUS_VALID'
+The TLD is valid. You can use it in any way you'd like, including with
+SSL certificates.
+.TP
+`TLD_STATUS_PROPOSED'
+The TLD was proposed but it was not yet activated.
+.TP
+`TLD_STATUS_DEPRECATED'
+The TLD was deprecated. It is considered invalid at the moment. It is
+still defined so we have the information defining that TLD.
+.TP
+`TLD_STATUS_UNUSED'
+The TLD exists and is assigned, however, it cannot be used directly.
+In most cases, this means we need one more sub-domain to have a valid
+URI. For example, the \fB.my\fR TLD (Malaysia) cannot be used as a
+second level TLD. In other words, \fBm2osw.my\fR is not allowed.
+.TP
+`TLD_STATUS_RESERVED'
+The reserved status is used by TLDs when the TLD was assigned by never
+used. That means you should never find such a TLD anywhere (except examples
+and definitions of such TLDs).
+.TP
+`TLD_STATUS_INFRASTRUCTURE'
+The TLD represents a domain name which is used by the infrastructure.
+For example, the \fB.arpa\fR is one of the infrastructure TLDs. These
+are definitively forbidden except within the infrastructure. You need
+to know exactly what this is for.
+.TP
+`TLD_STATUS_EXAMPLE'
+The TLD represents an example. This is not yet well defined in our
+environment. This would be useful for domain names such as
+\fB`example.com'\fR, however, at the moment there are no TLDs that
+represent examples, except maybe \fBtest.ru\fR (it is not clear to
+me at this point).
+.TP
+`TLD_STATUS_UNDEFINED'
+The TLD is not defined in our table. This is the default status until
+we find a TLD.
+.SH CATEGORY
+The \fBtld_category\fR enumeration is a remnant of version 1. It is
+still available, but it is considered deprecated. The \fBtld_info\fR
+still receives a category but the new way is to instead get the tags
+of the TLD.
+.TP
+`TLD_CATEGORY_INTERNATIONAL'
+The TLD is considered to be \fIinternational\fR. Anyone can use it anywhere.
+.TP
+`TLD_CATEGORY_PROFESSIONALS'
+The TLD is for professionals. This is also an international TLD, but it can
+be used only by professionals.
+.TP
+`TLD_CATEGORY_LANGUAGE'
+The TLD is specific to a language. For example, \fB.cat\fR is for websites
+in Catalan.
+.TP
+`TLD_CATEGORY_GROUP'
+The TLD represents a group such as \fB.gay\fR.
+.TP
+`TLD_CATEGORY_REGION'
+The TLD represents a location (a.k.a. "region" was the old designation).
+The region tag actually defines the type of region: country, city, prefecture,
+etc.
+.TP
+`TLD_CATEGORY_TECHNICAL'
+The TLD is a technical TLD. This goes hands in hands with the
+\fBinfrastructure\fR status.
+.TP
+`TLD_CATEGORY_COUNTRY'
+The TLD represents a country. Note that category is used instead of
+the \fB`TLD_CATEGORY_REGION'\fR when the TLD represents a country.
+.TP
+`TLD_CATEGORY_LOCATION'
+The TLD represents a location (a.k.a. a "region"). There "location"
+category is not currently used.
+.TP
+`TLD_CATEGORY_ENTREPRENEURIAL'
+The TLD was purchased as a valid domain of a TLD and itself transformed
+in a TLD so that way SSL certificate can properly be assigned to
+sub-domains of that domain. For example, the \fB`.blogspot.com'\fR
+is a domain that was purchased from a registrar selling \fB.com'\fR
+domain names. Then the owner decided to make use of it as a TLD. That
+means users can create a third level and be given an SSL certificate
+without the worry that the owner of the \fB`.blogspot.com'\fR domain
+name leaks its own certificate, or other users leak their certificate
+in their third level domain name.
+.TP
+`TLD_CATEGORY_BRAND'
+Since 2012, ICANN introduced a new process for any company to be assigned
+its own TLDs. In most cases, the name of the company. This category
+encompasses those extensions.
+.PP
+Note that the process included the introduction of international TLDs
+such as the \fB.lol\fR TLD.
+.TP
+`TLD_CATEGORY_UNDEFINED'
+This category is used as the default in the \fBtld_info\fR structure.
+This means the TLD was not defined or the TLD's category is not known.
+.PP
+If you use a category name which is not defined in the \fB`tld_category'\fR
+enumeration, then this value is used as a fallback. You probably want to
+use the category tag instead.
+.SH RESULT
+The \fBtld()\fR function returns a \fBtld_result\fR value:
+.TP
+`TLD_RESULT_SUCCESS'
+The input URI includes a valid TLD.
+.TP
+`TLD_RESULT_INVALID'
+The TLD was found, but it is not marked as being valid (TLD_STATUS_VALID)
+or an exception (TLD_STATUS_EXCEPTION, which is handled as a succcess
+internally).
+.TP
+`TLD_RESULT_NULL'
+The input URI is a NULL pointer or the string is an empty string.
+.TP
+`TLD_RESULT_NO_TLD'
+The input URI does not include at least one period, this is not considered
+valid since you are expected to have a domain name such as "<name>.com".
+Although the function works with just ".com", it is expecte that you use
+the function with a complete domain name, not just a TLD.
+.TP
+`TLD_RESULT_BAD_URI'
+The input URI was not valid.
+.TP
+`TLD_RESULT_NOT_FOUND'
+The TLD was not found. It's not considered to be valid at all.
 .SH AUTHOR
 Written by Alexis Wilke <alexis@m2osw.com>.
 .SH "REPORTING BUGS"

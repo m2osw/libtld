@@ -152,13 +152,7 @@ public:
 
     static constexpr std::uint32_t      SET_TLD =         0x0001;
     static constexpr std::uint32_t      SET_STATUS =      0x0002;
-    static constexpr std::uint32_t      SET_CATEGORY =    0x0004;
-    static constexpr std::uint32_t      SET_COUNTRY =     0x0008;
-    static constexpr std::uint32_t      SET_NIC =         0x0010;
-    static constexpr std::uint32_t      SET_DESCRIPTION = 0x0020;
-    static constexpr std::uint32_t      SET_NOTE =        0x0040;
     static constexpr std::uint32_t      SET_APPLY_TO =    0x0080;
-    static constexpr std::uint32_t      SET_REGION =      0x0100;
 
                             tld_definition(tld_definition const &) = default;
                             tld_definition(tld_string_manager & strings);
@@ -211,16 +205,6 @@ private:
 
     uint16_t                f_start_offset = USHRT_MAX;
     uint16_t                f_end_offset = USHRT_MAX;
-
-    // using tags instead of specific fields so that way
-    // we can put anything we want in those entries
-    //
-    //tld_category            f_category = TLD_CATEGORY_UNDEFINED;
-    //string_id_t             f_country = STRING_ID_NULL;
-    //tld_region              f_region = TLD_REGION_UNDEFINED;
-    //string_id_t             f_nic = STRING_ID_NULL;
-    //string_id_t             f_description = STRING_ID_NULL;
-    //string_id_t             f_note = STRING_ID_NULL;
 };
 
 
