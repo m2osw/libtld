@@ -9,6 +9,7 @@ libtld (2.0.1.0~bionic) bionic; urgency=high
   * Removed the lint test for the tld_data.xml, since the file is gone.
   * Removed the tabs found inside hex.c.
   * Made the path usable in run_all_tests.c so it works running coverage.
+  * Made the tests pass even with the sanitizer.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 01 Jan 2022 11:21:03 -0800
 
