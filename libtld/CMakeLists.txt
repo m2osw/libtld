@@ -94,14 +94,26 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     SOVERSION ${LIBTLD_VERSION_MAJOR}
 )
 install(
-    TARGETS ${PROJECT_NAME}
-    LIBRARY DESTINATION lib
-    COMPONENT runtime
+    TARGETS
+        ${PROJECT_NAME}
+
+    LIBRARY DESTINATION
+        lib
+
+    COMPONENT
+        runtime
 )
 install(
-    FILES ${PROJECT_BINARY_DIR}/tld.h
-    DESTINATION include
-    COMPONENT development
+    FILES
+        ${PROJECT_BINARY_DIR}/tld.h
+        tld_compiler.h
+        tld_file.h
+
+    DESTINATION
+        include
+
+    COMPONENT
+        development
 )
 
 ##
@@ -118,9 +130,14 @@ add_dependencies(${PROJECT_NAME}
 set_target_properties(tld_static PROPERTIES COMPILE_FLAGS -fPIC)
 
 install(
-    TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION lib
-    COMPONENT development
+    TARGETS
+        ${PROJECT_NAME}
+
+    ARCHIVE DESTINATION
+        lib
+
+    COMPONENT
+        development
 )
 
 # vim: ts=4 sw=4 et

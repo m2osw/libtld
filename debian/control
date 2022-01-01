@@ -17,6 +17,7 @@ Package: libtld
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: libtld-compiler
 Description: C/C++ library used to verify domain names by extracting their TLD
  Runtime library of the libtld project.
  .
@@ -28,6 +29,20 @@ Description: C/C++ library used to verify domain names by extracting their TLD
  domain name. That way you can extract the sub-domains, the domain name itself
  and the TLD for any world-wide URI. Note that this is very important if you
  manage cookies in a browser.
+
+Package: libtld-compiler
+Architecture: any
+Section: libs
+Depends: libtld (= ${binary:Version}), ${misc:Depends}
+Description: C/C++ library used to verify domain names by extracting their TLD
+ TLD Compiler and TLD source files (.ini).
+ .
+ To make it all work, we need to have a list of all the currently valid TLDs.
+ Then we compile those TLDs in a binary format which can be loaded and used
+ instantly. This package includes the compiler used to compile the .ini file
+ that define all the TLDs. The package also includes manual pages about the
+ compiler and the .ini file format. This is useful if you need to tweak some
+ of the existing TLDs or add your own.
 
 Package: libtld-dev
 Architecture: any
@@ -49,6 +64,7 @@ Package: libtld-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends}
+Suggests: libtld, libtld-compiler
 Description: C/C++ library used to verify domain names by extracting their TLD
  Documentation on how to use the libtld library.
  .

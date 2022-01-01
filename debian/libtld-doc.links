@@ -1,5 +1,5 @@
-tld.3.gz      /usr/share/man/man3/tld_check_uri.3.gz
-tld.3.gz      /usr/share/man/man3/tld_clear_info.3.gz
-tld.3.gz      /usr/share/man/man3/tld_domain_to_lowercase.3.gz
-tld.3.gz      /usr/share/man/man3/tld_load_tlds.3.gz
-tld.3.gz      /usr/share/man/man3/tld_status_to_string.3.gz
+./tld.3.gz      /usr/share/man/man3/tld_check_uri.3.gz
+./tld.3.gz      /usr/share/man/man3/tld_clear_info.3.gz
+./tld.3.gz      /usr/share/man/man3/tld_domain_to_lowercase.3.gz
+./tld.3.gz      /usr/share/man/man3/tld_load_tlds.3.gz
+./tld.3.gz      /usr/share/man/man3/tld_status_to_string.3.gz

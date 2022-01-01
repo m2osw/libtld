@@ -7,13 +7,13 @@
 
 if [ "$1" = "configure" ]
 then
-    # We want to allow users to add new .ini files in /var/lib/libtld/tlds/...
+    # Create the user directory and link to the README.md so that way the
+    # user knows what that folder is about
     #
     mkdir -p /var/lib/libtld/tlds
-    if ! test -L /usr/share/libtld/tlds/extensions
+    if ! test -L /var/lib/libtld/tlds/README.md
     then
-        rm -rf /usr/share/libtld/tlds/extensions
-        ln -s /var/lib/libtld/tlds /usr/share/libtld/tlds/extensions
+        ln -s /usr/share/libtld/tlds/README.md /var/lib/libtld/tlds/README.md
     fi
 fi
 

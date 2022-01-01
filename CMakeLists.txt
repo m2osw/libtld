@@ -57,6 +57,6 @@ add_subdirectory( tools   )
 add_subdirectory( cmake   )
 add_subdirectory( tests   )
 add_subdirectory( doc     )
-add_subdirectory( package )
+add_subdirectory( conf    )
 
 # vim: ts=4 sw=4 et

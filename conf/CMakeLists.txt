@@ -29,9 +29,14 @@
 project(tld_definitions)
 
 install(
-    DIRECTORY tlds
-    DESTINATION share/libtld
-    COMPONENT runtime
+    DIRECTORY
+        tlds
+
+    DESTINATION
+        share/libtld
+
+    COMPONENT
+        runtime
 )
 
 # vim: ts=4 sw=4 et

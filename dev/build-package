@@ -1,0 +1,26 @@
+#!/bin/bash -e
+#
+# WARNING: This script is only used to test a local build before sending
+#          the project to a build server such as launchpad
+#
+# NOTE: This require you to have the cmake project installed
+
+PROJECT=libtld
+VERSION=`dpkg-parsechangelog --show-field Version`
+echo "Building libtld v${VERSION}"
+
+cd ..
+
+# Restart from scratch
+#
+rm -rf ../BUILD/Packages
+mkdir -p ../BUILD/Packages
+
+# Copy the source code
+cp -r ${PROJECT} ../BUILD/Packages/${PROJECT}-${VERSION}
+
+# Run the build
+cd ../BUILD/Packages/${PROJECT}-${VERSION}
+dpkg-buildpackage -us -uc
+
+
