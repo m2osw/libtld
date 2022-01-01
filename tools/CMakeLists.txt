@@ -37,14 +37,6 @@ install(
     RUNTIME DESTINATION bin
     COMPONENT runtime
 )
-set(LIBTLD_TLD_EXTENSIONS_SOURCE ${CMAKE_INSTALL_PREFIX}/share/libtld/tlds)
-set(LIBTLD_TLD_EXTENSIONS_DESTINATION /var/lib/libtld/tlds)
-install(
-    CODE "if(NOT EXISTS ${LIBTLD_TLD_EXTENSIONS_SOURCE}/extensions)
-              EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBTLD_TLD_EXTENSIONS_SOURCE})
-              EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${LIBTLD_TLD_EXTENSIONS_DESTINATION} ${LIBTLD_TLD_EXTENSIONS_SOURCE}/extensions)
-          endif()"
-)
 
 ##
 ## TLD verification command line tool
