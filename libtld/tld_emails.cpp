@@ -1,5 +1,5 @@
 /* TLD library -- TLD, emails extractions
- * Copyright (c) 2013-2021  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2013-2022  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
