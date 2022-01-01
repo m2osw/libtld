@@ -30,8 +30,7 @@
  * .omg.lol domain name).
  */
 
-// Qt headers make use of long long which is not considered a valid type
-#pragma GCC diagnostic ignored "-Wlong-long"
+
 
 #include "libtld/tld.h"
 
@@ -41,7 +40,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <boost/algorithm/string.hpp>
-//#include <QtCore/QString>
 
 
 
@@ -152,6 +150,7 @@ std::string tld_encode(const std::string& tld, int& level)
         else
         {
             // add/remove as appropriate
+            //
             if(c == '/' || c == ':' || c == '&')
             {
                 fprintf(stderr, "error: character (^%c) is not allowed in TLDs.\n", c);

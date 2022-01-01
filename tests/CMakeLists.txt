@@ -41,7 +41,7 @@ add_executable(${PROJECT_NAME}
 #          not possible in a parallel cmake; instead we have to depend on
 #          a previous item to create a chain of dependencies
 add_dependencies(${PROJECT_NAME}
-    tld
+    tld_data
 )
 add_test(
     NAME ${PROJECT_NAME}
@@ -86,7 +86,6 @@ add_executable(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     tld
-    ${QT_LIBRARIES}
 )
 add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
@@ -97,7 +96,6 @@ add_executable(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     tld
-    ${QT_LIBRARIES}
 )
 add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
@@ -108,7 +106,6 @@ add_executable(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     tld
-    ${QT_LIBRARIES}
 )
 add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
@@ -119,7 +116,6 @@ add_executable(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     tld
-    ${QT_LIBRARIES}
 )
 add_test( NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME} ${CMAKE_SOURCE_DIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
@@ -133,7 +129,8 @@ add_custom_target( ${PROJECT_NAME}
         tld_test_object
         tld_test_tld_names
 )
-add_test( NAME ${PROJECT_NAME}
+add_test(
+    NAME              ${PROJECT_NAME}
     COMMAND           ${CMAKE_CURRENT_SOURCE_DIR}/tld_test_xml.sh
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )

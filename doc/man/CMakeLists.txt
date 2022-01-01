@@ -29,24 +29,28 @@
 ##
 project(man)
 
-# We have a special install() call because we need to gzip the files
 install(
-    CODE "EXECUTE_PROCESS(COMMAND gzip -c9 tldc.1 > ${CMAKE_INSTALL_PREFIX}/share/man/man1/tldc.1.gz)
-          EXECUTE_PROCESS(COMMAND gzip -c9 tld.3 > ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld.3.gz)
-          EXECUTE_PROCESS(COMMAND gzip -c9 tld.ini.5 > ${CMAKE_INSTALL_PREFIX}/share/man/man5/tld.ini.5.gz)"
+    FILES
+        tldc.1
+
+    DESTINATION
+        share/man/man1
 )
 
 install(
-    CODE "EXECUTE_PROCESS(COMMAND rm ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_clear_info.3.gz \
-                                     ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_load_tlds.3.gz \
-                                     ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_check_uri.3.gz \
-                                     ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_domain_to_lowercase.3.gz \
-                                     ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_status_to_string.3.gz)
-          EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink tld.3.gz ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_clear_info.3.gz)
-          EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink tld.3.gz ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_load_tlds.3.gz)
-          EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink tld.3.gz ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_check_uri.3.gz)
-          EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink tld.3.gz ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_domain_to_lowercase.3.gz)
-          EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink tld.3.gz ${CMAKE_INSTALL_PREFIX}/share/man/man3/tld_status_to_string.3.gz)"
+    FILES
+        tld.3
+
+    DESTINATION
+        share/man/man3
+)
+
+install(
+    FILES
+        tld.ini.5
+
+    DESTINATION
+        share/man/man5
 )
 
 # vim: ts=4 sw=4 et

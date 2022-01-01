@@ -2,6 +2,7 @@ libtld (2.0.0.0~bionic) bionic; urgency=high
 
   * Removed dependency on the Qt library.
   * Implemented our own parser using our own .ini like file format.
+  * Fixed all characters with code point higher than 0xFFFF.
 
  -- Alexis Wilke <alexis@m2osw.com>  Wed, 29 Dec 2021 11:48:51 -0800
 

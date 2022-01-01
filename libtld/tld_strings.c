@@ -27,7 +27,14 @@
  * This file includes functions converting numbers to strings.
  */
 
+// self
+//
 #include "libtld/tld.h"
+
+
+// C lib
+//
+#include    <string.h>
 
 
 /** \brief Transform the status to a string.
@@ -76,6 +83,119 @@ const char * tld_status_to_string(enum tld_status status)
 }
 
 
+/** \brief This is for backward compatibility.
+ *
+ * Many times, a simple category is not useful because one TLD may actually
+ * be part of multiple groups (i.e. a groups, a country, a language, an
+ * entrepreneurial TLD can very well exist!)
+ *
+ * The idea is to be backward compatible for anyone who was using the old
+ * category value. This function will convert the specified \p word in a
+ * category. The word is expected to be a non null terminated string,
+ * hence the parameter \p n to specify its length.
+ *
+ * \param[in] word  The word to convert.
+ * \param[in] n  The exact number of characters in the word.
+ *
+ * \return The corresponding TLD_CATEGORY_... or TLD_CATEGORY_UNDEFINED if
+ * the word could not be converted.
+ */
+enum tld_category tld_word_to_category(const char *word, int n)
+{
+    char buf[32];
+
+    if(word != NULL
+    && (size_t) n < sizeof(buf))
+    {
+        // force all lowercase
+        //
+        for(int idx = 0; idx < n; ++idx)
+        {
+            if(word[idx] >= 'A' && word[idx] <= 'Z')
+            {
+                buf[idx] = word[idx] | 0x20;
+            }
+            else
+            {
+                buf[idx] = word[idx];
+            }
+        }
+        buf[n] = '\0';
+
+        switch(buf[0])
+        {
+        case 'b':
+            if(strcmp(buf, "brand") == 0)
+            {
+                return TLD_CATEGORY_BRAND;
+            }
+            break;
+
+        case 'c':
+            if(strcmp(buf, "country") == 0)
+            {
+                return TLD_CATEGORY_COUNTRY;
+            }
+            break;
+
+        case 'e':
+            if(strcmp(buf, "entrepreneurial") == 0)
+            {
+                return TLD_CATEGORY_ENTREPRENEURIAL;
+            }
+            break;
+
+        case 'i':
+            if(strcmp(buf, "international") == 0)
+            {
+                return TLD_CATEGORY_INTERNATIONAL;
+            }
+            break;
+
+        case 'g':
+            if(strcmp(buf, "group") == 0)
+            {
+                return TLD_CATEGORY_GROUP;
+            }
+            break;
+
+        case 'l':
+            if(strcmp(buf, "language") == 0)
+            {
+                return TLD_CATEGORY_LANGUAGE;
+            }
+            if(strcmp(buf, "location") == 0)
+            {
+                return TLD_CATEGORY_LOCATION;
+            }
+            break;
+
+        case 'p':
+            if(strcmp(buf, "professionals") == 0)
+            {
+                return TLD_CATEGORY_PROFESSIONALS;
+            }
+            break;
+
+        case 'r':
+            if(strcmp(buf, "region") == 0)
+            {
+                return TLD_CATEGORY_REGION;
+            }
+            break;
+
+        case 't':
+            if(strcmp(buf, "technical") == 0)
+            {
+                return TLD_CATEGORY_TECHNICAL;
+            }
+            break;
+
+        }
+    }
+
+    return TLD_CATEGORY_UNDEFINED;
+}
 
 
 /* vim: ts=4 sw=4 et

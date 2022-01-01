@@ -524,7 +524,7 @@ void test_invalid()
     memset(&undefined_info, 0xFE, sizeof(undefined_info));
     undefined_info.f_category = TLD_CATEGORY_UNDEFINED;
     undefined_info.f_status   = TLD_STATUS_UNDEFINED;
-    undefined_info.f_country  = (const char *) 0;
+    memset(undefined_info.f_country, 0, sizeof(undefined_info.f_country));
     undefined_info.f_tld      = (const char *) 0;
     undefined_info.f_offset   = -1;
 

@@ -108,7 +108,7 @@ struct tld_info
 {
     enum tld_category   f_category;
     enum tld_status     f_status;
-    const char *        f_country;
+    char                f_country[48];  /* current longest is "South Georgia and the South Sandwich Islands" */
     const char *        f_tld; /* pointer within your URI string */
     int                 f_offset;
 };
@@ -126,6 +126,7 @@ extern LIBTLD_EXPORT enum tld_result tld_load_tlds(const char *filename, int fal
 extern LIBTLD_EXPORT enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags);
 extern LIBTLD_EXPORT char *tld_domain_to_lowercase(const char *domain);
 extern LIBTLD_EXPORT const char *tld_status_to_string(enum tld_status status);
+extern LIBTLD_EXPORT enum tld_category tld_word_to_category(const char *word, int n);
 
 
 

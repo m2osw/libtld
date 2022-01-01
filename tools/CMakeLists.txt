@@ -29,11 +29,6 @@ project(tldc)
 add_executable(${PROJECT_NAME}
     tldc.cpp
 )
-target_include_directories(${PROJECT_NAME}
-    PUBLIC
-        ${tld_library_BINARY_DIR}/include
-        ${tld_library_SOURCE_DIR}/include
-)
 target_link_libraries(${PROJECT_NAME}
     tld
 )
@@ -42,11 +37,12 @@ install(
     RUNTIME DESTINATION bin
     COMPONENT runtime
 )
-set(LIBTLD_TLD_EXTENSIONS_SOURCE share/libtld/tlds/extensions)
+set(LIBTLD_TLD_EXTENSIONS_SOURCE ${CMAKE_INSTALL_PREFIX}/share/libtld/tlds)
 set(LIBTLD_TLD_EXTENSIONS_DESTINATION /var/lib/libtld/tlds)
 install(
-    CODE "if(NOT EXISTS ${LIBTLD_TLD_EXTENSIONS_SOURCE})
-              EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${LIBTLD_TLD_EXTENSIONS_DESTINATION} ${LIBTLD_TLD_EXTENSIONS_SOURCE})
+    CODE "if(NOT EXISTS ${LIBTLD_TLD_EXTENSIONS_SOURCE}/extensions)
+              EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBTLD_TLD_EXTENSIONS_SOURCE})
+              EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${LIBTLD_TLD_EXTENSIONS_DESTINATION} ${LIBTLD_TLD_EXTENSIONS_SOURCE}/extensions)
           endif()"
 )
 
@@ -56,11 +52,6 @@ install(
 project(validate-tld)
 add_executable(${PROJECT_NAME}
     validate_tld.cpp
-)
-target_include_directories(${PROJECT_NAME}
-    PUBLIC
-        ${tld_library_BINARY_DIR}/include
-        ${tld_library_SOURCE_DIR}/include
 )
 target_link_libraries(${PROJECT_NAME}
     tld

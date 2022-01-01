@@ -137,6 +137,8 @@ void compiler::run()
         return;
     }
 
+    std::cout << "Compiling TLDs from \"" << f_input_path << "\"...\n";
+
     tld_compiler c;
     c.set_input_folder(f_input_path);
     c.set_output(f_output);

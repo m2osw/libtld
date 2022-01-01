@@ -148,7 +148,7 @@ void test_search()
          */
 
         /* get the .uk offset */
-        { 8842, 10466, "uk", 2, 10348 },
+        { 8842, 10464, "uk", 2, 10346 },
 
         /* get each offset of the .uk 2nd level domain */
         { 8595, 8625, "ac", 2,                         8595 },
@@ -193,7 +193,7 @@ void test_search()
         { 8595, 8625, "school", 2, -1 },
 
         /* get the .vu offset */
-        { 8842, 10466, "vu", 2, 10395 },
+        { 8842, 10464, "vu", 2, 10393 },
 
         /* get the 2nd level .vu offsets */
         { 8755, 8764, "blog", 4, 8755 },

@@ -55,11 +55,13 @@ add_custom_command(
     MAIN_DEPENDENCY tld_parser
     DEPENDS ${TLD_FILES}
 )
-add_custom_target(${PROJECT_NAME} ALL DEPENDS ${TLD_DATA_C})
+add_custom_target(${PROJECT_NAME}
+    DEPENDS ${TLD_DATA_C}
+)
 define_property(SOURCE
     PROPERTY GENERATED
     BRIEF_DOCS "The tld_data.c file is a table of all the TLDs defined in conf/tlds/... .ini files."
-    FULL_DOCS "In the new version, the tld_data.c is always generated on the fly since it can be done with just C/C++ and no Qt."
+    FULL_DOCS "In the new version, the tld_data.c is always generated on the fly since it can be done with just C/C++."
 )
 
 set(LIBTLD_SOURCES
@@ -84,6 +86,9 @@ configure_file(
 add_library(${PROJECT_NAME} SHARED
     ${LIBTLD_SOURCES}
 )
+add_dependencies(${PROJECT_NAME}
+    tld_data
+)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${LIBTLD_VERSION_MAJOR}.${LIBTLD_VERSION_MINOR}
     SOVERSION ${LIBTLD_VERSION_MAJOR}
@@ -107,7 +112,7 @@ add_library(${PROJECT_NAME} STATIC
     ${LIBTLD_SOURCES}
 )
 add_dependencies(${PROJECT_NAME}
-    tld
+    tld_data
 )
 # We need the -fPIC to use this library as extension of PHP, etc.
 set_target_properties(tld_static PROPERTIES COMPILE_FLAGS -fPIC)

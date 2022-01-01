@@ -730,6 +730,16 @@ bool tld_definition::add_segment(
     {
         switch(c)
         {
+        case '*':
+            if(segment.length() != 1)
+            {
+                errmsg = "a TLD segment (\""
+                       + segment
+                       + "\") cannot include an asterisk character ('*')."
+                         " However, the whole segment may be \"*\".";
+                return false;
+            }
+            [[fallthrough]];
         case '-':
         case '0':
         case '1':
@@ -1399,7 +1409,7 @@ void tld_compiler::process_file(std::string const & filename)
     f_data.resize(s.st_size);
 
     {
-        std::fstream in(filename);
+        std::ifstream in(filename);
         in.read(reinterpret_cast<char *>(f_data.data()), f_data.size());
         if(static_cast<size_t>(in.tellg()) != f_data.size())
         {
@@ -2294,7 +2304,19 @@ void tld_compiler::parse_tld()
     // use the '!' (0x21) for sorting, because '.' (0x2E) is after '-' (0x2D)
     // and there is no '!' allowed in domain names (so far)
     //
+    // the get_inverted_name() takes care of that
+    //
     f_current_tld = tld->get_inverted_name();
+
+    if(f_definitions.find(f_current_tld) != f_definitions.end())
+    {
+        f_errno = EINVAL;
+        f_errmsg = "TLD name \""
+                 + tld->get_name()
+                 + "\" defined twice.";
+        return;
+    }
+
     f_definitions[f_current_tld] = tld;
 
     // add the globals to this definition

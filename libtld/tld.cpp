@@ -154,22 +154,20 @@ extern "C" {
  *
  * \section not_linux Compiling on Other Platforms
  *
- * We can successfully compile the library under MS-Windows with cygwin
- * and the Microsoft IDE. To do so, we use the CMakeLists.txt file found
- * under the dev directory. Overwrite the CMakeLists.txt file in the
- * main directory before configuring and you'll get a library without
- * having to first compile Qt4.
+ * We were able to successfully compile the library under MS-Windows with
+ * cygwin and the Microsoft IDE. To do so, we use the same CMakeLists.txt
+ * file. We had a separate CMakeLists.txt  file which would not recompile
+ * the TLDs in earlier versions. Since version 2 of the library, we removed
+ * the Qt dependence and as a result, everything shall work from the same
+ * CMakeLists.txt file.
  *
- * \code
- * cp dev/libtld-only-CMakeLists.txt CMakeListst.txt
- * \endcode
- *
- * At this point this configuration only compiles the library. It gives
+ * The top CMakeLists.txt file compile a tld_parser which generates a
+ * tld_data.c file and then it compiles the libraries. It gives
  * you a shared (.DLL) and a static (.lib) version. With the IDE you may
  * create a debug and a release version.
  *
- * Later we'll look into having a single CMakeLists.txt so you do not
- * have to make this copy.
+ * At this point I have not tested version 2 on MS-Windows so it may not
+ * work quite right. Patches are welcome.
  *
  * \section example Example
  *
@@ -461,20 +459,32 @@ static int search(int i, int j, const char *domain, int n)
         return -1;
     }
 
-#if _DEBUG
-    // make sure we do not get out of range
-    //
-    if((uint32_t) i >= g_tld_file->f_descriptions_count
-    || (uint32_t) j >= g_tld_file->f_descriptions_count)
+#ifdef _DEBUG
+    if(static_cast<uint32_t>(i) > static_cast<uint32_t>(j))
     {
-        fprintf(stderr, "error: i (%d) or j (%d) is too large, max is %d.\n",
-                                i, j, g_tld_file->f_descriptions_count);
+        std::cerr
+            << "error: i ("
+            << i
+            << ") is larger than j ("
+            << j
+            << ") which is not expected in search()."
+            << std::endl;
         abort();
     }
 #endif
 
     if(i < j)
     {
+#ifdef _DEBUG
+        if(static_cast<uint32_t>(i) >= g_tld_file->f_descriptions_count
+        || static_cast<uint32_t>(j) > g_tld_file->f_descriptions_count) // can be equal to max. (actually it should always be on first call)
+        {
+            fprintf(stderr, "error: i (%d) or j (%d) is too large, max is %d.\n",
+                                    i, j, g_tld_file->f_descriptions_count);
+            abort();
+        }
+#endif
+
         /* the "*" breaks the binary search, we have to handle it specially */
         tld = tld_file_description(g_tld_file, i);
         name = tld_file_string(g_tld_file, tld->f_tld, &l);
@@ -489,6 +499,13 @@ static int search(int i, int j, const char *domain, int n)
             p = (j - i) / 2 + i;
             tld = tld_file_description(g_tld_file, p);
             name = tld_file_string(g_tld_file, tld->f_tld, &l);
+#ifdef _DEBUG
+            if(l == 1 && name[0] == '*')
+            {
+                std::cerr << "fatal error: found an asterisk within an array of sub-domains at " << p << "\n";
+                std::terminate();
+            }
+#endif
             r = cmp(name, l, domain, n);
             if(r < 0)
             {
@@ -530,7 +547,7 @@ void tld_clear_info(struct tld_info *info)
 {
     info->f_category = TLD_CATEGORY_UNDEFINED;
     info->f_status = TLD_STATUS_UNDEFINED;
-    info->f_country = (const char *) 0;
+    memset(info->f_country, 0, sizeof(info->f_country));
     info->f_tld = (const char *) 0;
     info->f_offset = -1;
 }
@@ -716,6 +733,9 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     //const char **level_ptr;
     const struct tld_description *tld;
     int level = 0, max_level, start_level, i, r, p, offset;
+    uint32_t l;
+    tld_tag *tag;
+    const char *str;
     enum tld_result result;
 
     /* set defaults in the info structure */
@@ -787,7 +807,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     }
 
     /* check for the next level if there is one */
-    for(p = r; level > 0; --level)
+    for(p = r; level > 0; --level, p = r)
     {
         tld = tld_file_description(g_tld_file, r);
         if(tld->f_start_offset == USHRT_MAX)
@@ -796,7 +816,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         }
         r = search(tld->f_start_offset, tld->f_end_offset,
                 level_ptr[level - 1] + 1,
-                (int) (level_ptr[level] - level_ptr[level - 1] - 1));
+                static_cast<int>(level_ptr[level] - level_ptr[level - 1] - 1));
         if(r == -1)
         {
             /* we are done, return the previous level */
@@ -812,7 +832,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         r = search(tld->f_start_offset,
                 tld->f_end_offset,
                 uri,
-                (int) (level_ptr[0] - uri));
+                static_cast<int>(level_ptr[0] - uri));
         if(r != -1)
         {
             p = r;
@@ -836,7 +856,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         p = tld->f_exception_apply_to;
         tld = tld_file_description(g_tld_file, p);
         level = start_level - tld->f_exception_level;
-        offset = (int) (level_ptr[level] - uri);
+        offset = static_cast<int>(level_ptr[level] - uri);
         info->f_status = TLD_STATUS_VALID;
         result = TLD_RESULT_SUCCESS;
         break;
@@ -847,12 +867,25 @@ enum tld_result tld(const char *uri, struct tld_info *info)
 
     }
 
-    //info->f_category = tld_descriptions[p].f_category;
-    //info->f_country = tld_descriptions[p].f_country;
+    for(uint32_t idx(0); idx < tld->f_tags_count; ++idx)
+    {
+        tag = tld_file_tag(g_tld_file, tld->f_tags + idx * 2);
+        str = tld_file_string(g_tld_file, tag->f_tag_name, &l);
+        if(memcmp(str, "category", l) == 0)
+        {
+            str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
+            info->f_category = tld_word_to_category(str, l);
+        }
+        else if(memcmp(str, "country", l) == 0)
+        {
+            str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
+            memcpy(info->f_country, str, l);
+            info->f_country[l] = '\0'; // the tld_clear_info() already does that -- double safe
+        }
+    }
+
     info->f_tld = level_ptr[level];
     info->f_offset = offset;
-
-    //free(level_ptr);
 
     return result;
 }
