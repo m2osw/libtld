@@ -33,9 +33,14 @@ target_link_libraries(${PROJECT_NAME}
     tld
 )
 install(
-    TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
-    COMPONENT runtime
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+
+    COMPONENT
+        runtime
 )
 
 ##
@@ -49,9 +54,35 @@ target_link_libraries(${PROJECT_NAME}
     tld
 )
 install(
-    TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
-    COMPONENT runtime
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+
+    COMPONENT
+        runtime
+)
+
+##
+## Tool used to extract TLDs by index
+##
+project(extract-tld)
+add_executable(${PROJECT_NAME}
+    extract_tld.cpp
+)
+target_link_libraries(${PROJECT_NAME}
+    tld
+)
+install(
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+
+    COMPONENT
+        runtime
 )
 
 # vim: ts=4 sw=4 et

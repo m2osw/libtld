@@ -144,15 +144,15 @@ main(int argc, char **argv)
                 }
                 else if(buf[j] >= 0x10000)
                 {
-                    printf("\\U%06X;", buf[j]);
+                    printf("\\U%06X", buf[j]);
                 }
                 else if(buf[j] >= 0x0100)
                 {
-                    printf("\\u%04X;", buf[j]);
+                    printf("\\u%04X", buf[j]);
                 }
                 else
                 {
-                    printf("\\x%02X;", buf[j]);
+                    printf("\\x%02X", buf[j]);
                 }
             }
             printf("\n");

@@ -8,5 +8,6 @@
 * Verify that it still works with the latest version of PHP.
 * Add a Debian package that installs the PHP extension (so auto-build that too).
 * Look at adding a Node.js extension.
+* Convert everything to C++ and offer an interface to C programmers.
 
 

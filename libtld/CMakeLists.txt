@@ -108,7 +108,7 @@ install(
         tld_file.h
 
     DESTINATION
-        include
+        include/libtld
 
     COMPONENT
         development

@@ -646,7 +646,8 @@ void test_tags()
 
     if(info.f_category != TLD_CATEGORY_COUNTRY)
     {
-        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return a country category as expected.\n");
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI did not return a country category as expected, got %d instead.\n",
+                        info.f_category);
         ++err_count;
         return;
     }
