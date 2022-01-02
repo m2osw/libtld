@@ -1,3 +1,9 @@
+libtld (2.0.2.0~bionic) bionic; urgency=high
+
+  * Removed the coverage script. `./mk -c` works as expected.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 02 Jan 2022 07:27:25 -0800
+
 libtld (2.0.1.0~bionic) bionic; urgency=high
 
   * Further clean ups.
@@ -6,7 +12,7 @@ libtld (2.0.1.0~bionic) bionic; urgency=high
   * Fixed the add_custom_command() dependencies. tld_parser is not a source.
   * Correctly verify that the tld_file_...() function return non-NULL.
   * Updated the hex tool to output \uXXXX instead of an HTML entity.
-  * Removed the lint test for the tld_data.xml, since the file is gone.
+  * Removed the lint test for the `tld_data.xml` since the file is gone.
   * Removed the tabs found inside hex.c.
   * Made the path usable in run_all_tests.c so it works running coverage.
   * Made the tests pass even with the sanitizer.
