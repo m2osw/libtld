@@ -948,17 +948,18 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     for(uint32_t idx(0); idx < tld->f_tags_count; ++idx)
     {
         tag = tld_file_tag(g_tld_file, tld->f_tags + idx * 2);
-        if(tag != nullptr)
+        if(tag == nullptr)
         {
             continue;
         }
 
         str = tld_file_string(g_tld_file, tag->f_tag_name, &l);
-        if(str != nullptr)
+        if(str == nullptr)
         {
             continue;
         }
-        if(memcmp(str, "category", l) == 0)
+        if(l == 8
+        && memcmp(str, "category", l) == 0)
         {
             str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
             if(str != nullptr)
@@ -966,10 +967,12 @@ enum tld_result tld(const char *uri, struct tld_info *info)
                 info->f_category = tld_word_to_category(str, l);
             }
         }
-        else if(memcmp(str, "country", l) == 0)
+        else if(l == 7
+             && memcmp(str, "country", l) == 0)
         {
             str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
-            if(str != nullptr)
+            if(str != nullptr
+            && l < sizeof(info->f_country))
             {
                 memcpy(info->f_country, str, l);
                 info->f_country[l] = '\0'; // the tld_clear_info() already does that -- double safe

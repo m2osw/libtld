@@ -451,16 +451,21 @@ void tld_tag_manager::merge()
 
             std::size_t const d1(end_start_match(*t1, *ti));
             std::size_t const d2(end_start_match(*ti, *t1));
-            if(d2 > d1
-            && d2 > best_swapped)
+            if(d2 > d1)
             {
-                best_swapped = d2;
-                best_intermediate_match = ti;
+                if(d2 > best_swapped)
+                {
+                    best_swapped = d2;
+                    best_intermediate_match = ti;
+                }
             }
-            else if(d1 > best)
+            else
             {
-                best = d1;
-                best_intermediate_match = ti;
+                if(d1 > best)
+                {
+                    best = d1;
+                    best_intermediate_match = ti;
+                }
             }
         }
 

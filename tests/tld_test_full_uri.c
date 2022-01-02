@@ -50,7 +50,8 @@ int verbose = 0;
 
 
 
-char *              g_filename = "../../BUILD/Debug/contrib/libtld/libtld/tlds.tld";
+char *              g_filename1 = "../../BUILD/Debug/contrib/libtld/libtld/tlds.tld";
+char *              g_filename2 = "../libtld/tlds.tld";
 struct tld_file *   g_tld_file = NULL;
 
 
@@ -60,13 +61,23 @@ struct tld_file *   g_tld_file = NULL;
  */
 void load_tlds()
 {
-    enum tld_file_error err = tld_file_load(g_filename, &g_tld_file);
-    if(err != TLD_FILE_ERROR_NONE)
+    enum tld_file_error err;
+
+    err = tld_file_load(g_filename1, &g_tld_file);
+    if(err == TLD_FILE_ERROR_NONE)
     {
-        fprintf(stderr, "fatal error: could not read TLD file \"%s\".\n",
-                            g_filename);
-        exit(1);
+        return;
     }
+
+    err = tld_file_load(g_filename2, &g_tld_file);
+    if(err == TLD_FILE_ERROR_NONE)
+    {
+        return;
+    }
+
+    fprintf(stderr, "fatal error: could not read TLD files \"%s\" or \"%s\".\n",
+                        g_filename1, g_filename2);
+    exit(1);
 }
 
 

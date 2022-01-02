@@ -365,15 +365,15 @@ void test_tlds()
             if(r == TLD_RESULT_SUCCESS || r == TLD_RESULT_INVALID)
             {
                 // it succeeded, but is it the right length?
-                uri = tld_encode(it->f_name, level);
-                if(strlen(info.f_tld) != static_cast<size_t>(uri.size() + 1))
+                std::string encoded_uri(tld_encode(it->f_name, level));
+                if(strlen(info.f_tld) != static_cast<size_t>(encoded_uri.size() + 1))
                 {
                     fprintf(stderr, "error:%d: tld(\"%s\", &info) length mismatch (\"%s\", %d/%d).\n",
                             it->f_line,
                             uri.c_str(),
                             info.f_tld,
                             static_cast<int>(strlen(info.f_tld)),
-                            static_cast<int>((uri.size() + 1)));
+                            static_cast<int>((encoded_uri.size() + 1)));
 // s3-website.ap-northeast-2.amazonaws.com
 std::string s(it->f_name);
 fprintf(stderr, "%d> %s [%s] {%s} -> %d ",

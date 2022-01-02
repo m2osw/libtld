@@ -1,4 +1,5 @@
 
+* Make the coverage 100% since I added a lot of code for v2.x it's not complete.
 * Make sure the superstring is checked on both ends, I think I test only one.
 * Further enhance the TLD definitions.
 * Look at having a way to detect TLDs we have defined and are not in the

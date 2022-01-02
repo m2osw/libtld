@@ -1,0 +1,9 @@
+# This is a Sanitizer file used to ignore some expected missing free()
+# You use this file with:
+#
+#     ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=suppressions.txt ./a.out
+#
+# For Details See:
+# https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer#suppressions
+#
+leak:tld_file_load_stream

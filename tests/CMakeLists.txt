@@ -215,7 +215,7 @@ add_custom_target(${PROJECT_NAME} ALL
 ###
 #project(run_libtld_tests)
 #add_custom_target(run_libtld_tests
-#    COMMAND tests/run_all_tests.sh
+#    COMMAND tests/run_all_tests.sh --source-dir "${CMAKE_SOURCE_DIR}"
 #    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 #    DEPENDS
 #        tld_internal_test

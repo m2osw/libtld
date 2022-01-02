@@ -178,6 +178,22 @@ void print_tld(int index)
 }
 
 
+void print_sizes()
+{
+    if(!has_tld_file())
+    {
+        return;
+    }
+
+    std::cout << "Number of ...\n"
+        << "... descriptions: " << g_tld_file->f_descriptions_count << "\n"
+        << "... tags:         " << g_tld_file->f_tags_size << "\n"
+        << "... strings:      " << g_tld_file->f_strings_count << "\n"
+        << "... characters:   " << g_tld_file->f_strings_end - g_tld_file->f_strings << "\n"
+        ;
+}
+
+
 int main(int argc, char * argv[])
 {
     for(int i(1); i < argc; ++i)
@@ -248,6 +264,10 @@ int main(int argc, char * argv[])
                 {
                     print_tld(atoi(argv[i]));
                 }
+            }
+            else if(strcmp(argv[i], "--sizes") == 0)
+            {
+                print_sizes();
             }
             else if(strcmp(argv[i], "--input") == 0)
             {
