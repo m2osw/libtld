@@ -404,7 +404,9 @@ void tld_tag_manager::merge()
         processed_tags.insert(std::distance(f_tags.begin(), t1));
 
         auto best_match(f_tags.end());
+        auto best_swapped_match(f_tags.end());
         auto best_intermediate_match(intermediate_tags.end());
+        auto best_swapped_intermediate_match(intermediate_tags.end());
         std::size_t best(0);
         std::size_t best_swapped(0);
 
@@ -419,22 +421,17 @@ void tld_tag_manager::merge()
             }
 
             std::size_t const d1(end_start_match(*t1, *t2));
-            std::size_t const d2(end_start_match(*t2, *t1));
-            if(d2 > d1)
+            if(d1 > best)
             {
-                if(d2 > best_swapped)
-                {
-                    best_swapped = d2;
-                    best_match = t2;
-                }
+                best = d1;
+                best_match = t2;
             }
-            else
+
+            std::size_t const d2(end_start_match(*t2, *t1));
+            if(d2 > best_swapped)
             {
-                if(d1 > best)
-                {
-                    best = d1;
-                    best_match = t2;
-                }
+                best_swapped = d2;
+                best_swapped_match = t2;
             }
         }
 
@@ -450,37 +447,35 @@ void tld_tag_manager::merge()
             }
 
             std::size_t const d1(end_start_match(*t1, *ti));
-            std::size_t const d2(end_start_match(*ti, *t1));
-            if(d2 > d1)
+            if(d1 > best)
             {
-                if(d2 > best_swapped)
-                {
-                    best_swapped = d2;
-                    best_intermediate_match = ti;
-                }
+                best = d1;
+                best_intermediate_match = ti;
             }
-            else
+
+            std::size_t const d2(end_start_match(*ti, *t1));
+            if(d2 > best_swapped)
             {
-                if(d1 > best)
-                {
-                    best = d1;
-                    best_intermediate_match = ti;
-                }
+                best_swapped = d2;
+                best_swapped_intermediate_match = ti;
             }
         }
 
-        if(best_intermediate_match != intermediate_tags.end())
+        if(best_intermediate_match != intermediate_tags.end()
+        || best_swapped_intermediate_match != intermediate_tags.end())
         {
             if(best_swapped > best)
             {
-                tags_table_t merged(*best_intermediate_match);
+                tags_table_t merged(*best_swapped_intermediate_match);
                 merged.insert(
                           merged.end()
                         , t1->begin() + best_swapped
                         , t1->end());
                 intermediate_tags.push_back(merged);
+
+                processed_intermediates.insert(std::distance(intermediate_tags.begin(), best_swapped_intermediate_match));
             }
-            else
+            else if(best > best_swapped)
             {
                 tags_table_t merged(*t1);
                 merged.insert(
@@ -488,22 +483,25 @@ void tld_tag_manager::merge()
                         , best_intermediate_match->begin() + best
                         , best_intermediate_match->end());
                 intermediate_tags.push_back(merged);
-            }
 
-            processed_intermediates.insert(std::distance(intermediate_tags.begin(), best_intermediate_match));
+                processed_intermediates.insert(std::distance(intermediate_tags.begin(), best_intermediate_match));
+            }
         }
-        else if(best_match != f_tags.end())
+        else if(best_match != f_tags.end()
+             || best_swapped_match != f_tags.end())
         {
             // we found a best match meaning that we can merged t1 & t2 a bit
             //
             if(best_swapped > best)
             {
-                tags_table_t merged(*best_match);
+                tags_table_t merged(*best_swapped_match);
                 merged.insert(
                           merged.end()
                         , t1->begin() + best_swapped
                         , t1->end());
                 intermediate_tags.push_back(merged);
+
+                processed_tags.insert(std::distance(f_tags.begin(), best_swapped_match));
             }
             else
             {
@@ -513,9 +511,9 @@ void tld_tag_manager::merge()
                         , best_match->begin() + best
                         , best_match->end());
                 intermediate_tags.push_back(merged);
-            }
 
-            processed_tags.insert(std::distance(f_tags.begin(), best_match));
+                processed_tags.insert(std::distance(f_tags.begin(), best_match));
+            }
         }
         else
         {

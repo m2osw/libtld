@@ -1,3 +1,9 @@
+libtld (2.0.4.0~bionic) bionic; urgency=high
+
+  * Looked into fixing the tag merging as one was overflowing.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 04 Jan 2022 20:28:02 -0800
+
 libtld (2.0.3.0~bionic) bionic; urgency=high
 
   * Removed the Boost REQUIRED from the main CMakeLists.txt.
