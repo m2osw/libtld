@@ -349,9 +349,15 @@ const tld_tag *tld_file_tag(tld_file const * file, uint32_t id)
 
 const char *tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
 {
+    if(length == nullptr)
+    {
+        errno = EINVAL;
+        return nullptr;
+    }
+    *length = 0;
+
     --id;
-    if(length == nullptr
-    || id >= file->f_strings_count)
+    if(id >= file->f_strings_count)
     {
         errno = EINVAL;
         return nullptr;

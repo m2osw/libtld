@@ -1,3 +1,10 @@
+libtld (2.0.5.0~bionic) bionic; urgency=high
+
+  * Applied a fix in a test so it compiles on Hirsute.
+  * Reset the length to 0 even if the id is invalid in tld_file_string().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 04 Jan 2022 20:56:23 -0800
+
 libtld (2.0.4.0~bionic) bionic; urgency=high
 
   * Looked into fixing the tag merging as one was overflowing.

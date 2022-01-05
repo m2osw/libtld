@@ -235,10 +235,10 @@ void test_search()
 
 void test_search_array(int start, int end)
 {
-    const struct tld_description *  tld;
-    int                             i, r;
-    uint32_t                        l;
-    const char *                    name;
+    const struct tld_description *  tld(nullptr);
+    int                             i(0), r(0);
+    uint32_t                        l(0);
+    const char *                    name(nullptr);
 
     /* now test all from the arrays */
     for(i = start; i < end; ++i)
