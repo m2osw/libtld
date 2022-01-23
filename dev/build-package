@@ -7,7 +7,7 @@
 
 PROJECT=libtld
 VERSION=`dpkg-parsechangelog --show-field Version`
-echo "Building libtld v${VERSION}"
+echo "Building ${PROJECT} v${VERSION}"
 
 cd ..
 
