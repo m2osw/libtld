@@ -721,9 +721,9 @@ void tld_free_tlds()
  * in lowercase. It understands the %XX characters (since the
  * URI is expected to still be encoded) and properly handles
  * UTF-8 characters in order to define the lowercase characters
- * of the input. Note that the function returns a newly
- * allocated pointer that you are responsible to free once
- * you are done with it.
+ * of the input. Note that the tld_domain_to_lowercase() function
+ * returns a newly allocated pointer that you are responsible to
+ * free once you are done with it.
  *
  * \warning
  * If you call tld() with the pointer return by
