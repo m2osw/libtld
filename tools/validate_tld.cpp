@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 
         if(!uri)
         {
-            fprintf(stderr, "error: no URI were specified on the command line.\n");
+            fprintf(stderr, "error: no URI was specified on the command line.\n");
             ++err_count;
         }
 
