@@ -106,6 +106,13 @@ then
 fi
 
 ############################################################################
+if ${VALIDATE} 'http://edu.mx:443/missing/domain'
+then
+    echo "\`validate-tld <only TLD is invalid>\` did not exit with an error";
+    exit 1;
+fi
+
+############################################################################
 if ! ${VALIDATE} 'http://.other.mx/missing/domain'
 then
     echo "\`validate-tld <valid domain and TLD>\` exited with an error";

@@ -1,3 +1,9 @@
+libtld (2.0.8.0~bionic) bionic; urgency=high
+
+  * Fixed validate-tld, if followed by a port, also remove the port.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 19 Feb 2022 13:59:02 -0800
+
 libtld (2.0.7.0~bionic) bionic; urgency=high
 
   * Fixed tld_check_uri() so it fails on empty domain names (only TLD is wrong).

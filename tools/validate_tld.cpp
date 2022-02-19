@@ -93,7 +93,13 @@ void check_uri(char const * uri)
             }
             if(info.f_tld != nullptr)
             {
-                char const * e(strchr(info.f_tld, '/'));
+                // port or path may follow this TLD
+                //
+                char const * e(strchr(info.f_tld, ':'));
+                if(e == nullptr)
+                {
+                    e = strchr(info.f_tld, '/');
+                }
                 if(e == nullptr)
                 {
                     std::cout << "TLD:      " << info.f_tld << std::endl;                       // LCOV_EXCL_LINE
