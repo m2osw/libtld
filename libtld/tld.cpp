@@ -623,7 +623,7 @@ enum tld_result tld_load_tlds(const char *filename, int fallback)
 
     tld_file_free(&g_tld_file);
 
-    if(filename == NULL)
+    if(filename == nullptr)
     {
         // first try a user updated version of the file
         //
@@ -802,7 +802,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     /* set defaults in the info structure */
     tld_clear_info(info);
 
-    if(uri == NULL || uri[0] == '\0')
+    if(uri == nullptr || uri[0] == '\0')
     {
         return TLD_RESULT_NULL;
     }
@@ -1061,7 +1061,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
     /* set defaults in the info structure */
     tld_clear_info(info);
 
-    if(uri == NULL || uri[0] == '\0')
+    if(uri == nullptr || uri[0] == '\0')
     {
         return TLD_RESULT_NULL;
     }
@@ -1111,7 +1111,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
     uri += 3; /* skip the '://' */
 
     /* extract the complete domain name with sub-domains, etc. */
-    username = NULL;
+    username = nullptr;
     host = uri;
     for(; *uri != '/' && *uri != '\0'; ++uri)
     {
@@ -1122,7 +1122,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
         }
         if(*uri == '@')
         {
-            if(username != NULL)
+            if(username != nullptr)
             {
                 /* two '@' signs is not possible */
                 return TLD_RESULT_BAD_URI;
@@ -1130,7 +1130,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
             username = host;
             host = uri + 1;
         }
-        else if(*uri & 0x80)
+        else if((*uri & 0x80) != 0)
         {
             if(flags & VALID_URI_ASCII_ONLY)
             {
@@ -1172,7 +1172,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
             uri += 2;
         }
     }
-    if(username != NULL)
+    if(username != nullptr)
     {
         password = username;
         for(; *password != '@' && *password != ':'; ++password);
@@ -1193,7 +1193,11 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
     for(port = host; *port != ':' && port < uri; ++port);
     if(*port == ':')
     {
-        /* we have a port, it must be digits [0-9]+ */
+        // we have a port, at this time it must be digits [0-9]+
+        // (this is incorrect, a port could be a name such as "https";
+        // also my current numeric test is invalid, it should make sure
+        // it's in range: 0 to 65,535)
+        //
         for(n = port + 1; *n >= '0' && *n <= '9'; ++n);
         if(n != uri || n == port + 1)
         {
@@ -1202,48 +1206,66 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
         }
     }
 
-    /* check the address really quick */
-    query_string = NULL;
+    // check the path, query string, and anchor
+    //
+    query_string = nullptr;
     anchor = 0;
     for(a = uri; *a != '\0'; ++a)
     {
         if((unsigned char) *a < ' ')
         {
-            /* no control characters allowed */
+            // no control characters allowed
+            //
             return TLD_RESULT_BAD_URI;
         }
-        else if(*a == '+' || *a == ' ') /* old space encoding */
+        else if(*a == '+' || *a == ' ') // old space encoding is '+' (instead of %20)
         {
-            if(flags & VALID_URI_NO_SPACES)
+            if((flags & VALID_URI_NO_SPACES) != 0)
             {
-                /* spaces not allowed by caller */
+                // spaces not allowed by caller
+                //
                 return TLD_RESULT_BAD_URI;
             }
         }
         else if(*a == '?')
         {
-            query_string = a + 1;
+            if(anchor == 0)
+            {
+                if(query_string != nullptr)
+                {
+                    // ? cannot be used multiple times
+                    //
+                    return TLD_RESULT_BAD_URI;
+                }
+
+                query_string = a + 1;
+            }
         }
         else if(*a == '&' && anchor == 0)
         {
-            if(query_string == NULL)
+            if(query_string == nullptr)
             {
-                /* & must be encoded if used before ? */
+                // '&' must be encoded if used before '?'
+                //
                 return TLD_RESULT_BAD_URI;
             }
+
+            // the query_string pointer is used to verify that the variable
+            // name is not empty
+            //
             query_string = a + 1;
         }
         else if(*a == '=')
         {
-            if(query_string != NULL && a - query_string == 0)
+            if(query_string != nullptr && a - query_string == 0)
             {
-                /* a query string variable name cannot be empty */
+                // a query string variable name cannot be empty
                 return TLD_RESULT_BAD_URI;
             }
         }
         else if(*a == '#')
         {
-            query_string = NULL;
+            query_string = nullptr;
             anchor = 1;
         }
         else if(*a == '%')
@@ -1261,12 +1283,12 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
             {
                 return TLD_RESULT_BAD_URI;
             }
-            if(a[1] == '2' && a[2] == '0' && (flags & VALID_URI_NO_SPACES))
+            if(a[1] == '2' && a[2] == '0' && (flags & VALID_URI_NO_SPACES) != 0)
             {
                 /* spaces not allowed by caller */
                 return TLD_RESULT_BAD_URI;
             }
-            if(a[1] >= '8' && (flags & VALID_URI_ASCII_ONLY))
+            if(a[1] >= '8' && (flags & VALID_URI_ASCII_ONLY) != 0)
             {
                 /* only ASCII allowed by caller */
                 return TLD_RESULT_BAD_URI;
@@ -1274,9 +1296,9 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
             /* skip the two digits right away */
             a += 2;
         }
-        else if(*a & 0x80)
+        else if((*a & 0x80) != 0)
         {
-            if(flags & VALID_URI_ASCII_ONLY)
+            if((flags & VALID_URI_ASCII_ONLY) != 0)
             {
                 /* only ASCII allowed by caller */
                 return TLD_RESULT_BAD_URI;
@@ -1311,9 +1333,9 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
     }
     if(length == 0)
     {
-        /* although we could return TLD_RESULT_NULL it would not be
-         * valid here because "http:///blah.com" is invalid, not NULL
-         */
+        // although we could return TLD_RESULT_NULL it would not be
+        // valid here because "http:///blah.com" is invalid, not nullptr
+        //
         return TLD_RESULT_BAD_URI;
     }
     for(i = 0, j = 0; i < length; ++i, ++j)
@@ -1321,22 +1343,32 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
         if(host[i] == '%')
         {
             domain[j] = (char) (h2d(host[i + 1]) * 16 + h2d(host[i + 2]));
-            i += 2; /* skip the 2 digits */
+            i += 2; // skip the 2 digits
         }
         else
         {
             domain[j] = host[i];
         }
-        /* TODO: check that characters are acceptable in a domain name */
+        /* TODO: check that characters are acceptable in a domain name (done above, right?) */
     }
     domain[j] = '\0';
     result = tld(domain, info);
-    if(info->f_tld != NULL)
+    if(info->f_tld != nullptr)
     {
-        /* define the TLD inside the source string which "unfortunately"
-         * is not null terminated by '\0'; also fix the offset since in
-         * the complete URI the TLD is a bit further away
-         */
+        if(info->f_offset == 0)
+        {
+            // if there is only a TLD, then it's invalid
+            //
+            return TLD_RESULT_BAD_URI;
+        }
+
+        // define the TLD inside the source string which "unfortunately"
+        // is not null terminated by '\0'; also fix the offset since in
+        // the complete URI the TLD is a bit further away
+        //
+        // note that `p` is the position at the start of the protocol
+        // (at the start of 'uri' at the start)
+        //
         info->f_tld = host + info->f_offset;
         info->f_offset = (int) (info->f_tld - p);
     }

@@ -83,20 +83,32 @@ void check_uri(char const * uri)
 
         if(verbose)
         {
-            std::cout << "URI:      " << uri                               << std::endl;        // LCOV_EXCL_LINE
+            std::cout << "URI:      " << uri << std::endl;                                      // LCOV_EXCL_LINE
             std::cout << "Category: " << static_cast<int>(info.f_category) << std::endl;        // LCOV_EXCL_LINE
-            std::cout << "Status:   " << static_cast<int>(info.f_status)   << std::endl;        // LCOV_EXCL_LINE
-            if(info.f_country != nullptr)                                                       // LCOV_EXCL_LINE
+            std::cout << "Status:   " << static_cast<int>(info.f_status) << std::endl;          // LCOV_EXCL_LINE
+            if(info.f_country != nullptr                                                        // LCOV_EXCL_LINE
+            && info.f_country[0] != '\0')                                                       // LCOV_EXCL_LINE
             {
-                std::cout << "Country:  " << info.f_country                    << std::endl;    // LCOV_EXCL_LINE
+                std::cout << "Country:  " << info.f_country << std::endl;                       // LCOV_EXCL_LINE
             }
-            std::cout << "TLD:      " << info.f_tld                        << std::endl;        // LCOV_EXCL_LINE
-            std::cout << "Offset:   " << info.f_offset                     << std::endl;        // LCOV_EXCL_LINE
+            if(info.f_tld != nullptr)
+            {
+                char const * e(strchr(info.f_tld, '/'));
+                if(e == nullptr)
+                {
+                    std::cout << "TLD:      " << info.f_tld << std::endl;                       // LCOV_EXCL_LINE
+                }
+                else
+                {
+                    std::cout << "TLD:      " << std::string(info.f_tld, e - info.f_tld) << std::endl; // LCOV_EXCL_LINE
+                }
+                std::cout << "Offset:   " << info.f_offset << std::endl;                        // LCOV_EXCL_LINE
+            }
         }
     }
     if(result != TLD_RESULT_SUCCESS)
     {
-        fprintf(stderr, "error: URI \"%s\" is not considered valid.\n", uri);
+        std::cerr << "error: URI \"" << uri << "\" is not considered valid." << std::endl;
         ++err_count;
     }
 }

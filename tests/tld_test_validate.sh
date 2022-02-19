@@ -85,6 +85,34 @@ then
 fi
 
 ############################################################################
+if ! ${VALIDATE} 'http://valid.com.mx/'
+then
+    echo "\`validate-tld <valid TLD>\` failed with an error";
+    exit 1;
+fi
+
+############################################################################
+if ${VALIDATE} 'http://.com.mx/missing/domain'
+then
+    echo "\`validate-tld <only TLD is invalid>\` did not exit with an error";
+    exit 1;
+fi
+
+############################################################################
+if ${VALIDATE} 'http://edu.mx/missing/domain'
+then
+    echo "\`validate-tld <only TLD is invalid>\` did not exit with an error";
+    exit 1;
+fi
+
+############################################################################
+if ! ${VALIDATE} 'http://.other.mx/missing/domain'
+then
+    echo "\`validate-tld <valid domain and TLD>\` exited with an error";
+    exit 1;
+fi
+
+############################################################################
 if ${VALIDATE} --schemes ftp http://www.m2osw.com/bad/scheme
 then
     echo "\`validate-tld --schemes ftp <wrong scheme>\` did not exit with an error";
