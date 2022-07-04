@@ -1070,7 +1070,7 @@ tld_result tld_email_list::tld_email_t::parse(std::string const & email)
                     ++s;
                     if(!is_quoted_char(*s))
                     {
-                        throw std::logic_error("somehow we found a \\0 in a comment quoted pair in tld_email_t which should not happen since it was already checked in tld_email_t::parse()");
+                        throw std::logic_error("somehow we found a non-quotable character after a backslash (\\) in tld_email_t which should not happen since it was already checked in tld_email_t::parse()");
                     }
                     c = *s;
                     break;
@@ -1435,7 +1435,7 @@ tld_result tld_email_list::tld_email_t::parse_group(std::string const & group)
                 case '\\':
                     if(!is_quoted_char(s[1]))
                     {
-                        throw std::logic_error("somehow we found a \\0 in a comment in tld_email_t which should not happen since it was already checked in tld_email_t::parse()");
+                        throw std::logic_error("somehow we found a non-quotable character in tld_email_t which should not happen since it was already checked in tld_email_t::parse()");
                     }
                     ++s;
                     break;
