@@ -1,3 +1,9 @@
+libtld (2.0.10.0~bionic) bionic; urgency=high
+
+  * Fixed a couple of error messages about non-quotable characters.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 04 Jul 2022 11:30:23 -0700
+
 libtld (2.0.9.1~bionic) bionic; urgency=high
 
   * Updated compat version to v10.
