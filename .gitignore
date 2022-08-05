@@ -1,3 +1,4 @@
 *.sw?
 gmon.out
 tmp
+seed.txt
