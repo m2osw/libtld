@@ -41,7 +41,15 @@ set(TLD_DATA_C ${PROJECT_BINARY_DIR}/tld_data.c)
 file(GLOB_RECURSE TLD_FILES ${CMAKE_SOURCE_DIR}/conf/tlds/*.ini)
 add_custom_command(
     OUTPUT ${TLD_DATA_C}
-    COMMAND "./tld_parser"
+    COMMAND
+        "gdb"
+            "-batch"
+            "-ex"
+            "run"
+            "-ex"
+            "bt"
+            "--args"
+            "./tld_parser"
                 "--source"
                     "${CMAKE_SOURCE_DIR}/conf/tlds"
                 "--verify"

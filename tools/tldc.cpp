@@ -50,6 +50,7 @@ public:
     void            set_verify(bool verify);
     void            set_output_json(bool verify);
     void            set_include_offsets(bool include_offsets);
+    void            set_verbose(bool verbose);
 
     void            run();
 
@@ -63,6 +64,7 @@ private:
     bool            f_verify = false;
     bool            f_output_json = false;
     bool            f_include_offsets = false;
+    bool            f_verbose = false;
 };
 
 
@@ -137,7 +139,7 @@ void compiler::run()
         return;
     }
 
-    std::cout << "Compiling TLDs from \"" << f_input_path << "\"...\n";
+    std::cout << "Compiling TLDs from \"" << f_input_path << "\"..." << std::endl;
 
     tld_compiler c;
     c.set_input_folder(f_input_path);
@@ -166,7 +168,7 @@ void compiler::run()
     std::cout << "Total string length:      " << c.get_string_manager().total_length() << "\n";
     std::cout << "Included strings:         " << c.get_string_manager().included_count() << " (saved length: " << c.get_string_manager().included_length() << ")\n";
     std::cout << "Mergeable strings:        " << c.get_string_manager().merged_count() << " (saved length: " << c.get_string_manager().merged_length() << ")\n";
-    std::cout << "Compressed string length: " << c.get_string_manager().compressed_length() << "\n";
+    std::cout << "Compressed string length: " << c.get_string_manager().compressed_length() <<  << std::endl;
     // TODO: add info about tags
 
     if(f_output_json)
@@ -307,6 +309,7 @@ void usage(char * argv0)
     std::cout << "    --output-json           also save to a .json file\n";
     std::cout << "    --source | -s <folder>  define the source (input) folder\n";
     std::cout << "    --verify                verify loading results and compare against sources\n";
+    std::cout << "    --verbose               print out more information about what is happening\n";
     std::cout << "    --version | -V          print out the version and exit\n";
     std::cout << "\n";
     std::cout << "The default source is \"/usr/share/libtld/tlds\".\n";
@@ -373,6 +376,10 @@ int main(int argc, char * argv[])
             else if(strcmp(argv[i], "--include-offsets") == 0)
             {
                 tldc.set_include_offsets(true);
+            }
+            else if(strcmp(argv[i], "--verbose") == 0)
+            {
+                tldc.set_verbose(true);
             }
             else
             {

@@ -2365,11 +2365,6 @@ void tld_compiler::print_tokens()
             << " = \""
             << t.get_value()
             << "\"\n";
-
-        //std::string const &     get_filename() const;
-        //int                     get_line() const;
-        //token_t                 get_token() const;
-        //std::string const &     get_value() const;
     }
 }
 
