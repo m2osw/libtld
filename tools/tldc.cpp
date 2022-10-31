@@ -117,6 +117,12 @@ void compiler::set_include_offsets(bool include_offsets)
 }
 
 
+void compiler::set_verbose(bool verbose)
+{
+    f_verbose = verbose;
+}
+
+
 void compiler::run()
 {
     if(f_errcnt != 0)
@@ -168,7 +174,7 @@ void compiler::run()
     std::cout << "Total string length:      " << c.get_string_manager().total_length() << "\n";
     std::cout << "Included strings:         " << c.get_string_manager().included_count() << " (saved length: " << c.get_string_manager().included_length() << ")\n";
     std::cout << "Mergeable strings:        " << c.get_string_manager().merged_count() << " (saved length: " << c.get_string_manager().merged_length() << ")\n";
-    std::cout << "Compressed string length: " << c.get_string_manager().compressed_length() <<  << std::endl;
+    std::cout << "Compressed string length: " << c.get_string_manager().compressed_length() << std::endl;
     // TODO: add info about tags
 
     if(f_output_json)

@@ -1,3 +1,9 @@
+libtld (2.0.11.2~bionic) bionic; urgency=high
+
+  * This version compiles on my computer.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 31 Oct 2022 16:54:22 -0700
+
 libtld (2.0.11.1~bionic) bionic; urgency=high
 
   * The tld_parser is exiting with an exception at the moment. Trying with gdb.
