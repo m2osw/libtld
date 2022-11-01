@@ -397,7 +397,6 @@ void tld_tag_manager::merge()
     std::set<int> processed_tags;
     std::set<int> processed_intermediates;
     std::set<int> unhandled_tags;
-    std::set<int> unhandled_intermediates;
     tags_vector_t intermediate_tags;
 
     for(auto t1(f_tags.begin()); t1 != f_tags.end(); ++t1)
@@ -524,9 +523,15 @@ void tld_tag_manager::merge()
         }
     }
 
+#define INTERMEDIATE_OPT 0
+#if INTERMEDIATE_OPT
+At the moment the following repeats forever. Something is wrong in the
+algorithm. I may spend some more time on it later.
+
     // repeat with the intermediate (which is unlikely to generate much
     // more merging, but we never know...)
     //
+    std::set<int> unhandled_intermediates;
     bool repeat(false);
     do
     {
@@ -547,7 +552,7 @@ void tld_tag_manager::merge()
 
             // check against other unmerged tags
             //
-            for(std::size_t i2(0); i2 < intermediate_tags.size(); ++i2)
+            for(std::size_t i2(i1 + 1); i2 < intermediate_tags.size(); ++i2)
             {
                 if(processed_intermediates.find(i2) != processed_intermediates.end())
                 {
@@ -560,13 +565,38 @@ void tld_tag_manager::merge()
                 if(d2 > d1
                 && d2 > best_swapped)
                 {
+std::cerr << "--- found d2 match: " << i1 << ":" << i2 << " d2: " << d2 << " cmp: ";
+for(auto q : intermediate_tags[i1])
+{
+std::cerr << " " << q;
+}
+std::cerr << " vs ";
+for(auto q : intermediate_tags[i2])
+{
+std::cerr << " " << q;
+}
+std::cerr << "\n";
+
                     best_swapped = d2;
                     best_intermediate_match = i2;
                 }
-                else if(d1 > best)
+                else if(d1 > d2
+                     && d1 > best)
                 {
+std::cerr << "--- found d1 match: " << i1 << ":" << i2 << " d1: " << d1 << " cmp: ";
+for(auto q : intermediate_tags[i1])
+{
+std::cerr << " " << q;
+}
+std::cerr << " vs ";
+for(auto q : intermediate_tags[i2])
+{
+std::cerr << " " << q;
+}
+std::cerr << "\n";
+
                     best = d1;
-                    best_intermediate_match = i1;
+                    best_intermediate_match = i2;
                 }
             }
 
@@ -574,6 +604,9 @@ void tld_tag_manager::merge()
             {
                 repeat = true;
 
+std::cerr << "--- i1: " << i1 << " intermediate_tags.size " << intermediate_tags.size()
+<< " best_swapped " << best_swapped << " vs best " << best
+<< "\n";
                 if(best_swapped > best)
                 {
                     tags_table_t merged(intermediate_tags[best_intermediate_match]);
@@ -602,6 +635,7 @@ void tld_tag_manager::merge()
         }
     }
     while(repeat);
+#endif
 
     // once done merging, we end up with a set of tables which we can
     // merge all together and any tag table can then be found in this
@@ -615,6 +649,7 @@ void tld_tag_manager::merge()
                 , f_tags[idx].end());
     }
 
+#if INTERMEDIATE_OPT
     for(auto const & idx : unhandled_intermediates)
     {
         f_merged_tags.insert(
@@ -622,6 +657,15 @@ void tld_tag_manager::merge()
                 , intermediate_tags[idx].begin()
                 , intermediate_tags[idx].end());
     }
+#else
+    for(std::size_t idx(0); idx < intermediate_tags.size(); ++idx)
+    {
+        f_merged_tags.insert(
+                      f_merged_tags.end()
+                    , intermediate_tags[idx].begin()
+                    , intermediate_tags[idx].end());
+    }
+#endif
 }
 
 
@@ -676,6 +720,8 @@ std::size_t tld_tag_manager::end_start_match(tags_table_t const & tag1, tags_tab
         }
     }
 
+    // no merge possible
+    //
     return 0;
 }
 
@@ -1386,6 +1432,8 @@ void tld_compiler::find_files(std::string const & path)
 void tld_compiler::process_input_files()
 {
 #if 0
+// I use this on my test system to make sure I get the input files
+// in a random order because my default order may work differently
 auto rng = std::default_random_engine {};
 std::shuffle(std::begin(f_input_files), std::end(f_input_files), rng);
 #endif

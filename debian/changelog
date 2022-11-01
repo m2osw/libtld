@@ -1,3 +1,9 @@
+libtld (2.0.11.3~bionic) bionic; urgency=high
+
+  * Removed an optimization which doesn't work from the tld comipler.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 01 Nov 2022 13:23:12 -0700
+
 libtld (2.0.11.2~bionic) bionic; urgency=high
 
   * This version compiles on my computer.

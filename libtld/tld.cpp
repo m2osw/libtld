@@ -481,6 +481,7 @@ static int search(int i, int j, const char *domain, int n)
 #ifdef _DEBUG
     if(static_cast<uint32_t>(i) > static_cast<uint32_t>(j))
     {
+        // LCOV_EXCL_START
         std::cerr
             << "error: i ("
             << i
@@ -488,7 +489,8 @@ static int search(int i, int j, const char *domain, int n)
             << j
             << ") which is not expected in search()."
             << std::endl;
-        abort();
+        std::terminate();
+        // LCOV_EXCL_STOP
     }
 #endif
 
@@ -498,9 +500,18 @@ static int search(int i, int j, const char *domain, int n)
         if(static_cast<uint32_t>(i) >= g_tld_file->f_descriptions_count
         || static_cast<uint32_t>(j) > g_tld_file->f_descriptions_count) // can be equal to max. (actually it should always be on first call)
         {
-            fprintf(stderr, "error: i (%d) or j (%d) is too large, max is %d.\n",
-                                    i, j, g_tld_file->f_descriptions_count);
-            abort();
+            // LCOV_EXCL_START
+            std::cerr
+                << "error: i ("
+                << i
+                << ") or j ("
+                << j
+                << ") is too large, max is "
+                << g_tld_file->f_descriptions_count
+                << '.'
+                << std::endl;
+            std::terminate();
+            // LCOV_EXCL_STOP
         }
 #endif
 
@@ -508,12 +519,12 @@ static int search(int i, int j, const char *domain, int n)
         tld = tld_file_description(g_tld_file, i);
         if(tld == nullptr)
         {
-            return -1;
+            return -1;      // LCOV_EXCL_LINE -- see above (already checked)
         }
         name = tld_file_string(g_tld_file, tld->f_tld, &l);
         if(name == nullptr)
         {
-            return -1;
+            return -1;      // LCOV_EXCL_LINE -- see above (already checked)
         }
         if(l == 1 && name[0] == '*')
         {
@@ -537,8 +548,13 @@ static int search(int i, int j, const char *domain, int n)
 #ifdef _DEBUG
             if(l == 1 && name[0] == '*')
             {
-                std::cerr << "fatal error: found an asterisk within an array of sub-domains at " << p << "\n";
+                // LCOV_EXCL_START
+                std::cerr
+                    << "fatal error: found an asterisk within an array of sub-domains at "
+                    << p
+                    << std::endl;
                 std::terminate();
+                // LCOV_EXCL_STOP
             }
 #endif
             r = cmp(name, l, domain, n);
@@ -791,12 +807,12 @@ void tld_free_tlds()
  */
 enum tld_result tld(const char *uri, struct tld_info *info)
 {
-    const char *end = uri;
+    const char * end = uri;
     const struct tld_description *tld;
     int level = 0, max_level, start_level, i, r, p, offset;
     uint32_t l;
-    const tld_tag *tag;
-    const char *str;
+    tld_tag const * tag;
+    char const * str;
     enum tld_result result;
 
     /* set defaults in the info structure */
@@ -2021,7 +2037,7 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  * In this table, the TLD is actually just one name and no period. Other
  * parts of a multi-part TLD are found at the [f_start_offset, f_end_offset).
  *
- * The TLD is built by starting a search at the top level which is defined as 
+ * The TLD is built by starting a search at the top level which is defined as
  * [tld_start_offset, tld_end_offset). These offsets are global variables defined
  * in the tld_data.c file.
  */

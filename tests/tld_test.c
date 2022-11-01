@@ -683,6 +683,11 @@ void test_tags()
         ++err_count;
         return;
     }
+    if(tag_count != 6)
+    {
+        fprintf(stderr, "error: the \"info.\xE6\xBE\xB3\xE9\x96\x80\" URI was expected to have 6 tags. Edit test if new tags were added.\n");
+        ++err_count;
+    }
 
     for(int idx = 0; idx < tag_count; ++idx)
     {
