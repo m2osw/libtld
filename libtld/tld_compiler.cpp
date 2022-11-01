@@ -39,9 +39,10 @@
 //
 #include    <algorithm>
 #include    <fstream>
-#include    <iostream>
-#include    <sstream>
 #include    <iomanip>
+#include    <iostream>
+#include    <random>
+#include    <sstream>
 
 
 // C lib
@@ -565,7 +566,7 @@ void tld_tag_manager::merge()
                 else if(d1 > best)
                 {
                     best = d1;
-                    best_intermediate_match = i2;
+                    best_intermediate_match = i1;
                 }
             }
 
@@ -1384,6 +1385,10 @@ void tld_compiler::find_files(std::string const & path)
 
 void tld_compiler::process_input_files()
 {
+#if 0
+auto rng = std::default_random_engine {};
+std::shuffle(std::begin(f_input_files), std::end(f_input_files), rng);
+#endif
     for(auto const & filename : f_input_files)
     {
         process_file(filename);
