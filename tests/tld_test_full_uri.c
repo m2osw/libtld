@@ -1,5 +1,5 @@
 /* TLD library -- test the TLD interface
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2023  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -399,18 +399,18 @@ const struct test_info test_info_entries[] =
       { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "United Kingdom", ".ltd%2Euk/", 15, 0 }
     },
     {
-      "http://www.m2osw.orange.ac.om/valid%9fcharacter",
+      "http://www.m2osw.orange.edu.om/valid%9fcharacter",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".ac.om", 23, 0 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".edu.om", 23, 0 }
     },
     {
-      "http://www.m2osw.orange.ac.om/valid\x9f/character",
+      "http://www.m2osw.orange.edu.om/valid\x9f/character",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".ac.om", 23, 0 }
+      { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Oman", ".edu.om", 23, 0 }
     },
     {
       "ftp://www.m2osw.ltd%2euk/encoded/period", /* still encoded */
@@ -477,7 +477,7 @@ void test_uri()
         result = tld_check_uri(test_info_entries[i].f_uri, &info, test_info_entries[i].f_protocols, test_info_entries[i].f_flags);
         if(result != test_info_entries[i].f_result)
         {
-            fprintf(stderr, "error:%s: URI failed with the wrong result: %d\n", test_info_entries[i].f_uri, result);
+            fprintf(stderr, "error:%s: URI failed with the wrong result: %d, expected %d\n", test_info_entries[i].f_uri, result, test_info_entries[i].f_result);
             ++err_count;
         }
 

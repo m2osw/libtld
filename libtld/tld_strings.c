@@ -1,5 +1,5 @@
 /* TLD library -- TLD, domain name, and sub-domain extraction
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2023  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -95,7 +95,7 @@ const char * tld_status_to_string(enum tld_status status)
  * hence the parameter \p n to specify its length.
  *
  * \param[in] word  The word to convert.
- * \param[in] n  The exact number of characters in the word.
+ * \param[in] n  The exact number of characters (bytes) in the word.
  *
  * \return The corresponding TLD_CATEGORY_... or TLD_CATEGORY_UNDEFINED if
  * the word could not be converted.

@@ -1,5 +1,5 @@
 /* TLD library -- TLD, domain name, and sub-domain extraction
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2023  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -176,6 +176,7 @@ enum tld_file_error
     TLD_FILE_ERROR_INVALID_ARRAY_SIZE,
     TLD_FILE_ERROR_UNSUPPORTED_VERSION,
     TLD_FILE_ERROR_MISSING_HUNK,
+    TLD_FILE_ERROR_HUNK_FOUND_TWICE,
 };
 
 

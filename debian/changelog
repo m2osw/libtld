@@ -1,3 +1,20 @@
+libtld (2.0.12.0~bionic) bionic; urgency=high
+
+  * Updated TLDs to the latest defined in the public_suffix_list.dat file.
+  * Marked many entries as deprecated (not in the public suffix list).
+  * Moved some "commercial" domain names to a file under owner's name.
+  * Removed some TLDs I added according to WikiPedia and NICs, but if the
+    public list does not have them, it's not safe.
+  * Various clean ups to the TLD files.
+  * Updated the test verifying the public list to go both ways (test present
+    and test absent TLDs).
+  * Added tld_next_tld() to go through the whole list of TLDs available.
+  * Updated test of full URI and internal test to match new domains.
+  * Generate an error if the same hunk is found multipletimes in TLD file.
+  * Fixed documentation in various places.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 23 Feb 2023 21:54:40 -0800
+
 libtld (2.0.11.3~bionic) bionic; urgency=high
 
   * Removed an optimization which doesn't work from the tld comipler.

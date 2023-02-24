@@ -1,5 +1,5 @@
 /* TLD library -- encrypted domain name case folding
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2023  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -79,18 +79,15 @@ static int tld_hex2dec(char c)
 }
 
 
-/** \brief Transform an hexadecimal digit to a number.
+/** \brief Transform a number to an hexadecimal digit.
  * \internal
  *
- * This function transforms the specified character \p c to a number from
- * 0 to 15.
+ * This function transforms the specified number in an hexadecimal digit.
+ * The number must be a value between 0 and 15.
  *
- * The function supports upper and lower case.
+ * \param[in] d  A number from 0 to 15 to convert to an hexadecimal digit.
  *
- * \param[in] d  An hexadecimal character to transform to a number.
- *
- * \return The number corresponding to the hexadecimal character or -1 if
- *         the character is not 0-9, A-F, nor a-f.
+ * \return The character 0-9 or A-F.
  */
 static int tld_dec2hex(int d)
 {

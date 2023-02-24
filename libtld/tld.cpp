@@ -1,5 +1,5 @@
 /* TLD library -- TLD, domain name, and sub-domain extraction
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2023  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -342,6 +342,108 @@ static struct tld_file * g_tld_file = nullptr;
 
 
 
+namespace
+{
+
+
+
+/** \brief Convert tags to tld_info fields.
+ *
+ * The old tld_info offered a category field and a country field. To keep
+ * the legacy setup we have this function going through the tags an
+ * extracting the tag named "category" and the tag named "country" when
+ * they exist.
+ *
+ * \param[in] tld  The tld description with the list of tags.
+ * \param[in] info  The info structure where the strings are copied.
+ */
+void tags_to_info(const struct tld_description *tld, struct tld_info *info)
+{
+    tld_tag const * tag;
+    uint32_t l;
+    char const * str;
+    for(uint32_t idx(0); idx < tld->f_tags_count; ++idx)
+    {
+        tag = tld_file_tag(g_tld_file, tld->f_tags + idx * 2);
+        if(tag == nullptr)
+        {
+            continue;
+        }
+
+        str = tld_file_string(g_tld_file, tag->f_tag_name, &l);
+        if(str == nullptr)
+        {
+            continue;
+        }
+        if(l == 8
+        && memcmp(str, "category", l) == 0)
+        {
+            str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
+            if(str != nullptr)
+            {
+                info->f_category = tld_word_to_category(str, l);
+            }
+        }
+        else if(l == 7
+             && memcmp(str, "country", l) == 0)
+        {
+            str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
+            if(str != nullptr
+            && l < sizeof(info->f_country))
+            {
+                memcpy(info->f_country, str, l);
+                info->f_country[l] = '\0'; // the tld_clear_info() already does that -- double safe
+            }
+        }
+    }
+}
+
+
+/** \brief Check whether a character is an hexadecimal character.
+ *
+ * This internal function returns true if the input character represents
+ * a valid hexadecimal character (0-9, A-F, or a-f).
+ *
+ * \param[in] c  The character to check as an hexadecimal digit.
+ *
+ * \return true if \p c represents an hexadecimal digit.
+ */
+bool is_hex(int c)
+{
+    return (c >= '0' && c <= '9')
+        || (c >= 'A' && c <= 'F')
+        || (c >= 'a' && c <= 'f');
+}
+
+
+/** \brief Internal function used to transform %XX values.
+ *
+ * This function transforms an hexadecimal (h) character to (2) a
+ * decimal number (d).
+ *
+ * \param[in] c  The hexadecimal character to transform
+ *
+ * \return The number the hexadecimal character represents (0 to 15)
+ */
+int h2d(int c)
+{
+    if(c >= 'a')
+    {
+        return c - 'a' + 10;
+    }
+    if(c >= 'A')
+    {
+        return c - 'A' + 10;
+    }
+    return c - '0';
+}
+
+
+
+} // no name namespace
+
+
+
 /** \brief Load the TLDs if not yet loaded.
  *
  * This user can call the tld_load_tlds() function to load or reload
@@ -464,12 +566,12 @@ static int cmp(const char *a, int l, const char *b, int n)
  *
  * \return The offset of the domain found, or -1 when not found.
  */
-static int search(int i, int j, const char *domain, int n)
+static int search(int i, int j, const char * domain, int n)
 {
     int auto_match = -1, p, r;
     uint32_t l;
     const struct tld_description *tld;
-    const char *name;
+    const char * name;
     enum tld_result result;
 
     result = tld_load_tlds_if_not_loaded();
@@ -681,6 +783,29 @@ enum tld_result tld_load_tlds(const char *filename, int fallback)
 }
 
 
+/** \brief Return a pointer to the current list of TLDs.
+ *
+ * This function returns the list of TLDs that were loaded by the
+ * tld_load_tlds() function. If the TLDs were not yet loaded, then
+ * the function returns a nullptr.
+ *
+ * The structure must be considered 100% read-only. It is possible that
+ * the TLDs were loaded from the tld_data.c buffer which means it is
+ * read-only data from the library.
+ *
+ * \warning
+ * Calling the tld_free_tlds() invalidates the pointer returned by this
+ * file since it releases all the allocated buffers including the pointer
+ * returned by this function.
+ *
+ * \return A pointer to the in memory tld_file structure or nullptr.
+ */
+const struct tld_file * tld_get_tlds()
+{
+    return g_tld_file;
+}
+
+
 /** \brief Clear the allocated TLD file.
  *
  * Once you are done with the library and if you want to make sure you do
@@ -699,6 +824,180 @@ void tld_free_tlds()
     tld_file_free(&g_tld_file);
 }
 
+
+/** \brief Read the next TLD and return its info.
+ *
+ * This function is used to read all the TLDs one at a time.
+ *
+ * To read the first TLD, make sure the state structure is cleared the
+ * first time you call the tld_next_tld() function:
+ *
+ * \code
+ *     struct tld_enumeration_state state = {};
+ *     struct tld_info info;
+ *     for(;;)
+ *     {
+ *         enum tld_result r = tld_next_tld(&state, &info);
+ *         if(r == TLD_RESULT_NOT_FOUND)
+ *         {
+ *             // you already found the last TLD
+ *             return;
+ *         }
+ *         ...
+ *     }
+ * \endcode
+ *
+ * The function may return various values and it is important to verify those
+ * value to know the state of the \p info parameter. In particular, the
+ * TLD_RESULT_INVALID means that the returned domain name is considered
+ * to exist but it is currently not a valid domain name (i.e. it could be
+ * a deprecated or unused intermediate).
+ *
+ * \li TLD_RESULT_SUCCESS -- if the returned \p info is considered to be a
+ *     valid domain name.
+ * \li TLD_RESULT_INVALID -- if the code found a domain name which is not
+ *     currently considered valid (deprecated, unused, reserved, etc.)
+ * \li TLD_RESULT_NULL -- if one of the input pointers is null, return this
+ *     and nothing happened.
+ * \li TLD_RESULT_NO_TLD -- if the file includes more levels than available
+ *     in the state structure
+ * \li TLD_RESULT_BAD_URI -- if some error is detected which is neither a
+ *     NULL or too many levels in the files
+ * \li TLD_RESULT_NOT_FOUND -- if no more results are available (i.e. you
+ *     reached the end of the list)
+ *
+ * \note
+ * The tld_info.f_tld will be a pointer to the tld_enumeration_state.f_domain
+ * and the tld_info.f_offset is changed to point at the start of the computed
+ * domain name.
+ *
+ * \param[in] state  The current state. Reset to get the very first domain
+ * name.
+ * \param[in] info  The structure where the information of the next domain
+ * name is saved.
+ *
+ * \return This function returns one of the TLD_RESULT_... values as indicated
+ * above.
+ */
+enum tld_result tld_next_tld(struct tld_enumeration_state * state, struct tld_info * info)
+{
+    if(state == nullptr
+    || info == nullptr)
+    {
+        return TLD_RESULT_NULL;
+    }
+
+    tld_clear_info(info);
+
+    enum tld_result loaded = tld_load_tlds_if_not_loaded();
+    if(loaded != TLD_RESULT_SUCCESS)
+    {
+        return loaded;
+    }
+
+    if(g_tld_file->f_header->f_tld_max_level > std::size(state->f_offset))
+    {
+        return TLD_RESULT_NO_TLD;
+    }
+
+    if(state->f_depth == 0
+    && state->f_offset[0] == 0)
+    {
+        // set offset for the very first domain name
+        //
+        state->f_offset[0] = g_tld_file->f_header->f_tld_start_offset;
+    }
+
+    // did we reach the end?
+    //
+    if(state->f_offset[0] >= g_tld_file->f_header->f_tld_end_offset)
+    {
+        return TLD_RESULT_NOT_FOUND;
+    }
+
+    const struct tld_description * tld(nullptr);
+
+    char * domain(state->f_domain + sizeof(state->f_domain));
+    --domain;
+    *domain = '\0';
+    for(int d(0); d <= state->f_depth; ++d)
+    {
+        tld = tld_file_description(g_tld_file, state->f_offset[d]);
+        //tld = g_tld_file->f_descriptions + state->f_offset[d];
+        uint32_t length;
+        char const * name = tld_file_string(g_tld_file, tld->f_tld, &length);
+        if(name == nullptr)
+        {
+            return TLD_RESULT_BAD_URI;
+        }
+        while(length > 0)
+        {
+            char c('\0');
+            --length;
+            if(length >= 2
+            && name[length - 2] == '%'
+            && is_hex(name[length - 1])
+            && is_hex(name[length - 0]))
+            {
+                // convert back to a byte
+                //
+                c = h2d(name[length - 1]) * 16 + h2d(name[length - 0]);
+                length -= 2;
+            }
+            else
+            {
+                c = name[length];
+            }
+            --domain;
+            if(domain < state->f_domain)
+            {
+                return TLD_RESULT_BAD_URI;
+            }
+            *domain = c;
+        }
+
+        // the period is not saved in this case
+        //
+        --domain;
+        if(domain < state->f_domain)
+        {
+            return TLD_RESULT_BAD_URI;
+        }
+        *domain = '.';
+    }
+
+    info->f_tld = state->f_domain;
+    info->f_offset = domain - state->f_domain;
+    info->f_tld_index = state->f_offset[state->f_depth];
+    info->f_status = static_cast<tld_status>(tld->f_status);
+    tags_to_info(tld, info);
+
+    // compute the next position now
+    //
+    if(tld->f_start_offset != 65535)
+    {
+        ++state->f_depth;
+        state->f_offset[state->f_depth] = tld->f_start_offset;
+    }
+    else
+    {
+        ++state->f_offset[state->f_depth];
+        while(state->f_depth > 0)
+        {
+            const struct tld_description * parent = g_tld_file->f_descriptions + state->f_offset[state->f_depth - 1];
+            if(state->f_offset[state->f_depth] < parent->f_end_offset)
+            {
+                break;
+            }
+            --state->f_depth;
+            ++state->f_offset[state->f_depth];
+        }
+    }
+
+    return info->f_status == TLD_STATUS_VALID
+                ? TLD_RESULT_SUCCESS
+                : TLD_RESULT_INVALID;
+}
 
 
 /** \brief Get information about the TLD for the specified URI.
@@ -810,9 +1109,6 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     const char * end = uri;
     const struct tld_description *tld;
     int level = 0, max_level, start_level, i, r, p, offset;
-    uint32_t l;
-    tld_tag const * tag;
-    char const * str;
     enum tld_result result;
 
     /* set defaults in the info structure */
@@ -961,68 +1257,12 @@ enum tld_result tld(const char *uri, struct tld_info *info)
 
     }
 
-    for(uint32_t idx(0); idx < tld->f_tags_count; ++idx)
-    {
-        tag = tld_file_tag(g_tld_file, tld->f_tags + idx * 2);
-        if(tag == nullptr)
-        {
-            continue;
-        }
-
-        str = tld_file_string(g_tld_file, tag->f_tag_name, &l);
-        if(str == nullptr)
-        {
-            continue;
-        }
-        if(l == 8
-        && memcmp(str, "category", l) == 0)
-        {
-            str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
-            if(str != nullptr)
-            {
-                info->f_category = tld_word_to_category(str, l);
-            }
-        }
-        else if(l == 7
-             && memcmp(str, "country", l) == 0)
-        {
-            str = tld_file_string(g_tld_file, tag->f_tag_value, &l);
-            if(str != nullptr
-            && l < sizeof(info->f_country))
-            {
-                memcpy(info->f_country, str, l);
-                info->f_country[l] = '\0'; // the tld_clear_info() already does that -- double safe
-            }
-        }
-    }
+    tags_to_info(tld, info);
 
     info->f_tld = level_ptr[level];
     info->f_offset = offset;
 
     return result;
-}
-
-
-/** \brief Internal function used to transform %XX values.
- *
- * This function transforms an hexadecimal (h) character to (2) a
- * decimal number (d).
- *
- * \param[in] c  The hexadecimal character to transform
- *
- * \return The number the hexadecimal character represents (0 to 15)
- */
-static int h2d(int c)
-{
-    if(c >= 'a')
-    {
-        return c - 'a' + 10;
-    }
-    if(c >= 'A')
-    {
-        return c - 'A' + 10;
-    }
-    return c - '0';
 }
 
 
@@ -1067,7 +1307,7 @@ static int h2d(int c)
  *
  * \sa tld()
  */
-enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags)
+enum tld_result tld_check_uri(const char * uri, struct tld_info * info, const char * protocols, int flags)
 {
     const char      *p, *q, *username, *password, *host, *port, *n, *a, *query_string;
     char            domain[256];
@@ -1148,7 +1388,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
         }
         else if((*uri & 0x80) != 0)
         {
-            if(flags & VALID_URI_ASCII_ONLY)
+            if((flags & VALID_URI_ASCII_ONLY) != 0)
             {
                 /* only ASCII allowed by caller */
                 return TLD_RESULT_BAD_URI;
@@ -1161,7 +1401,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
         }
         else if(*uri == '%')
         {
-            /* the next two digits must be hex
+            /* the next two characters must be hex digits
              * note that the first digit must be at least 2 because
              * we do not allow control characters
              */
@@ -1179,7 +1419,7 @@ enum tld_result tld_check_uri(const char *uri, struct tld_info *info, const char
                 /* spaces not allowed in domain name */
                 return TLD_RESULT_BAD_URI;
             }
-            if(uri[1] >= '8' && (flags & VALID_URI_ASCII_ONLY))
+            if(uri[1] >= '8' && (flags & VALID_URI_ASCII_ONLY) != 0)
             {
                 /* only ASCII allowed by caller */
                 return TLD_RESULT_BAD_URI;

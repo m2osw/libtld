@@ -1,5 +1,5 @@
 /* TLD library -- TLD, domain name, and sub-domain extraction
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2023  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -109,23 +109,34 @@ struct tld_tag_definition
     int                 f_value_length;
 };
 
+struct tld_enumeration_state
+{
+    int                 f_depth;
+    int                 f_offset[10];
+    char                f_domain[64];   /* TODO: max. size needs to be verified */
+};
+
 #define VALID_URI_ASCII_ONLY  0x0001
 #define VALID_URI_NO_SPACES   0x0002
 
+/* defined in tld_file.h */
+struct tld_file;
 
 extern LIBTLD_EXPORT const char *tld_version();
 
 
-extern LIBTLD_EXPORT void               tld_clear_info(struct tld_info *info);
-extern LIBTLD_EXPORT enum tld_result    tld(const char *uri, struct tld_info *info);
-extern LIBTLD_EXPORT enum tld_result    tld_load_tlds(const char *filename, int fallback);
-extern LIBTLD_EXPORT void               tld_free_tlds();
-extern LIBTLD_EXPORT enum tld_result    tld_check_uri(const char *uri, struct tld_info *info, const char *protocols, int flags);
-extern LIBTLD_EXPORT char *             tld_domain_to_lowercase(const char *domain);
-extern LIBTLD_EXPORT int                tld_tag_count(struct tld_info *info);
-extern LIBTLD_EXPORT enum tld_result    tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_definition *tag);
-extern LIBTLD_EXPORT const char *       tld_status_to_string(enum tld_status status);
-extern LIBTLD_EXPORT enum tld_category  tld_word_to_category(const char *word, int n);
+extern LIBTLD_EXPORT void                       tld_clear_info(struct tld_info * info);
+extern LIBTLD_EXPORT enum tld_result            tld(const char *uri, struct tld_info * info);
+extern LIBTLD_EXPORT enum tld_result            tld_load_tlds(const char *filename, int fallback);
+extern LIBTLD_EXPORT const struct tld_file *    tld_get_tlds();
+extern LIBTLD_EXPORT void                       tld_free_tlds();
+extern LIBTLD_EXPORT enum tld_result            tld_next_tld(struct tld_enumeration_state * state, struct tld_info * info);
+extern LIBTLD_EXPORT enum tld_result            tld_check_uri(const char * uri, struct tld_info * info, const char *protocols, int flags);
+extern LIBTLD_EXPORT char *                     tld_domain_to_lowercase(const char *domain);
+extern LIBTLD_EXPORT int                        tld_tag_count(struct tld_info * info);
+extern LIBTLD_EXPORT enum tld_result            tld_get_tag(struct tld_info * info, int tag_idx, struct tld_tag_definition * tag);
+extern LIBTLD_EXPORT const char *               tld_status_to_string(enum tld_status status);
+extern LIBTLD_EXPORT enum tld_category          tld_word_to_category(const char *word, int n);
 
 
 

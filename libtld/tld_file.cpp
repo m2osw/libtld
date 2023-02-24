@@ -1,5 +1,5 @@
 /* TLD library -- TLD, domain name, and sub-domain extraction
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+ * Copyright (c) 2011-2023  Made to Order Software Corp.  All Rights Reserved
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -148,6 +148,10 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
             {
                 return TLD_FILE_ERROR_INVALID_STRUCTURE_SIZE;
             }
+            if((*file)->f_header != nullptr)
+            {
+                return TLD_FILE_ERROR_HUNK_FOUND_TWICE;
+            }
             (*file)->f_header = reinterpret_cast<tld_header *>(hunk + 1);
             if((*file)->f_header->f_version_major != TLD_FILE_VERSION_MAJOR
             || (*file)->f_header->f_version_minor != TLD_FILE_VERSION_MINOR)
@@ -162,6 +166,10 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
             {
                 return TLD_FILE_ERROR_INVALID_ARRAY_SIZE;
             }
+            if((*file)->f_descriptions != nullptr)
+            {
+                return TLD_FILE_ERROR_HUNK_FOUND_TWICE;
+            }
             (*file)->f_descriptions = reinterpret_cast<tld_description *>(hunk + 1);
             break;
 
@@ -174,6 +182,10 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
             if((*file)->f_tags_size * sizeof(uint32_t) != hunk->f_size)
             {
                 return TLD_FILE_ERROR_INVALID_ARRAY_SIZE;
+            }
+            if((*file)->f_tags != nullptr)
+            {
+                return TLD_FILE_ERROR_HUNK_FOUND_TWICE;
             }
             (*file)->f_tags = reinterpret_cast<uint32_t *>(hunk + 1);
             break;
@@ -191,6 +203,10 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
             {
                 return TLD_FILE_ERROR_INVALID_ARRAY_SIZE;
             }
+            if((*file)->f_string_offsets != nullptr)
+            {
+                return TLD_FILE_ERROR_HUNK_FOUND_TWICE;
+            }
             (*file)->f_string_offsets = reinterpret_cast<tld_string_offset *>(hunk + 1);
             break;
 
@@ -207,6 +223,10 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
             {
                 return TLD_FILE_ERROR_INVALID_ARRAY_SIZE;
             }
+            if((*file)->f_string_lengths != nullptr)
+            {
+                return TLD_FILE_ERROR_HUNK_FOUND_TWICE;
+            }
             (*file)->f_string_lengths = reinterpret_cast<tld_string_length *>(hunk + 1);
             break;
 
@@ -214,6 +234,10 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
             if(hunk->f_size == 0)
             {
                 return TLD_FILE_ERROR_INVALID_ARRAY_SIZE;
+            }
+            if((*file)->f_strings != nullptr)
+            {
+                return TLD_FILE_ERROR_HUNK_FOUND_TWICE;
             }
             (*file)->f_strings = reinterpret_cast<char *>(hunk + 1);
             (*file)->f_strings_end = reinterpret_cast<char *>(hunk + 1 + hunk->f_size);
@@ -319,6 +343,9 @@ const char *tld_file_errstr(tld_file_error err)
     case TLD_FILE_ERROR_MISSING_HUNK:
         return "Missing hunk";
 
+    case TLD_FILE_ERROR_HUNK_FOUND_TWICE:
+        return "Found the same hunk twice";
+
     //default: -- handled below, without a default, we know whether we missed
     //            some new TLD_FILE_ERROR_... in our cases above.
     }
@@ -327,7 +354,7 @@ const char *tld_file_errstr(tld_file_error err)
 }
 
 
-const tld_description *tld_file_description(tld_file const * file, uint32_t id)
+const tld_description * tld_file_description(tld_file const * file, uint32_t id)
 {
     if(id >= file->f_descriptions_count)
     {
@@ -337,7 +364,7 @@ const tld_description *tld_file_description(tld_file const * file, uint32_t id)
 }
 
 
-const tld_tag *tld_file_tag(tld_file const * file, uint32_t id)
+const tld_tag * tld_file_tag(tld_file const * file, uint32_t id)
 {
     if(id + 1 >= file->f_tags_size)
     {
@@ -347,7 +374,7 @@ const tld_tag *tld_file_tag(tld_file const * file, uint32_t id)
 }
 
 
-const char *tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
+const char * tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
 {
     if(length == nullptr)
     {

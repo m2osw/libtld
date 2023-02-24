@@ -3,6 +3,7 @@
 # Run all the tests in order
 
 NAME=`basename $0`
+BUILD=true
 if test "$NAME" = "unittest" -a ! -d debian
 then
 	BUILD_PATH="`pwd`/BUILD"
@@ -10,9 +11,20 @@ else
 	BUILD_PATH="`cd ../.. && pwd`/BUILD/Debug/contrib/libtld"
 fi
 
+SOURCE=`pwd`
 while test -n "${1}"
 do
 	case "$1" in
+	"--build")
+		shift
+		BUILD=true
+		;;
+
+	"--no-build")
+		shift
+		BUILD=false
+		;;
+
 	"--progress")
 		shift
 		;;
@@ -37,7 +49,7 @@ do
 		;;
 
 	"--version")
-		${BUILD_PATH}/tests/tld_test_versions "${SOURCE:-`pwd`}"
+		${BUILD_PATH}/tests/tld_test_versions "${SOURCE}"
 		exit 0
 		;;
 
@@ -61,6 +73,16 @@ do
 done
 
 
+############################################################################
+# By default we want to make sure we have the latest, use --no-build to avoid
+# rebuilding each time
+if $BUILD
+then
+	echo "--- build libtld"
+	./mk
+fi
+
+############################################################################
 echo "--- running tests found in $BUILD_PATH from `pwd`"
 
 ############################################################################
@@ -113,3 +135,5 @@ echo "--- tld_test_versions"
 ${BUILD_PATH}/tests/tld_test_versions "${SOURCE:-`pwd`}"
 
 
+############################################################################
+echo "--- success!"
