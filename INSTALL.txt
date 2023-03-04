@@ -41,7 +41,6 @@ REQUIREMENTS
 
 The library requirements are:
 
-* boost -- for the C++ code
 * cmake -- the tool to generate the Makefile (no auto-tool or configure!)
 * doxygen -- currently required with the new cmake scheme
 * dot (optional) -- recommanded if you want more complete documentations
