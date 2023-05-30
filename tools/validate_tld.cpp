@@ -86,8 +86,7 @@ void check_uri(char const * uri)
             std::cout << "URI:      " << uri << std::endl;                                      // LCOV_EXCL_LINE
             std::cout << "Category: " << static_cast<int>(info.f_category) << std::endl;        // LCOV_EXCL_LINE
             std::cout << "Status:   " << static_cast<int>(info.f_status) << std::endl;          // LCOV_EXCL_LINE
-            if(info.f_country != nullptr                                                        // LCOV_EXCL_LINE
-            && info.f_country[0] != '\0')                                                       // LCOV_EXCL_LINE
+            if(info.f_country[0] != '\0')                                                       // LCOV_EXCL_LINE
             {
                 std::cout << "Country:  " << info.f_country << std::endl;                       // LCOV_EXCL_LINE
             }
