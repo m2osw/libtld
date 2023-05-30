@@ -516,26 +516,10 @@ void test_uri()
             ++err_count;
         }
 
-        if(test_info_entries[i].f_info.f_country == NULL)
+        if(strcmp(info.f_country, test_info_entries[i].f_info.f_country) != 0)
         {
-            if(info.f_country != NULL)
-            {
-                fprintf(stderr, "error:%s: country was expected to be NULL.\n", test_info_entries[i].f_uri);
-                ++err_count;
-            }
-        }
-        else
-        {
-            if(info.f_country == NULL)
-            {
-                fprintf(stderr, "error:%s: country is NULL when it was expected to be \"%s\".\n", test_info_entries[i].f_uri, test_info_entries[i].f_info.f_country);
-                ++err_count;
-            }
-            else if(strcmp(info.f_country, test_info_entries[i].f_info.f_country) != 0)
-            {
-                fprintf(stderr, "error:%s: country was not properly extracted.\n", test_info_entries[i].f_uri);
-                ++err_count;
-            }
+            fprintf(stderr, "error:%s: country was not properly extracted.\n", test_info_entries[i].f_uri);
+            ++err_count;
         }
 
         if(info.f_offset != test_info_entries[i].f_info.f_offset)
