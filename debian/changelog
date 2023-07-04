@@ -1,4 +1,4 @@
-libtld (2.0.12.0~bionic) bionic; urgency=high
+libtld (2.0.12.0~jammy) jammy; urgency=high
 
   * Updated TLDs to the latest defined in the public_suffix_list.dat file.
   * Marked many entries as deprecated (not in the public suffix list).
