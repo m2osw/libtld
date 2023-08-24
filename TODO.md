@@ -10,5 +10,7 @@
 * Convert everything to C++ and offer an interface to C programmers.
 * Look at how to handle the special cases in `tests/tld_test_tld_names.cpp`
   (i.e some definitions are just `*.er` in the public list)
+* Add man pages for the tld extractor (extract-tld)
+* Fixed the extract-tld tool errors on 65535 offsets (try with .arpa)
 
 
