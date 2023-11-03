@@ -1,3 +1,9 @@
+libtld (2.0.13.0~jammy) jammy; urgency=high
+
+  * Added missing #include of cstdint for std::uint32_t and others.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 03 Nov 2023 16:28:15 -0700
+
 libtld (2.0.12.0~jammy) jammy; urgency=high
 
   * Updated TLDs to the latest defined in the public_suffix_list.dat file.

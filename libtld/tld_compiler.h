@@ -42,6 +42,7 @@
 #include    <map>
 #include    <memory>
 #include    <set>
+#include    <cstdint>
 #include    <vector>
 
 // C lib
