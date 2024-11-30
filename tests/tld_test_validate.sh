@@ -21,7 +21,7 @@ fi
 
 if ! test -x "${VALIDATE}"
 then
-	echo "error: ${VALIDATE} is not an executable; you supply the wrong path?"
+	echo "error: ${VALIDATE} is not an executable; you supplied the wrong path?"
 	exit 1;
 fi
 
@@ -73,7 +73,7 @@ fi
 ############################################################################
 if ! ${VALIDATE} 'http://www.m2osw.com/validate/tld?perfect=work'
 then
-    echo "\`validate-tld <invalid URI>\` did exit with an error";
+    echo "\`validate-tld <valid URI>\` did exit with an error";
     exit 1;
 fi
 
@@ -113,7 +113,7 @@ then
 fi
 
 ############################################################################
-if ! ${VALIDATE} 'http://.other.mx/missing/domain'
+if ! ${VALIDATE} 'http://.other.mx/valid/domain'
 then
     echo "\`validate-tld <valid domain and TLD>\` exited with an error";
     exit 1;
@@ -164,7 +164,7 @@ fi
 ############################################################################
 if ${VALIDATE} --verbose
 then
-    echo "\`validate-tld --version\` (no TLD) did not exit with an error";
+    echo "\`validate-tld --verbose\` (no TLD) did not exit with an error";
     exit 1;
 fi
 

@@ -23,16 +23,17 @@
 #
 
 ##
-## TLD tests
+## Tool to generate the \u... characters for UTF-8 domain names
 ##
-
-# Tool to generate the \u... characters for UTF-8 domain names
 project(hex)
 add_executable(${PROJECT_NAME}
     hex.c
 )
 
-# Test the library directly
+
+##
+## Test the library directly
+##
 project(tld_internal_test)
 add_executable(${PROJECT_NAME}
     tld_internal_test.cpp
@@ -54,7 +55,10 @@ add_test(
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Test the library as an end user
+
+##
+## Test the library as an end user
+##
 project(tld_test)
 add_executable(${PROJECT_NAME}
     tld_test.c
@@ -73,7 +77,10 @@ add_test(
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Test the tld_valid_uri() function
+
+##
+## Test the tld_valid_uri() function
+##
 project(tld_test_full_uri)
 add_executable(${PROJECT_NAME}
     tld_test_full_uri.c
@@ -92,7 +99,10 @@ add_test(
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Test the C++ tld_object
+
+##
+## Test the C++ tld_object
+##
 project(tld_test_object)
 add_executable(${PROJECT_NAME}
     tld_test_object.cpp
@@ -111,7 +121,10 @@ add_test(
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Test TLD names as defined by Mozilla
+
+##
+## Test TLD names as defined by Mozilla
+##
 project(tld_test_tld_names)
 add_executable(${PROJECT_NAME}
     tld_test_tld_names.cpp
@@ -130,7 +143,10 @@ add_test(
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Test emails validity
+
+##
+## Test emails validity
+##
 project(tld_test_emails)
 add_executable(${PROJECT_NAME}
     tld_test_emails.cpp
@@ -149,7 +165,10 @@ add_test(
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Test tld_domain_to_lowercase() validity
+
+##
+## Test tld_domain_to_lowercase() validity
+##
 project(tld_test_domain_lowercase)
 add_executable(${PROJECT_NAME}
     tld_test_domain_lowercase.c
@@ -168,7 +187,10 @@ add_test(
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Test versions validity
+
+##
+## Test versions validity
+##
 project(tld_test_versions)
 add_executable(${PROJECT_NAME}
     tld_test_versions.c
@@ -186,6 +208,7 @@ add_test(
     WORKING_DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
 
 ##
 ## Install "run_all_tests.sh" as "unittest" for coverage compatibility
@@ -209,6 +232,17 @@ add_custom_target(${PROJECT_NAME} ALL
     DEPENDS
         ${TLD_UNITTEST}
 )
+
+
+###
+### Run the unit tests
+###
+find_package(SnapTestRunner)
+AddUnitTestsTarget(
+    PROJECT_NAME
+        rununittests
+)
+
 
 ###
 ### Run all the tests

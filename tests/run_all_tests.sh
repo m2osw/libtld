@@ -3,7 +3,7 @@
 # Run all the tests in order
 
 NAME=`basename $0`
-BUILD=true
+BUILD=false
 if test "$NAME" = "unittest" -a ! -d debian
 then
 	BUILD_PATH="`pwd`/BUILD"
@@ -14,10 +14,29 @@ fi
 SOURCE=`pwd`
 while test -n "${1}"
 do
-	case "$1" in
+	case "${1}" in
+	"--binary-dir")
+		# ignore
+		shift
+		BUILD_PATH="${1}"
+		shift
+		;;
+
 	"--build")
 		shift
 		BUILD=true
+		;;
+
+	"--colour-mode")
+		# ignore
+		shift
+		shift
+		;;
+
+	"--dist-dir")
+		# ignore
+		shift
+		shift
 		;;
 
 	"--no-build")
@@ -26,6 +45,7 @@ do
 		;;
 
 	"--progress")
+		# ignore
 		shift
 		;;
 
@@ -71,6 +91,11 @@ do
 
 	esac
 done
+
+# The cmake ./mk script starts the unit tests from within the binary folder
+# but this script expects us to be in the source folder so do a cd first
+#
+cd "${SOURCE}"
 
 
 ############################################################################
