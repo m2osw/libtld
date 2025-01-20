@@ -45,7 +45,7 @@
 #include <wctype.h>
 
 
-/** \brief Transform an hexadecimal digit to a number.
+/** \brief Transform a hexadecimal digit to a number.
  * \internal
  *
  * This function transforms the specified character \p c to a number from
@@ -79,13 +79,13 @@ static int tld_hex2dec(char c)
 }
 
 
-/** \brief Transform a number to an hexadecimal digit.
+/** \brief Transform a number to a hexadecimal digit.
  * \internal
  *
- * This function transforms the specified number in an hexadecimal digit.
+ * This function transforms the specified number in a hexadecimal digit.
  * The number must be a value between 0 and 15.
  *
- * \param[in] d  A number from 0 to 15 to convert to an hexadecimal digit.
+ * \param[in] d  A number from 0 to 15 to convert to a hexadecimal digit.
  *
  * \return The character 0-9 or A-F.
  */

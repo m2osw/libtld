@@ -59,7 +59,7 @@ void test_add_byte(char **out, int wc, int force_caps)
     }
     else
     {
-        // add '%XX' where X represents an hexadecimal digit
+        // add '%XX' where X represents a hexadecimal digit
         if(force_caps
         || (rand() & 1) != 0)
         {

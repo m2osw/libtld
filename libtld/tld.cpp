@@ -399,14 +399,14 @@ void tags_to_info(const struct tld_description *tld, struct tld_info *info)
 }
 
 
-/** \brief Check whether a character is an hexadecimal character.
+/** \brief Check whether a character is a hexadecimal character.
  *
  * This internal function returns true if the input character represents
  * a valid hexadecimal character (0-9, A-F, or a-f).
  *
- * \param[in] c  The character to check as an hexadecimal digit.
+ * \param[in] c  The character to check as a hexadecimal digit.
  *
- * \return true if \p c represents an hexadecimal digit.
+ * \return true if \p c represents a hexadecimal digit.
  */
 bool is_hex(int c)
 {
@@ -418,7 +418,7 @@ bool is_hex(int c)
 
 /** \brief Internal function used to transform %XX values.
  *
- * This function transforms an hexadecimal (h) character to (2) a
+ * This function transforms a hexadecimal (h) character to (2) a
  * decimal number (d).
  *
  * \param[in] c  The hexadecimal character to transform
