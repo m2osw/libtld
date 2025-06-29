@@ -32,7 +32,7 @@
 #include "libtld/tld.h"
 
 
-// C lib
+// C
 //
 #include    <string.h>
 

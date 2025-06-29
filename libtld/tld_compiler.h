@@ -35,7 +35,7 @@
 
 #ifdef __cplusplus
 
-// C++ lib
+// C++
 //
 #include    <iostream>
 #include    <list>
@@ -45,7 +45,7 @@
 #include    <cstdint>
 #include    <vector>
 
-// C lib
+// C
 //
 #include    <limits.h>
 

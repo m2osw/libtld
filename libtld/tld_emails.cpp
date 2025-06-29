@@ -22,12 +22,12 @@
  */
 #include "libtld/tld.h"
 
-// C lib
+// C
 //
 #include <stdio.h>
 #include <string.h>
 
-// C++ lib
+// C++
 //
 #include <memory>
 #include <iostream>

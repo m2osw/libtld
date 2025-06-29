@@ -33,7 +33,7 @@
  * includes it within itself.
  */
 
-// libtld library sources
+// libtld sources
 //
 #include    <libtld/tld.cpp>
 #include    <libtld/tld_file.cpp>
@@ -45,7 +45,7 @@ extern "C" {
 }
 
 
-// C lib
+// C
 //
 #include    <stdlib.h>
 #include    <string.h>

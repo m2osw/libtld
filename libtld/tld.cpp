@@ -36,12 +36,12 @@
 #include    "libtld/tld_file.h"
 
 
-// C++ lib
+// C++
 //
 #include    <sstream>
 
 
-// C lib
+// C
 //
 #if defined(MO_DARWIN)
 #include    <malloc/malloc.h>

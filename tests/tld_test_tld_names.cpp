@@ -34,7 +34,7 @@
 
 #include    "libtld/tld.h"
 
-// C++ lib
+// C++
 //
 #include    <algorithm>
 #include    <iostream>
@@ -43,7 +43,7 @@
 #include    <vector>
 
 
-// C lib
+// C
 //
 #include    <stdlib.h>
 #include    <stdio.h>

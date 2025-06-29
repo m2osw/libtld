@@ -35,7 +35,7 @@
 #include    "libtld/tld_file.h"
 
 
-// C++ lib
+// C++
 //
 #include    <algorithm>
 #include    <fstream>
@@ -45,7 +45,7 @@
 #include    <sstream>
 
 
-// C lib
+// C
 //
 #include    <dirent.h>
 #include    <string.h>

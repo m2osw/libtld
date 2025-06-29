@@ -28,14 +28,14 @@
  * tld_check_uri() function works as expected.
  */
 
-// libtld lib
+// libtld
 //
 #include    <libtld/tld.h>
 #include    <libtld/tld_data.h>
 #include    <libtld/tld_file.h>
 
 
-// C lib
+// C
 //
 #include    <string.h>
 #include    <stdlib.h>

@@ -34,14 +34,14 @@
 #include    "libtld/tld_data.h"
 
 
-// C++ lib
+// C++
 //
 #include    <fstream>
 #include    <iostream>
 #include    <sstream>
 
 
-// C lib
+// C
 //
 #include    <limits.h>
 #include    <string.h>

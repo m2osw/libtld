@@ -21,20 +21,20 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// libtld lib
+// libtld
 //
 #include    <libtld/tld_file.h>
 #include    <libtld/tld.h>
 
 
-// C++ lib
+// C++
 //
 #include    <fstream>
 #include    <iostream>
 #include    <sstream>
 
 
-// C lib
+// C
 //
 #include    <string.h>
 #include    <limits.h>

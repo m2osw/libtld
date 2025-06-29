@@ -49,7 +49,7 @@
  *   size for each one of those strings
  */
 
-// C lib
+// C
 //
 #include    <stdint.h>
 
