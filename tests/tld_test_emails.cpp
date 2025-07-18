@@ -732,8 +732,8 @@ const invalid_email list_of_invalid_emails[] =
     { TLD_RESULT_NULL, "(Bad Emails) alexis,m2osw.com" },
     { TLD_RESULT_INVALID, "(Bad Char) alexis@m2osw\001com" },
     { TLD_RESULT_NOT_FOUND, "(Bad Extension) alexis@m2osw.comm" },
-    { TLD_RESULT_INVALID, "(Bad Extension) alexis@m2osw.ar" },
-    { TLD_RESULT_INVALID, "(Bad Extension) alexis@m2osw.nom.ar" },
+    { TLD_RESULT_INVALID, "(Bad Extension) alexis@m2osw.bd" },
+    { TLD_RESULT_INVALID, "(Bad Extension) alexis@m2osw.nom.bd" },
     { TLD_RESULT_NO_TLD, "(Bad Extension) alexis@m2osw" },
     { TLD_RESULT_INVALID, "(Bad Extension) alexis@[m2osw..com]" },
 

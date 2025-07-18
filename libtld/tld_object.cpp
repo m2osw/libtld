@@ -317,6 +317,8 @@ std::string tld_object::tld_only() const
  * \li TLD_CATEGORY_TECHNICAL -- technical TLD names used to make it all work
  * \li TLD_CATEGORY_COUNTRY -- country based TLD
  * \li TLD_CATEGORY_ENTREPRENEURIAL -- TLD spawned of other official TLD names
+ * \li TLD_CATEGORY_BRAND -- TLD is owned by a private company
+ * \li TLD_CATEGORY_CONTACT -- there is a known contact person
  * \li TLD_CATEGORY_UNDEFINED -- this value means the TLD was not defined
  *
  * \return The category of the current URI or TLD_CATEGORY_UNDEFINED.

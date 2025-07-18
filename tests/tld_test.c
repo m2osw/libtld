@@ -97,7 +97,6 @@ void free_tlds()
 }
 
 
-
 /** \brief Build an extension from any offset.
  *
  * Create a domain name extensions from any entry in the TLD
@@ -108,22 +107,48 @@ void free_tlds()
  *
  * \return true if the first TLD is a star ("*").
  */
-int cat_ext(int offset, char *uri)
+int cat_ext(int offset, char * uri)
 {
     int                             o, has_star;
     uint32_t                        k, l;
-    const struct tld_description *  tld;
-    const char *                    name;
+    struct tld_description const *  tld;
+    char const *                    name;
+    char *                          d = uri;
+
+    while(*d != '\0')
+    {
+        ++d;
+    }
 
     tld = tld_file_description(g_tld_file, offset);
     name = tld_file_string(g_tld_file, tld->f_tld, &l);
+
+    // verify that the names do match between the library TLDs file and
+    // our copy of the file
+    {
+        struct tld_file const * lib_tld = tld_get_tlds();
+        tld = tld_file_description(lib_tld, offset);
+        uint32_t length = 2000;
+        char const * name2 = tld_file_string(lib_tld, tld->f_tld, &length);
+        if(l != length || memcmp(name, name2, l) != 0)
+        {
+            fprintf(stderr, "error: the names in our and the library files do not match: [%.*s] vs [%.*s]\n",
+                            l, name, length, name2);
+            abort();
+        }
+    }
 
     has_star = l == 1 && name[0] == '*';
 
     if(!has_star)
     {
-        strcat(uri, ".");
-        strncat(uri, name, l);
+        *d++ = '.';
+        for(; *name != '\0' && l > 0; --l)
+        {
+            *d++ = *name++;
+        }
+        //strcat(uri, ".");
+        //strncat(uri, name, l);
     }
     o = offset;
     for(k = offset + 1; k < g_tld_file->f_descriptions_count; ++k)
@@ -136,8 +161,11 @@ int cat_ext(int offset, char *uri)
             name = tld_file_string(g_tld_file, tld->f_tld, &l);
             if(l != 1 || name[0] != '*')
             {
-                strcat(uri, ".");
-                strncat(uri, name, l);
+                *d++ = '.';
+                for(; *name != '\0' && l > 0; --l)
+                {
+                    *d++ = *name++;
+                }
             }
             else
             {
@@ -148,6 +176,8 @@ int cat_ext(int offset, char *uri)
             k = tld->f_end_offset;
         }
     }
+
+    *d = '\0';
 
     return has_star;
 }
@@ -192,7 +222,7 @@ const struct test_uris g_uris[] =
     },
     {
         ".ar",
-        TLD_RESULT_INVALID,
+        TLD_RESULT_SUCCESS,
         0,
     },
     {
@@ -286,7 +316,7 @@ void test_specific()
  */
 void test_all()
 {
-    const char *sub_domains[] = {
+    char const * sub_domains[] = {
         "",
         "www.",
         "tld.",
@@ -298,11 +328,12 @@ void test_all()
     };
     struct tld_info                 info;
     char                            uri[256], extension_uri[256];
-    const char *                    name;
+    char const *                    name;
     uint32_t                        i, j, l, p, max_subdomains;
     int                             has_star, sub_has_star;
     enum tld_result                 r;
-    const struct tld_description    *tld_desc, *sub_tld;
+    struct tld_description const  * tld_desc;
+    struct tld_description const  * sub_tld;
 
     max_subdomains = sizeof(sub_domains) / sizeof(sub_domains[0]);
 
@@ -323,20 +354,28 @@ void test_all()
 
             /* reset the structure so we can verify it gets initialized */
             memset(&info, 0xFE, sizeof(info));
+
             r = tld(uri, &info);
-            /*
-            for(size_t l = 0; l < sizeof(info); ++l)
+#if 0
+            if(i == 5108)
             {
-                fprintf(stderr, "0x%02X ", ((unsigned char*)&info)[l]);
+                for(size_t l = 0; l < sizeof(info); ++l)
+                {
+                    if((l % 16) == 0 && l > 0)
+                    {
+                        fprintf(stderr, "\n");
+                    }
+                    fprintf(stderr, "0x%02X ", ((unsigned char*)&info)[l]);
+                }
+                fprintf(stderr, "\nresult for [%s]: category[%d], status[%d/%%d n.a.], country[%s],"
+                                    " tld[%s], offset[%d]\n",
+                        uri,
+                        (int)info.f_category,
+                        (int)info.f_status, //(int)tld_descriptions[i].f_status,
+                        info.f_country,
+                            info.f_tld, (int)info.f_offset);
             }
-            fprintf(stderr, "\nresult for [%s]: category[%d], status[%d/%d], country[%s],"
-                                " tld[%s], offset[%d]\n",
-                    uri,
-                    (int)info.f_category,
-                    (int)info.f_status, (int)tld_descriptions[i].f_status,
-                    info.f_country,
-                        info.f_tld, (int)info.f_offset);
-            */
+#endif
             p = i;
             tld_desc = tld_file_description(g_tld_file, i);
             if(tld_desc->f_status == TLD_STATUS_EXCEPTION)

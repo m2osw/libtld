@@ -122,13 +122,8 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
         return TLD_FILE_ERROR_CANNOT_READ_FILE;
     }
 
-    for(;;)
+    while(size != 0)
     {
-        if(size == 0)
-        {
-            break;
-        }
-
         if(sizeof(tld_hunk) > size)
         {
             return TLD_FILE_ERROR_INVALID_HUNK_SIZE;
@@ -174,7 +169,7 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
             break;
 
         case TLD_TAGS:
-            // the tags ar ea bit peculiar in that the compression happens
+            // the tags are a bit peculiar in that the compression happens
             // by uin32_t and not by tld_tags so the number of tags cannot
             // be inferred by the hunk size
             //
@@ -240,7 +235,7 @@ tld_file_error tld_file_load_stream(tld_file ** file, std::istream & in)
                 return TLD_FILE_ERROR_HUNK_FOUND_TWICE;
             }
             (*file)->f_strings = reinterpret_cast<char *>(hunk + 1);
-            (*file)->f_strings_end = reinterpret_cast<char *>(hunk + 1 + hunk->f_size);
+            (*file)->f_strings_end = reinterpret_cast<char *>(hunk + 1) + hunk->f_size;
             break;
 
         default:
@@ -354,7 +349,7 @@ const char *tld_file_errstr(tld_file_error err)
 }
 
 
-const tld_description * tld_file_description(tld_file const * file, uint32_t id)
+tld_description const * tld_file_description(tld_file const * file, uint32_t id)
 {
     if(id >= file->f_descriptions_count)
     {
@@ -364,7 +359,7 @@ const tld_description * tld_file_description(tld_file const * file, uint32_t id)
 }
 
 
-const tld_tag * tld_file_tag(tld_file const * file, uint32_t id)
+tld_tag const * tld_file_tag(tld_file const * file, uint32_t id)
 {
     if(id + 1 >= file->f_tags_size)
     {
@@ -374,7 +369,7 @@ const tld_tag * tld_file_tag(tld_file const * file, uint32_t id)
 }
 
 
-const char * tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
+char const * tld_file_string(tld_file const * file, uint32_t id, uint32_t * length)
 {
     if(length == nullptr)
     {
@@ -389,9 +384,9 @@ const char * tld_file_string(tld_file const * file, uint32_t id, uint32_t * leng
         errno = EINVAL;
         return nullptr;
     }
-    char * s(file->f_strings + file->f_string_offsets[id].f_string_offset);
+    char const * s(file->f_strings + file->f_string_offsets[id].f_string_offset);
     uint32_t l(file->f_string_lengths[id].f_string_length);
-    char * e(s + l);
+    char const * e(s + l);
     if(s > file->f_strings_end
     || e > file->f_strings_end)
     {
@@ -416,7 +411,7 @@ const char * tld_file_string(tld_file const * file, uint32_t id, uint32_t * leng
  *
  * \return A string with the tld_file JSON or nullptr on error.
  */
-char *tld_file_to_json(tld_file const * file)
+char * tld_file_to_json(tld_file const * file)
 {
     if(file == nullptr
     || file->f_header == nullptr

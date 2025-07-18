@@ -2012,6 +2012,7 @@ char32_t tld_compiler::getc()
         {
             return CHAR_ERR;
         }
+        ++f_pos;
         wc = (wc << 6) | (c & 0x3F);
     }
 
@@ -2115,15 +2116,18 @@ void tld_compiler::parse_line()
 
 void tld_compiler::parse_variable()
 {
+    std::string const & name(f_tokens[0].get_value());
+
     if(f_tokens.size() < 2
     || f_tokens[1].get_token() != TOKEN_EQUAL)
     {
         f_errno = EINVAL;
-        f_errmsg = "a variable name must be followed by an equal sign";
+        f_errmsg = "a variable name ("
+            + name
+            + ") must be followed by an equal sign";
         return;
     }
 
-    std::string const & name(f_tokens[0].get_value());
     std::string::size_type const pos(name.find('/'));
     bool const is_tag(pos != std::string::npos);
     if(is_tag)
@@ -2832,7 +2836,7 @@ void tld_compiler::save_to_c_file(std::string const & buffer)
         << std::hex
         << std::setfill('0');
 
-    for(std::uint32_t idx(0); idx + 16 < buffer.length(); idx += 16)
+    for(std::uint32_t idx(0); idx + 16 <= buffer.length(); idx += 16)
     {
         out << "   ";
         for(std::uint32_t o(0); o < 16; ++o)

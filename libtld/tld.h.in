@@ -61,6 +61,7 @@ enum tld_category
     TLD_CATEGORY_LOCATION,
     TLD_CATEGORY_ENTREPRENEURIAL,
     TLD_CATEGORY_BRAND,
+    TLD_CATEGORY_CONTACT,
     TLD_CATEGORY_UNDEFINED
 };
 
@@ -75,8 +76,13 @@ enum tld_status
     TLD_STATUS_EXAMPLE,
     TLD_STATUS_UNDEFINED,
 
-    /* The following status is never returned. It is used internally to handle
-     * exceptions (i.e. usually 2nd level domain names that should not be.)
+    /* The following status is returned when the 2nd level domain names
+     * were not used for some top domain names that now required a 2nd level.
+     * For example, the UK had parliament.uk as an exception. Since the
+     * UK now allows .uk to be used directly, those exceptions are gone.
+     *
+     * In other words, that entry is NOT a TLD. It is an actual website
+     * URI.
      */
     TLD_STATUS_EXCEPTION = 100
 };

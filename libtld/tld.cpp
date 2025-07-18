@@ -566,12 +566,12 @@ static int cmp(const char *a, int l, const char *b, int n)
  *
  * \return The offset of the domain found, or -1 when not found.
  */
-static int search(int i, int j, const char * domain, int n)
+static int search(int i, int j, char const * domain, int n)
 {
     int auto_match = -1, p, r;
     uint32_t l;
-    const struct tld_description *tld;
-    const char * name;
+    struct tld_description const * tld;
+    char const * name;
     enum tld_result result;
 
     result = tld_load_tlds_if_not_loaded();
@@ -647,6 +647,9 @@ static int search(int i, int j, const char * domain, int n)
             {
                 return -1;
             }
+#if 0
+std::cerr << "--- name offset: " << tld->f_tld << " --- ptr: " << reinterpret_cast<void const *>(name) << ", cmp(\"" << std::string(name, l) << "\", \"" << std::string(domain, n) << "\") == " << r << "\n";
+#endif
 #ifdef _DEBUG
             if(l == 1 && name[0] == '*')
             {
@@ -660,6 +663,9 @@ static int search(int i, int j, const char * domain, int n)
             }
 #endif
             r = cmp(name, l, domain, n);
+#if 0
+std::cerr << "--- name offset: " << tld->f_tld << " --- cmp(\"" << std::string(name, l) << "\", \"" << std::string(domain, n) << "\") == " << r << "\n";
+#endif
             if(r < 0)
             {
                 /* eliminate the first half */
@@ -735,7 +741,7 @@ void tld_clear_info(struct tld_info *info)
  * the file could not be read, and TLD_RESULT_NOT_FOUND if the file is
  * not found.
  */
-enum tld_result tld_load_tlds(const char *filename, int fallback)
+enum tld_result tld_load_tlds(char const * filename, int fallback)
 {
     enum tld_file_error err;
 
@@ -1104,10 +1110,10 @@ enum tld_result tld_next_tld(struct tld_enumeration_state * state, struct tld_in
  *
  * \return One of the TLD_RESULT_... enumeration values.
  */
-enum tld_result tld(const char *uri, struct tld_info *info)
+enum tld_result tld(char const * uri, struct tld_info * info)
 {
-    const char * end = uri;
-    const struct tld_description *tld;
+    char const * end = uri;
+    struct tld_description const * tld;
     int level = 0, max_level, start_level, i, r, p, offset;
     enum tld_result result;
 
@@ -1119,7 +1125,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
         return TLD_RESULT_NULL;
     }
 
-    /* before we can go futher, we want to load the TLDs file */
+    /* before we can go further, we want to load the TLDs file */
     result = tld_load_tlds_if_not_loaded();
     if(result != TLD_RESULT_SUCCESS)
     {
@@ -1128,8 +1134,6 @@ enum tld_result tld(const char *uri, struct tld_info *info)
 
     max_level = g_tld_file->f_header->f_tld_max_level;
     std::vector<const char *> level_ptr(max_level);
-    //level_ptr = reinterpret_cast<const char **>(malloc(sizeof(const char *) * max_level));
-
     while(*end != '\0')
     {
         if(*end == '.')
@@ -1137,7 +1141,7 @@ enum tld_result tld(const char *uri, struct tld_info *info)
             if(level >= max_level)
             {
                 /* At this point the maximum number of levels in the
-                 * TLDs is 5
+                 * TLDs is 7
                  */
                 for(i = 1; i < max_level; ++i)
                 {
@@ -1153,7 +1157,6 @@ enum tld_result tld(const char *uri, struct tld_info *info)
             if(level >= 2 && level_ptr[level - 2] + 1 == level_ptr[level - 1])
             {
                 /* two periods one after another */
-                //free(level_ptr);
                 return TLD_RESULT_BAD_URI;
             }
         }
@@ -1163,7 +1166,6 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     if(level == 0)
     {
         /* no TLD */
-        //free(level_ptr);
         return TLD_RESULT_NO_TLD;
     }
 
@@ -1175,7 +1177,6 @@ enum tld_result tld(const char *uri, struct tld_info *info)
     if(r == -1)
     {
         /* unknown */
-        //free(level_ptr);
         return TLD_RESULT_NOT_FOUND;
     }
 
@@ -1859,7 +1860,7 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  *
  * The concept of groups is similar to the language grouping, but in
  * this case it may reference to a specific group of people (but not
- * based on anything such as etnicity.)
+ * based on anything such as ethnicity).
  *
  * Examples of groups are Kids, Gay people, Ecologists, etc. This is
  * only proposed at this point.
@@ -1929,6 +1930,14 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  * specific to one company. Note that certain TLDs are owned by
  * companies now, but they are not automatically marked as a
  * brand (i.e. ".lol").
+ */
+
+/** \var TLD_CATEGORY_CONTACT
+ * \brief The attached TLD has contact information.
+ *
+ * Some TLDs are submitted to Mozilla by someone who becomes the point
+ * of contact for the corresponding TLDs. In most cases, this is the
+ * name and email of that contact person.
  */
 
 /** \var TLD_CATEGORY_UNDEFINED
@@ -2037,10 +2046,14 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  * When a NIC decides to change their setup it can generate exceptions. For
  * example, the UK first made use of .uk and as such offered a few customers
  * to use .uk. Later they decided to only offer second level domain names
- * such as the .co.uk and .ac.uk. This generates a few exceptions on the .uk
- * domain name. For example, the police.uk domain is still in use and thus
- * it is an exception. We reference it as ".police.uk" in our XML data file
+ * such as the .co.uk and .ac.uk. This generated a few exceptions on the .uk
+ * domain name. For example, the police.uk domain was in use at that time and
+ * thus it was an exception. We reference it as ".police.uk" in our data file
  * yet the TLD in that case is just ".uk".
+ *
+ * \note
+ * The .uk top domain is now available to anyone. Another example that is
+ * still in place is the .ar.
  */
 
 

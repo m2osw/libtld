@@ -37,16 +37,18 @@
  * forth in the last 10 years or so and having a compressed external file
  * will make it a lot faster and a lot easier to update the available TLDs.
  *
- * The structures found here descript that external file. The basic format
+ * The structures found here describe that external file. The basic format
  * is IFF (like a WAVE file, sizes and other numbers will be in the endian
- * of your computer, so watch out on that part.)
+ * of your computer, so watch out on that part).
  *
- * At time of writing, I have three hunks:
+ * At time of writing, I have these hunks:
  *
- * * Header -- a header with a few parameters such as the maximum TLD level
- * * Descriptions -- the array of descriptions
- * * Strings -- one super-string; the descriptions include an offset and a
- *   size for each one of those strings
+ * * File Magic (RIFF <size> TLDS) -- the start of the file
+ * * Header (HEAD) -- a header with a few parameters such as the maximum TLD level
+ * * Descriptions (DESC) -- the array of descriptions
+ * * Strings (STRS, SLEN, SOFF) -- one super-string; the file includes
+ *   two hunks with offsets and sizes for each one of those strings
+ * * Tags (TAGS) -- the tag attached to a domain
  */
 
 // C

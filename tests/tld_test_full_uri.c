@@ -427,11 +427,11 @@ const struct test_info test_info_entries[] =
       { TLD_CATEGORY_COUNTRY, TLD_STATUS_VALID, "Nauru", ".org.nr/", 12, 0 }
     },
     {
-      "http://snap.m2osw.blogspot.mx:888/longer/address",
+      "http://snap.m2osw.blogspot.com:888/longer/address",
       PROTOCOLS,
       0,
       TLD_RESULT_SUCCESS,
-      { TLD_CATEGORY_ENTREPRENEURIAL, TLD_STATUS_VALID, "", ".blogspot.mx:", 17, 0 }
+      { TLD_CATEGORY_ENTREPRENEURIAL, TLD_STATUS_VALID, "", ".blogspot.com:", 17, 0 }
     },
     {
       "HTTP://alexis:password1@www.m2osw.com:888/correct/uri?with=variable",

@@ -132,6 +132,10 @@ enum tld_category tld_word_to_category(const char *word, int n)
             break;
 
         case 'c':
+            if(strcmp(buf, "contact") == 0)
+            {
+                return TLD_CATEGORY_CONTACT;
+            }
             if(strcmp(buf, "country") == 0)
             {
                 return TLD_CATEGORY_COUNTRY;

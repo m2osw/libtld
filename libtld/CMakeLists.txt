@@ -38,7 +38,6 @@ add_executable(${PROJECT_NAME}
 ##
 project(tld_data)
 set(TLD_DATA_C ${PROJECT_BINARY_DIR}/tld_data.c)
-file(GLOB_RECURSE TLD_FILES ${CMAKE_SOURCE_DIR}/conf/tlds/*.ini)
 add_custom_command(
     OUTPUT ${TLD_DATA_C}
     COMMAND
@@ -51,7 +50,7 @@ add_custom_command(
             "--c-file"
                 "${TLD_DATA_C}"
             "tlds.tld"
-    DEPENDS tld_parser ${TLD_FILES}
+    DEPENDS tld_parser ${CMAKE_SOURCE_DIR}/conf/tlds/*.ini ${CMAKE_SOURCE_DIR}/conf/tlds/*/*.ini
 )
 add_custom_target(${PROJECT_NAME}
     DEPENDS ${TLD_DATA_C}

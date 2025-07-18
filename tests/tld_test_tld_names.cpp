@@ -51,8 +51,8 @@
 
 
 
-int err_count = 0;
-int verbose = 0;
+int g_err_count = 0;
+int g_verbose = 0;
 
 /*
  * This test calls the tld() function with all the TLDs as defined
@@ -182,8 +182,8 @@ std::string tld_encode(const std::string& tld, int& level)
     }
     // at this time the maximum level we declared is 4 but there are cases
     // where countries defined 5 levels (which is definitively crazy!)
-    // there is also one Amazon server using 6 levels
-    if(level < 0 || level > 6)
+    // there is also one Amazon server using 7 levels
+    if(level < 0 || level > 7)
     {
         fflush(stdout);
         fprintf(stderr, "error: level out of range (%d) in \"%s\"; if larger than the maximum limit, you may want to increase the limit.\n", level, p);
@@ -224,7 +224,7 @@ void test_load()
             // the fgets() failed in this case so forget it
             fflush(stdout);
             fprintf(stderr, "public_suffix_list.dat:%d:error: line too long.\n", line);
-            ++err_count;
+            ++g_err_count;
         }
         else
         {
@@ -244,7 +244,7 @@ void test_load()
                 // all TLDs are at least 2 characters
                 fflush(stdout);
                 fprintf(stderr, "public_suffix_list.dat:%d:error: a TLD must be at least two characters.\n", line);
-                ++err_count;
+                ++g_err_count;
             }
             else if(s.length() > 1 && s[0] != '/' && s[1] != '/')
             {
@@ -291,7 +291,7 @@ void test_load()
         }
     }
     fclose(f);
-    if(verbose)
+    if(g_verbose)
     {
         printf("Found %d TLDs in public_suffix_list.dat.\n", static_cast<int>(g_tlds.size()));
     }
@@ -339,7 +339,7 @@ void test_tlds()
                             it->f_name.c_str(),
                             TLD_RESULT_INVALID,
                             r);
-                ++err_count;
+                ++g_err_count;
             }
 
             // then try with a sub-name, in most cases it is invalid
@@ -357,7 +357,7 @@ void test_tlds()
                 fprintf(stderr,
                         "error: tld(\"%s\", &info) returned %d when 3rd or 4th level name is \"%s\" in public_suffix_list.dat and we provided that name.\n",
                         url.c_str(), r, it->f_name.c_str());
-                ++err_count;
+                ++g_err_count;
             }
         }
         else if(it->f_name.at(0) == '!')
@@ -371,7 +371,7 @@ void test_tlds()
                 fflush(stdout);
                 fprintf(stderr, "error: exception for tld(\"%s\", &info) = %d failed with an exception that should have been accepted.\n",
                         url.c_str(), r);
-                ++err_count;
+                ++g_err_count;
             }
         }
         else
@@ -408,7 +408,7 @@ fprintf(stderr, "%d> %s [%s] {%s} -> %d ",
 //fprintf(stderr, "&#x%04X;", s.at(i).unicode());
 //}
 fprintf(stderr, "\n");
-                    ++err_count;
+                    ++g_err_count;
                 }
             }
             else
@@ -427,7 +427,7 @@ printf("error:%d: tld(\"%s\", &info) failed with %d [%s] -> %d ",
 //printf("&#x%04X;", s.at(i).unicode());
 //}
 printf("\n");
-                ++err_count;
+                ++g_err_count;
             }
         }
     }
@@ -455,25 +455,35 @@ void test_tlds_flip()
             return;
 
         case TLD_RESULT_NULL:
-            ++err_count;
+            ++g_err_count;
             fflush(stdout);
             fprintf(stderr, "error: tld_next_tld() received a TLD_RESULT_NULL which is an internal error.\n");
             return;
 
         case TLD_RESULT_NO_TLD:
-            ++err_count;
+            ++g_err_count;
             fflush(stdout);
             fprintf(stderr, "error: tld_next_tld() received a TLD_RESULT_NO_TLD which means the number of levels is larger than what the state structure supports.\n");
             return;
 
         case TLD_RESULT_BAD_URI:
-            ++err_count;
+            ++g_err_count;
             fflush(stdout);
             fprintf(stderr, "error: tld_next_tld() received a TLD_RESULT_BAD_URI which is an internal error (index, offset, or length overflow).\n");
             return;
 
         case TLD_RESULT_INVALID:
-            printf("--- INVALID: %d. [%s] with status: %d\n", info.f_tld_index, info.f_tld + info.f_offset, info.f_status);
+            if(g_verbose || (info.f_status != TLD_STATUS_DEPRECATED
+                          && info.f_status != TLD_STATUS_UNUSED
+                          && info.f_status != TLD_STATUS_RESERVED
+                          && info.f_status != TLD_STATUS_PROPOSED
+                          && info.f_status != TLD_STATUS_INFRASTRUCTURE
+                          && info.f_status != TLD_STATUS_EXCEPTION))      // here exception means that this is not a TLD but a website exception
+            {
+                printf("--- INVALID: %d. [%s] with status: %s (%d)\n",
+                        info.f_tld_index, info.f_tld + info.f_offset,
+                        tld_status_to_string(info.f_status), info.f_status);
+            }
             break;
 
         case TLD_RESULT_SUCCESS:
@@ -487,10 +497,11 @@ void test_tlds_flip()
                     }));
                 if(it == g_tlds.end())
                 {
-                    ++err_count;
+                    ++g_err_count;
                     fflush(stdout);
-                    fprintf(stderr, "error: tld_next_tld() found \"%s\" (index: %d) which was not found in the public_suffix_list.dat file.\n",
-                                    info.f_tld + info.f_offset, info.f_tld_index);
+                    fprintf(stderr, "error: tld_next_tld() found \"%s\" (index: %d, status: %s/%d) which was not found in the public_suffix_list.dat file.\n",
+                                    info.f_tld + info.f_offset, info.f_tld_index,
+                                    tld_status_to_string(info.f_status), info.f_status);
                 }
             }
             break;
@@ -510,33 +521,33 @@ int main(int argc, char *argv[])
     {
         if(strcmp(argv[1], "-v") == 0)
         {
-            verbose = 1;
+            g_verbose = 1;
         }
     }
 
     /* call all the tests, one by one
-     * failures are "recorded" in the err_count global variable
+     * failures are "recorded" in the g_err_count global variable
      * and the process stops with an error message and exit(1)
-     * if err_count is not zero.
+     * if g_err_count is not zero.
      */
     test_load();
 
-    if(err_count == 0)
+    if(g_err_count == 0)
     {
         test_tlds();
     }
-    if(err_count == 0)
+    if(g_err_count == 0)
     {
         test_tlds_flip();
     }
 
-    if(err_count || verbose)
+    if(g_err_count || g_verbose)
     {
         fflush(stdout);
         fprintf(stderr, "%d error%s occured.\n",
-                    err_count, err_count != 1 ? "s" : "");
+                    g_err_count, g_err_count != 1 ? "s" : "");
     }
-    exit(err_count ? 1 : 0);
+    exit(g_err_count ? 1 : 0);
 }
 
 /* vim: ts=4 sw=4 et
