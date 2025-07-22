@@ -1,4 +1,4 @@
-libtld (2.0.14.0~bionic) bionic; urgency=high
+libtld (2.0.14.0~noble) noble; urgency=high
 
   * Updated the TLDs from the suffix file.
   * Fixed the compiler (several issues).
