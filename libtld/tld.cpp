@@ -324,14 +324,14 @@ extern "C" {
  * You can change the TLDs at any one time by calling the tld_load_tlds()
  * again.
  *
- * \h3 Thread Safety
+ * \par Thread Safety
  *
  * The loading of the TLDs is not thread safe. If you want to use the library
  * in a multi-threaded environment, make sure to call the tld_load_tlds()
  * before you start your threads. Then you'll be safe as long as you do not
  * want to reload a file of TLDs while running your threads.
  *
- * \h3 Making Sure TLDs Are Loaded
+ * \par Making Sure TLDs Are Loaded
  *
  * The tld_load_tlds_if_not_loaded() can be used to load the TLDs if the
  * g_tld_file is still a null pointer. At the moment, this is only an
@@ -1657,7 +1657,7 @@ const char *tld_version()
  * is used to create an std::stringstream file with the static data
  * which is read as if the data came from a disk file.
  *
- * \return The size of the TLDS buffer.
+ * \return The size of the TLDs static buffer.
  */
 uint32_t tld_get_static_tlds_buffer_size()
 {
@@ -1821,7 +1821,7 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  * TLDs (such as .us, .uk, .fr, etc.)
  *
  * IANA offers and is working on other extensions such as .pro for
- * profesionals, and .arpa for their internal infrastructure.
+ * professionals, and .arpa for their internal infrastructure.
  */
 
 /** \var TLD_CATEGORY_INTERNATIONAL
@@ -1855,15 +1855,14 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  * all the people on the Earth can read in their language.
  */
 
-/** \var TLD_CATEGORY_GROUPS
+/** \var TLD_CATEGORY_GROUP
  * \brief Groups specific TLDs
  *
  * The concept of groups is similar to the language grouping, but in
  * this case it may reference to a specific group of people (but not
  * based on anything such as ethnicity).
  *
- * Examples of groups are Kids, Gay people, Ecologists, etc. This is
- * only proposed at this point.
+ * Examples of groups are .kids and .gay.
  */
 
 /** \var TLD_CATEGORY_REGION
@@ -1871,8 +1870,8 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  *
  * It has been proposed, like the .eu, to have extensions based on
  * well defined regions such as .asia for all of Asia. We currently
- * also have .aq for Antartique. Some proposed regions are .africa
- * and city names such as .paris and .wien.
+ * also have .aq for Antartique (French spelling). Some proposed
+ * regions are .africa and city names such as .paris and .wien.
  *
  * Old TLDs that were for countries but are not assigned to those
  * because the country \em disappeared (i.e. in general was split in
@@ -1882,6 +1881,13 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  * We keep old TLDs because it is not unlikely that such will be
  * used every now and then and they can, in this way, cleanly be
  * refused by your software.
+ */
+
+/** \var TLD_CATEGORY_LOCATION
+ * \brief Another region specific TLDs
+ *
+ * This category is not currently used and probably won't be since
+ * TLD_CATEGORY_REGION is more than sufficient for this purpose.
  */
 
 /** \var TLD_CATEGORY_TECHNICAL
@@ -2200,99 +2206,6 @@ enum tld_result tld_get_tag(struct tld_info *info, int tag_idx, struct tld_tag_d
  * for the beginning of the domain name by searching for the previous
  * period from that offset minus one. In effect, this gives you a
  * way to determine the list of sub-domain.
- */
-
-/** \struct tld_description
- * \brief [internal] The description of one TLD.
- * \internal
- *
- * The XML data is transformed in an array of TLD description saved in this
- * structure.
- *
- * This structure is internal to the database. You never are given direct
- * access to it. However, some of the constant pointers (i.e. country names)
- * do point to that data.
- */
-
-/** \var tld_description::f_category
- * \brief The category of this entry.
- *
- * The XML data must defined the different TLDs inside catageorized area
- * tags. This variable represents that category.
- */
-
-/** \var tld_description::f_country
- * \brief The name of the country owning this TLD.
- *
- * The name of the country owning this entry. Many TLDs do not have a
- * country attached to it (i.e. .com and .info, for example, do not have
- * a country attached to them) in which case this pointer is NULL.
- */
-
-/** \var tld_description::f_start_offset
- * \brief The first offset of a list of TLDs.
- *
- * This offset represents the start of a list of TLDs. The start offset is
- * inclusive so that very offset IS included in the list.
- *
- * The TLDs being referenced from this TLD are those between f_start_offset
- * and f_end_offset - 1 also writte:
- *
- * [f_start_offset, f_end_offset)
- */
-
-/** \var tld_description::f_end_offset
- * \brief The last offset of a list of TLDs.
- *
- * This offset represents the end of a list of TLDs. The end offset is
- * exclusive so that very offset is NOT included in the list.
- *
- * The TLDs being referenced from this TLD are those between f_start_offset
- * and f_end_offset - 1 also writte:
- *
- * [f_start_offset, f_end_offset)
- */
-
-/** \var tld_description::f_exception_apply_to
- * \brief This TLD is an exception of the "apply to" TLD.
- *
- * With time, some TLDs were expected to have or not have certain sub-domains
- * and when removal of those was partial (i.e. did not force existing owners
- * to lose their domain) then we have exceptions. This variable holds the
- * necessary information to support such exceptions.
- *
- * The "apply to" is only defined if the entry is an exception (see f_status.)
- * The f_exception_apply_to value is an offset to the very TLD we want to
- * return when we get this exception.
- */
-
-/** \var tld_description::f_exception_level
- * \brief This entry is an exception representing a TLD at this specified level.
- *
- * When we find an exception, it may be more than 1 level below the TLD it uses
- * (a.b.c.d may be viewed as part of TLD .d thus .a has to be bumped 3 levels
- * up.) In most cases, this is equal to this TLD level - 1.
- */
-
-/** \var tld_description::f_status
- * \brief The status of this TLD.
- *
- * The status of a TLD is TLD_STATUS_VALID by default. Using the different
- * tags available in the XML file we can defined other statuses such as the
- * TLD_STATUS_DEPRECATED status.
- *
- * In the TLD table the status can be TLD_STATUS_EXCEPTION.
- */
-
-/** \var tld_description::f_tld
- * \brief The actual TLD of this entry.
- *
- * In this table, the TLD is actually just one name and no period. Other
- * parts of a multi-part TLD are found at the [f_start_offset, f_end_offset).
- *
- * The TLD is built by starting a search at the top level which is defined as
- * [tld_start_offset, tld_end_offset). These offsets are global variables defined
- * in the tld_data.c file.
  */
 
 #ifdef __cplusplus

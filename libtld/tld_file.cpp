@@ -498,6 +498,113 @@ void tld_file_free(tld_file ** file)
 }
 
 
+/** \struct tld_description
+ * \brief [internal] The description of one TLD.
+ * \internal
+ *
+ * The configuration data is transformed in an array of TLD descriptions
+ * using this structure.
+ *
+ * This structure is internal to the database. You never are given direct
+ * access to it. However, some of the constant pointers (i.e. country names)
+ * do point to that data.
+ */
+
+/** \var tld_description::f_status
+ * \brief The status of this TLD.
+ *
+ * The status of a TLD is TLD_STATUS_VALID by default. Using the different
+ * tags available in the configuration files we can defined other statuses
+ * such as the TLD_STATUS_DEPRECATED status.
+ *
+ * In the TLD table the status can be TLD_STATUS_EXCEPTION. This is used
+ * to define an allow domain where normally we only would have a second
+ * or third level name. (i.e. the .uk used to only support third level
+ * domain names such as example.co.uk but had a few websites that used
+ * .uk directly such as parliament.uk--libtld would properly extract
+ * .uk in that case)
+ */
+
+/** \var tld_description::f_exception_level
+ * \brief This entry is an exception representing a TLD at this specified level.
+ *
+ * When we find an exception, it may be more than 1 level below the TLD it uses
+ * (a.b.c.d may be viewed as part of TLD .d thus .a has to be bumped 3 levels
+ * up.) In most cases, this is equal to this TLD level - 1.
+ */
+
+/** \var tld_description::f_exception_apply_to
+ * \brief This TLD is an exception of the "apply to" TLD.
+ *
+ * With time, some TLDs were expected to have or not have certain sub-domains
+ * and when removal of those was partial (i.e. did not force existing owners
+ * to lose their domain) then we have exceptions. This variable holds the
+ * necessary information to support such exceptions.
+ *
+ * The "apply to" is only defined if the entry is an exception (see f_status).
+ * The f_exception_apply_to value is an offset to the very TLD we want to
+ * return when we get this exception.
+ */
+
+/** \var tld_description::f_start_offset
+ * \brief The first offset of a list of TLDs.
+ *
+ * This offset represents the start of a list of TLDs. The start offset is
+ * inclusive so that very offset \b is included in the list.
+ *
+ * The TLDs being referenced from this TLD are those between f_start_offset
+ * and f_end_offset - 1 also written:
+ *
+ * [f_start_offset, f_end_offset)
+ */
+
+/** \var tld_description::f_end_offset
+ * \brief The last offset of a list of TLDs.
+ *
+ * This offset represents the end of a list of TLDs. The end offset is
+ * exclusive so that very offset is NOT included in the list.
+ *
+ * The TLDs being referenced from this TLD are those between f_start_offset
+ * and f_end_offset - 1 also written:
+ *
+ * [f_start_offset, f_end_offset)
+ */
+
+/** \var tld_description::f_tld
+ * \brief The actual TLD of this entry.
+ *
+ * In this table, the TLD is actually just one name and no periods. Other
+ * parts of a multi-part TLD are found at the [f_start_offset, f_end_offset).
+ *
+ * The TLD is built by starting a search at the top level which is defined
+ * as [tld_start_offset, tld_end_offset). These offsets are global
+ * variables defined in the tld_data.c file.
+ */
+
+/** \var tld_description::f_tags
+ * \brief The tags of this TLD.
+ *
+ * A TLD can be described in many different ways. To minimum the description
+ * structure, we instead use a specific list of tags for each TLD.
+ *
+ * Examples of tags are: country, category, description, notes, brand.
+ *
+ * The tld() function automatically loads a few of the tags and returns
+ * that information to the caller (i.e. the category and the country).
+ *
+ * \sa tags_to_info()
+ */
+
+/** \var tld_description::f_tags_count
+ * \brief The number of tags defined by this TLD.
+ *
+ * The number of tags defined by this TLD starting at f_tags.
+ *
+ * In many cases, this is just 1 or 2. It is unlikely 0 since there is
+ * generally always at least a category and a description.
+ */
+
+
 #ifdef __cplusplus
 }
 #endif

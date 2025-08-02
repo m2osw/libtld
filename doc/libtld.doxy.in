@@ -44,7 +44,7 @@ PROJECT_NUMBER         = @FULL_VERSION@
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "A library to determine the Top-Level Domain name of any URL."
+PROJECT_BRIEF          = "A library to determine the Top-Level Domain name of any Internet URI."
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55
@@ -152,8 +152,8 @@ FULL_PATH_NAMES        = YES
 # will be relative from the directory where doxygen is started.
 # This tag requires that the tag FULL_PATH_NAMES is set to YES.
 
-STRIP_FROM_PATH        = @PROJECT_ROOT_PATH@ \
-                         @PROJECT_ROOT_PATH@/BUILD
+STRIP_FROM_PATH        = @CMAKE_BINARY_DIR@ \
+                         @CMAKE_SOURCE_DIR@
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of the
 # path mentioned in the documentation of a class, which tells the reader which
@@ -772,10 +772,10 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @CMAKE_CURRENT_BINARY_DIR@/../include/libtld/tld.h \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../php \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../src \
-                         @CMAKE_CURRENT_SOURCE_DIR@/../tests
+INPUT                  = @CMAKE_BINARY_DIR@/libtld/tld.h \
+                         @CMAKE_SOURCE_DIR@/libtld \
+                         @CMAKE_SOURCE_DIR@/php \
+                         @CMAKE_SOURCE_DIR@/tools
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -800,9 +800,9 @@ INPUT_ENCODING         = UTF-8
 # *.m, *.markdown, *.md, *.mm, *.dox, *.py, *.pyw, *.f90, *.f, *.for, *.tcl,
 # *.vhd, *.vhdl, *.ucf, *.qsf, *.as and *.js.
 
-FILE_PATTERNS          = *.h \
-                         *.c \
+FILE_PATTERNS          = *.c \
                          *.cpp \
+                         *.h \
                          *.sh
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
@@ -834,10 +834,7 @@ EXCLUDE_SYMLINKS       = NO
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = /.svn \
-                         /.svn/* \
-                         */.svn \
-                         */.svn/*
+EXCLUDE_PATTERNS       =
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -862,6 +859,7 @@ EXAMPLE_PATH           = @CMAKE_CURRENT_SOURCE_DIR@
 # files are included.
 
 EXAMPLE_PATTERNS       = *.c \
+                         *.cpp \
                          *.h
 
 # If the EXAMPLE_RECURSIVE tag is set to YES then subdirectories will be
@@ -1658,7 +1656,7 @@ COMPACT_LATEX          = NO
 # The default value is: a4.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-PAPER_TYPE             = a4wide
+PAPER_TYPE             = a4
 
 # The EXTRA_PACKAGES tag can be used to specify one or more LaTeX package names
 # that should be included in the LaTeX output. The package can be specified just

@@ -25,8 +25,10 @@
 /** \file
  * \brief The public header of the libtld library.
  *
- * This file declares all the functions, objects, structures, etc. publicly
- * available from the libtld library.
+ * This file declares most of the functions, objects, structures, etc.
+ * publicly available from the libtld library. The newer version
+ * also offers a compiler and file headers to handle .ini files
+ * and compile them in a .tld file.
  */
 
 #if ( defined(LIBTLD_DLL) || defined(_WINDLL) ) && ( defined(_WINDOWS) || defined(WINDOWS) )
@@ -48,7 +50,6 @@ extern "C" {
 #define LIBTLD_VERSION_PATCH    @LIBTLD_VERSION_PATCH@
 #define LIBTLD_VERSION          "@LIBTLD_VERSION_MAJOR@.@LIBTLD_VERSION_MINOR@.@LIBTLD_VERSION_PATCH@"
 
-// use tags instead
 enum tld_category
 {
     TLD_CATEGORY_INTERNATIONAL,

@@ -43,7 +43,7 @@
  *
  * At time of writing, I have these hunks:
  *
- * * File Magic (RIFF <size> TLDS) -- the start of the file
+ * * File Magic (RIFF \<size> TLDS) -- the start of the file
  * * Header (HEAD) -- a header with a few parameters such as the maximum TLD level
  * * Descriptions (DESC) -- the array of descriptions
  * * Strings (STRS, SLEN, SOFF) -- one super-string; the file includes
