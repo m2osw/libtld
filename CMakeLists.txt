@@ -36,7 +36,6 @@ endif()
 # specific to that project)
 #
 find_package(SnapCMakeModules REQUIRED)
-find_package(SnapDoxygen              )
 
 SnapGetVersion(LIBTLD ${CMAKE_CURRENT_SOURCE_DIR})
 
