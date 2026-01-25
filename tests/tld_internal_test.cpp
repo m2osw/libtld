@@ -280,6 +280,9 @@ void test_search_all()
 }
 
 
+} // extern "C"
+
+
 int main(int argc, char *argv[])
 {
     fprintf(stderr, "testing internal tld version %s\n", tld_version());
@@ -308,7 +311,5 @@ int main(int argc, char *argv[])
     }
     exit(err_count ? 1 : 0);
 }
-
-} // extern "C"
 
 // vim: ts=4 sw=4 et
