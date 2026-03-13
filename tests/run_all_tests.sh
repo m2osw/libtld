@@ -47,6 +47,7 @@ do
 	"--premature-exit-guard-file")
 		# ignore
 		shift
+		shift
 		;;
 
 	"--progress")
