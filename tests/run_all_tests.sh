@@ -44,6 +44,11 @@ do
 		BUILD=false
 		;;
 
+	"--premature-exit-guard-file")
+		# ignore
+		shift
+		;;
+
 	"--progress")
 		# ignore
 		shift
