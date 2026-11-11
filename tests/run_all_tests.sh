@@ -39,6 +39,11 @@ do
 		shift
 		;;
 
+	"--durations="*)
+		# ignore
+		shift
+		;;
+
 	"--no-build")
 		shift
 		BUILD=false

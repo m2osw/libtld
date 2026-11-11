@@ -50,6 +50,9 @@ extern "C" {
 #define LIBTLD_VERSION_PATCH    @LIBTLD_VERSION_PATCH@
 #define LIBTLD_VERSION          "@LIBTLD_VERSION_MAJOR@.@LIBTLD_VERSION_MINOR@.@LIBTLD_VERSION_PATCH@"
 
+#define LIBTLD_MAXIMUM_LABEL_LENGTH      63 /* this is an inclusive length, it can be between 1 and 63 */
+#define LIBTLD_MAXIMUM_URI_LENGTH       253 /* inclusive of the dots */
+
 enum tld_category
 {
     TLD_CATEGORY_INTERNATIONAL,
@@ -58,7 +61,7 @@ enum tld_category
     TLD_CATEGORY_GROUP,
     TLD_CATEGORY_REGION,
     TLD_CATEGORY_TECHNICAL,
-    TLD_CATEGORY_COUNTRY,   // TODO: remove: TLD_CATEGORY_LOCATION + TLD_REGION_COUNTRY 
+    TLD_CATEGORY_COUNTRY,   /* TODO: remove: TLD_CATEGORY_LOCATION + TLD_REGION_COUNTRY */
     TLD_CATEGORY_LOCATION,
     TLD_CATEGORY_ENTREPRENEURIAL,
     TLD_CATEGORY_BRAND,
@@ -92,7 +95,7 @@ enum tld_result
 {
     TLD_RESULT_SUCCESS,
     TLD_RESULT_INVALID,   /* TLD not acceptable (reserved, deprecated, etc.) */
-    TLD_RESULT_NULL,      /* URI is a NULL pointer */
+    TLD_RESULT_NULL,      /* URI is a NULL pointer or empty string */
     TLD_RESULT_NO_TLD,    /* no '.' in the URI */
     TLD_RESULT_BAD_URI,   /* URI includes two '.' one after another or some other problem */
     TLD_RESULT_NOT_FOUND

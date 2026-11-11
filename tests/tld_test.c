@@ -260,6 +260,16 @@ const struct test_uris g_uris[] =
         TLD_RESULT_SUCCESS,
         6,
     },
+    {
+        "a-really-long-name-is-not-considered-valid-when-more-than-63-chars.com",
+        TLD_RESULT_BAD_URI,
+        -1,
+    },
+    {
+        "very.many.sub-domain.names.can.make.the.uri.more.than.the.allowed.253.characterss.because.the.dns.limit.is.255.bytes.total.but.that.includes.an.extra.size.and.the.null.terminator.so.we.cannot.have.that.many.names.after.all.although.frankly.this.is.huge.com",
+        TLD_RESULT_BAD_URI,
+        -1,
+    },
 };
 
 

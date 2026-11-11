@@ -1110,7 +1110,7 @@ enum tld_result tld_next_tld(struct tld_enumeration_state * state, struct tld_in
  *
  * \return One of the TLD_RESULT_... enumeration values.
  */
-enum tld_result tld(char const * uri, struct tld_info * info)
+enum tld_result tld(char const * const uri, struct tld_info * info)
 {
     char const * end = uri;
     struct tld_description const * tld;
@@ -1134,10 +1134,14 @@ enum tld_result tld(char const * uri, struct tld_info * info)
 
     max_level = g_tld_file->f_header->f_tld_max_level;
     std::vector<const char *> level_ptr(max_level);
-    while(*end != '\0')
+    for(char const * previous_start(end); *end != '\0'; ++end)
     {
         if(*end == '.')
         {
+            if(end - previous_start > LIBTLD_MAXIMUM_LABEL_LENGTH)
+            {
+                return TLD_RESULT_BAD_URI;
+            }
             if(level >= max_level)
             {
                 /* At this point the maximum number of levels in the
@@ -1159,8 +1163,12 @@ enum tld_result tld(char const * uri, struct tld_info * info)
                 /* two periods one after another */
                 return TLD_RESULT_BAD_URI;
             }
+            previous_start = end + 1;
         }
-        ++end;
+    }
+    if(end - uri > LIBTLD_MAXIMUM_URI_LENGTH)
+    {
+        return TLD_RESULT_BAD_URI;
     }
     /* if level is not at least 1 then there are no periods */
     if(level == 0)
